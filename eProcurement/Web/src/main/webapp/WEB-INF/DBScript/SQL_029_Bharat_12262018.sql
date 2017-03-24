@@ -1,0 +1,2 @@
+insert into `tbl_commonlisting`(`listingId`,`actionItem`,`columnName`,`commonAction`,`discription`,`fromClause`,`isHQL`,`status`,`srnocol`)
+values(19,'View','tenderId:Event Id.:1,tenderNo:Tender No.:1,tenderBrief:Tender Brief:1,keywordText:Keyword:1,submissionStartDate:Start Date:1,submissionEndDate:End Date:1,openingDate:Opening Date:1,corrigendumCount:Corrigendum:1',NULL,'View Tender Before Login','from tbl_tender where cstatus = 1 and submissionStartDate<now() and submissionEndDate>now() and TenderMode = 1','0','1','1');

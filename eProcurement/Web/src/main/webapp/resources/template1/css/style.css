@@ -1,0 +1,43 @@
+.gradi{
+	    background-color: rgba(128, 128, 128, 0.25);
+}
+.red{
+	color: red;
+}
+.validationMsg {
+	color: red;
+}
+.pull-right{
+	float: right;
+}
+.pull-left{
+	float: left;
+}
+.lightgreen{
+	background:lightgreen;border:1px solid #374850;
+}
+.lightgray{
+	background:#d8dcd5;border:1px solid #374850;
+}
+.nowrap{
+	white-space: nowrap;
+}
+.successMsg{
+	color: green;
+}
+.errorMsg{
+	color: red;
+}
+.mouseHand{
+	cursor: pointer;
+}
+.clearfix:after {
+   content: " "; /* Older browser do not support empty content */
+   visibility: hidden;
+   display: block;
+   height: 0;
+   clear: both;
+}
+.bold{
+	font-weight:bold;
+}

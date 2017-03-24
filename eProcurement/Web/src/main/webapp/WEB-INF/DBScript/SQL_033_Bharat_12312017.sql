@@ -1,0 +1,2 @@
+alter table `eauctiontender`.`tbl_userlogin` add column `isOrgenizationUser` int DEFAULT '0' NULL after `userId`, add column `isCTPLUser` int DEFAULT '0' NULL after `isOrgenizationUser`;
+update tbl_userlogin set isCTPLUser = 0,isOrgenizationUser=0;

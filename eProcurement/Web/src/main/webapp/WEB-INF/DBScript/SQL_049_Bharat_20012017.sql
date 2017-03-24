@@ -1,0 +1,1 @@
+insert into `tbl_process`(`processId`,`isActive`,`processName`,`tableName`,`processText`)values(9,'1','Bidder Notification',NULL,'New tender published , Detail for tender is (Event: {tenderId} , Event ref No: {tenderNo}).');

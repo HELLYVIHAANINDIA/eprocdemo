@@ -341,10 +341,10 @@ public class CommonService {
 	// Get utc date
 	public Date getServerDateTime() {
 		try{
-			SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+			SimpleDateFormat dateFormatGmt = new SimpleDateFormat(sql_dateformate);
 			dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
 			//Local time zone   
-			SimpleDateFormat dateFormatLocal = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+			SimpleDateFormat dateFormatLocal = new SimpleDateFormat(sql_dateformate);
 			//Time in GMT
 			return dateFormatLocal.parse( dateFormatGmt.format(new Date()));
 		}catch(Exception e){
@@ -424,6 +424,12 @@ public class CommonService {
 			SimpleDateFormat simpleDateFormat = new SimpleDateFormat(sql_dateformate);
 			return simpleDateFormat.parse(newDate);
 	}
+	public Date convertDateToClientDate(Date cDate) throws ParseException{
+		String sqlFormateDate = convertDateToString(sql_dateformate, cDate);
+		String newDate = convertDateTimeZone(sqlFormateDate.toString(),"+00:00",getUserTimeZone());
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat(sql_dateformate);
+		return simpleDateFormat.parse(newDate);
+    }
     public String convertToDBDate(String fromFormate, String toFormate,String date) throws ParseException{
     	String returnData = "";
     	Date cDate = null;
@@ -652,7 +658,7 @@ public class CommonService {
 	 * @throws Exception 
 	 */
 	public List<Object[]> getCountries() throws Exception{
-			String query = "select countryId,countryName from TblCountry order by countryName";
+			String query = "select countryId,countryName from TblCountry  where countryId != 0 order by countryId";
 			List<Object[]> list = commonDAO.executeSelect(query, null);
 	    	return list;
 	}

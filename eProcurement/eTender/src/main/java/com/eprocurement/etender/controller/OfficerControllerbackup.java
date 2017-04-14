@@ -49,7 +49,7 @@ import com.eprocurement.etender.model.TblUserLogin;
 import com.eprocurement.etender.model.TblUserRoleMapping;
 import com.eprocurement.etender.services.OfficerService;
 @Controller
-public class OfficerController {
+public class OfficerControllerbackup {
 
 	@Autowired
     private ExceptionHandlerService exceptionHandlerService;

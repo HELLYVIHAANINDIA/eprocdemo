@@ -42,7 +42,7 @@ import com.eprocurement.common.utility.SpringMailSender;
 //import com.eprocurement.common.utility.SpringMailSender;
 
 @Controller
-public class LoginController {
+public class LoginControllerbackup {
 	@Autowired	
 	private SessionFactory sessionFactory;
 	@Autowired

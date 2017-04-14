@@ -216,7 +216,7 @@ public class OfficerService {
 	 */
 	public boolean isEmailIdExists(String emailId) throws Exception {
 		boolean isEmailIdExist = false;
-		List<TblUserLogin> tblUserLogins = tblUserLoginDao.findTblUserLogin("loginid",Operation_enum.EQ,emailId,"cstatus",Operation_enum.IN,new Integer[]{1,0});
+		List<TblUserLogin> tblUserLogins = tblUserLoginDao.findTblUserLogin("loginid",Operation_enum.EQ,emailId,"cstatus",Operation_enum.IN,new Integer[]{1,0,3});
 		if(tblUserLogins !=null && !tblUserLogins.isEmpty()) {
 			isEmailIdExist = true;
 		}
@@ -304,7 +304,12 @@ public class OfficerService {
 	public boolean addDepartment(TblDepartment tblDepartment,String type) {
 		boolean bSuccess = false;
 		if(type.equals("edit")) {
+			StringBuilder strQuery3 = new StringBuilder();
 			tblDepartmentDao.saveOrUpdateEntity(tblDepartment);
+			HashMap<String, Object> bidderremarks = new HashMap<String, Object>();
+	        bidderremarks.put("bidderId", tblDepartment.getDeptId());
+	        bidderremarks.put("type", tblDepartment.getCstatus());
+	        commonDAO.executeUpdate(strQuery3.toString(), bidderremarks);
 		}else {
 			if(tblDepartment.getParentDeptId()==null) {
 				tblDepartment.setParentDeptId(0);
@@ -364,6 +369,22 @@ public class OfficerService {
     		sectorName = list.get(0)[1].toString();
     	}
 		return sectorName;
+	}
+	
+	
+	@Transactional
+	public String getStatusRemarks(int bidderId,int type,int moduleId) throws Exception {
+		String remarks = "";
+		Map<String,Object> column = new HashMap<String, Object>();
+		column.put("bidderId", bidderId);
+		column.put("moduleId", moduleId);
+		column.put("type", type);
+		String query = "SELECT Remarks FROM Tbl_BidderStatusRemarks  where bidderId=:bidderId and  moduleId=:moduleId and type=:type";
+		List<Object> list = commonDAO.executeSqlSelect(query, column);
+    	if(list!=null && !list.isEmpty()) {
+    		remarks = list.get(0).toString();
+    	}
+		return remarks;
 	}
 	
 	@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
@@ -537,6 +558,21 @@ public class OfficerService {
         return bidderDtl;
 	}
 	
+	
+	@Transactional
+	public Object[] getBiddderDetailsByCompanyId(int companyId) {
+		
+		List<Object[]> bidderDtls = null;
+		Object[] bidderDtl = null;
+        Map<String, Object> var = new HashMap<String, Object>();
+        var.put("companyId",companyId);
+        bidderDtls = hibernateQueryDao.createNewQuery("select tblBidder.emailId,tblBidder.personName,tblBidder.companyName,tblBidder.address,tblBidder.city,tblBidder.phoneno,tblBidder.mobileno,tblBidder.website,tblBidder.tblState.stateId,tblBidder.tblCountry.countryId,tblBidder.keyword,tblBidder.cstatus,tbluserlogin.userId,tbluserlogin.password,tblCompany.companyid,tblBidder.timezoneId,tblBidder.lastName,tblBidder.middleName,tblBidder.bidderDocId,tblBidder.addressline2,tblBidder.originCountryId,tblBidder.commercialRegNo,tblBidder.establishDate,tblBidder.postalAddressLine1,tblBidder.postalAddressLine2,tblBidder.postalStateId,tblBidder.postalCity,tblBidder.designationName,tblBidder.personalMobileNo,tblBidder.personalPhoneNo,tblBidder.registerType,tblBidder.postalStateId from TblBidder tblBidder inner join tblBidder.tblUserlogin tbluserlogin inner join tblBidder.tblCompany tblCompany  where tblCompany.companyid=:companyId",var);
+        if(bidderDtls!=null && !bidderDtls.isEmpty()) {
+        	bidderDtl = bidderDtls.get(0);
+        }																														
+        return bidderDtl;
+	}
+	
 	/**
 	 * 
 	 * @param tblLink
@@ -684,22 +720,30 @@ public class OfficerService {
 	 */
 	@Transactional
 	public boolean updateBidderstatus(int bidderId,int userstatus,String remarks) throws Exception {
-		Integer rowcnt = 0;
+		Integer rowcnt;
 		StringBuilder strQuery = new StringBuilder();
 		StringBuilder strQuery2 = new StringBuilder();
+		StringBuilder strQuery3 = new StringBuilder();
 		TblBidder tblBidder = tblBidderDao.findTblBidder("bidderId",Operation_enum.EQ,bidderId).get(0);	
         HashMap<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("userId", tblBidder.getTblUserlogin().getUserId());
         parameters.put("cstatus", userstatus);
         strQuery.append("update TblUserLogin tblUserLogin set tblUserLogin.cstatus=:cstatus where tblUserLogin.userId=:userId ");
         rowcnt = commonDAO.executeUpdate(strQuery.toString(), parameters);
+        
         HashMap<String, Object> bidderparameters = new HashMap<String, Object>();
         bidderparameters.put("bidderId", bidderId);
         bidderparameters.put("cstatus", userstatus);
         bidderparameters.put("remarks", remarks);
         strQuery2.append("update TblBidder tblBidder set tblBidder.cstatus=:cstatus,tblBidder.remarks=:remarks where tblBidder.bidderId=:bidderId ");
         rowcnt = commonDAO.executeUpdate(strQuery2.toString(), bidderparameters);
-		return rowcnt!=0;
+        
+        HashMap<String, Object> bidderremarks = new HashMap<String, Object>();
+        bidderremarks.put("bidderId", bidderId);
+        bidderremarks.put("type", userstatus);
+        strQuery3.append("delete from TblBidderStatusRemarks tblBidderStatusRemarks where tblBidderStatusRemarks.type=:type and tblBidderStatusRemarks.bidderId=:bidderId and moduleId=1 ");
+        rowcnt = commonDAO.executeUpdate(strQuery3.toString(), bidderremarks);
+        return rowcnt!=0;
 	}
 
 	public List<Map<String,Object>> getNotificaitonCount( Integer marqueeTo, Integer tenderId) {
@@ -866,6 +910,19 @@ public class OfficerService {
 			commonDAO.saveOrUpdateAll(tblCurrencyMapList);
 		}
 		return true;
+	}
+	@Transactional
+	public boolean deleteUser(String officerId) {
+		Map<String,Object> col = new HashMap<String, Object>();
+		col.put("officerId", Long.parseLong(officerId));
+		Long userId = Long.parseLong(getOfficerDetails(Integer.parseInt(officerId))[4].toString());
+		int i = commonDAO.executeUpdate("update TblOfficer set cstatus=3 where id=:officerId", col);
+		if(i!=0){
+			col.clear();
+			col.put("userId", userId);
+			i = commonDAO.executeUpdate("update TblUserLogin set cstatus=3 where userId=:userId", col);
+		}
+		return i!=0 ? true : false ;
 	}
 	
 }

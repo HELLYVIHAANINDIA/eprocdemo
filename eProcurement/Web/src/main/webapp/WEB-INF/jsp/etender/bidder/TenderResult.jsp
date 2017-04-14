@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@include file="../../includes/head.jsp"%>
+  <%@include file="../../includes/masterheader.jsp"%>
+
 <spring:message code="tooltip_bidderwise_abstract_report"  var="toolTipBidderAbstReport"/>
 <spring:message code="link_l1_report"     var="l1Report"/>
 <c:if test="${biddingVariant eq 2}"><spring:message code="link_h1_report" var="l1Report"/></c:if>
@@ -12,54 +9,55 @@
 <c:set value="${sessionObject.userId}" var="currentUserId"/>
 <spring:message code="msg_env_not_open" var="vEnvNotOpen"/>
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
 <div class="content-wrapper">
-
-	<section class="content-header"> <c:if
-		test="${not empty successMsg}">
-		<div>
-			<span class="alert alert-success"><spring:message
-					code="${successMsg}" />
-			</span>
-		</div>
-	</c:if> <c:if test="${not empty errorMsg}">
-		<div>
-			<span class="alert alert-danger"><spring:message
-					code="${errorMsg}" />
-			</span>
-		</div>
-	</c:if>
-	<div>
-		<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"
-		class="btn btn-submit"><< ${backDashboard}</a>
-	</div>
-	</section>
-
 	<section class="content">
-	  <div class="row">
+		<div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-			<div class="box">	
+			<div class="box">
+				<c:if test="${not empty successMsg}">
+					<div><span class="alert alert-success"><spring:message code="${successMsg}"/></span></div>
+				</c:if>
+				<c:if test="${not empty errorMsg}">
+					<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
+				</c:if>
+				<div>
+					<c:choose>
+						<c:when test="${sessionUserTypeId eq 2 }">
+							<a  href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"><< 
+                                            <c:if test="${tblTender.isAuction eq 0}">
+                                               ${backDashboard} 
+                                            </c:if>
+                                            <c:if test="${tblTender.isAuction eq 1}">
+                                                Go To Auction DashBoard
+                                            </c:if>
+                                            
+                                            </a>
+						</c:when>
+						<c:otherwise>
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a>
+						</c:otherwise>
+					</c:choose>
+					
+				</div>
 				<div class="box-header with-border">
 					<h2 class="box-title">Result</h2>
 				</div>
-<div class="box-body">
+                                       
+                <div class="box-body">
 		<div class="row">
 			<div class="col-lg-12 col-md-12 col-xs-12">
-				<div class="box-body pad">
+				<div class="box-body pad">                           
+                                        <c:if test="${tblTender.isAuction eq 0}">
+                                         
 <table  class="table table-striped table-responsive">	
 	<tr>
 		<td>
 			<%--<table width="100%" class="table-border border-right">--%>
 			 	<c:set value="${tenderDetailList}" var="tenderData"/> 
-			 	<c:if test="${tenderData.resultSharing eq '2'}">
+			 	<c:if test="${tenderData.autoResultSharing eq '1'}">
 			 		<c:set value="${tblShareReport}" var="tenderShareReportDataMap"/>
 		 		</c:if>                                    
-                                    <%--<c:when test="${true or tenderData.resultSharing eq '1' or (tenderData.resultSharing eq '2' and isResultShareDone)}">--%>
+                                    <%--<c:when test="${true or tenderData.autoResultSharing eq '1' or (tenderData.autoResultSharing eq '1' and isResultShareDone)}">--%>
 				<c:forEach items="${envList}"  varStatus="srno" var="envelopeData"><%-- First Envelopes whole loop In which all links and data show/hide by condition wise--%>
 					<c:set value="${envelopeData[0]}" var="envelopeid"/>
 							<c:set value="${envelopeData[1]}" var="envelopename"/>
@@ -104,65 +102,41 @@
 					</c:forEach>
 					<c:set value="," var="qualifiedBidders"/>
 					<c:set value="," var="participatedBidders"/>
-					<c:if test="${tenderData.resultSharing eq '2'}"><%-- tenderShareReportDataMap.shareReport=2 Means only Qualified Bidders --%>
+					<c:if test="${tenderData.autoResultSharing eq '1'}"><%-- tenderShareReportDataMap.shareReport=2 Means only Qualified Bidders --%>
 						<c:forEach items="${bidderList}" var="bidderData">
+						
 							<c:set var="bidderBidderId" value="${bidderData[0]}"/>
 							<c:set var="bidderEnvelopeId" value="${bidderData[2]}"/>
-							<c:set var="bidderIsApproved" value="${bidderData[4]}"/>
-							<c:if test="${envelopeid eq bidderEnvelopeId and bidderIsApproved eq '1'}">
-								<c:set value="${qualifiedBidders}${bidderBidderId}," var="qualifiedBidders"/>
+							<c:set var="bidderUserId" value="${bidderData[10]}"/>
+							<c:set var="bidderIsApproved" value="${not empty bidderData[4] ? bidderData[4] : 0}"/>
+							<c:if test="${envelopeid eq bidderEnvelopeId and bidderIsApproved eq 1}">
+								<c:set value="${qualifiedBidders}${bidderUserId}," var="qualifiedBidders"/>
 							</c:if>
 							
 							<c:if test="${envelopeid eq bidderEnvelopeId}">
-								<c:set value="${participatedBidders}${bidderBidderId}," var="participatedBidders"/>
+								<c:set value="${participatedBidders}${bidderUserId}," var="participatedBidders"/>
 							</c:if>
 						</c:forEach>
 					</c:if>
                                     <div class="m-bottom3 box-shadow o-hidden">
                                         <div class="page-title prefix_1 o-hidden border-left border-top border-right border-bottom-none">
                                         	<span class="${timelapsed eq 1 and isopened ne 0 ? 'open-envelope-icn m-top2' : 'close-envelope-icn'} pull-left "></span>
-                                        	<h3 style="float:left; font-size:18px;">${envelopename}</h3>
-											<h3 style="float:right; font-size:18px;" class="pull-right prefix1_20">
+                                        	<h3 style="float:left;">${envelopename}</h3>
+                                        	<c:if test="${!fromOfficer}">
+											<h3 style="float:right;" class="pull-right prefix1_20">
 											<spring:message code="lbl_bid_time"/>:
 												<c:choose>
 													<c:when test="${srno.index ne 0 and tenderData.envelopeType eq 2 and openingdatestatus ne 1}">---</c:when> 
 													<c:when test="${openingdatestatus eq 1}">
-														${openingdate}
+														<fmt:formatDate pattern="${clientDateFormate}" value="${openingdate}" />
 													</c:when> 
 												</c:choose>
 											</h3>
+											</c:if>
                                         </div>
                                         <table class="table">
-<!--                                             <tr> -->
-<!--                                                 <td colspan="3" class="no-padding"> -->
-<!--                                                     <table class="table"> -->
-<!--                                                         <tr> -->
-<%--                                                             <spring:url value="etender/bidder/viewQueries/${tenderId}/${envelopeid}/${currentUserId}" var="responseUrl"/> --%>
-<%--                                                                 <c:choose> --%>
-<%--                                                                         <c:when test='${isEvaluationDone eq 0 or isNextEnvEvalDone eq 0 }'> --%>
-<%--                                                                             <spring:message var="linkRespond" code="linkRespond"/> --%>
-<!--                                                                             <td> -->
-<%--                                                                             	<a href="${responseUrl}">${linkRespond}</a> --%>
-<!--                                                                             </td> -->
-<%--                                                                         </c:when>    --%>
-<%--                                                                         <c:otherwise> --%>
-<!--                                                                             <td> -->
-<%--                                                                                 <c:choose> --%>
-<%--                                                                                     <c:when test="${isEvaluationDone eq 0}">-</c:when> --%>
-<%--                                                                                     <c:otherwise> --%>
-<%--                                                                                         <spring:message code="lbl_view_response" var="linkViewResponse" /> --%>
-<%--                                                                                         <a href="${responseUrl}">${linkViewResponse}</a> --%>
-<%--                                                                                     </c:otherwise> --%>
-<%--                                                                                 </c:choose> --%>
-<!--                                                                                 </td> -->
-<%--                                                                         </c:otherwise> --%>
-<%--                                                                     </c:choose> --%>
-<!--                                                             </tr> -->
-<!--                                                         </table> -->
-<!--                                                     </td> -->
-<!--                                                 </tr> -->
                                                 <c:choose>
-                                                <c:when test="${tenderData.resultSharing eq '1' or (tenderData.resultSharing eq '2' and isResultShareDone)}">
+                                                <c:when test="${tenderData.autoResultSharing eq '0' or (tenderData.autoResultSharing eq '1' and isResultShareDone)}">
                                             <tr>
                                                 <%--<div class="page-title prefix_1 o-hidden m-top1 border-left border-top border-right border-bottom-none">${envelopename}</div>--%>
                                                     <td>
@@ -204,9 +178,7 @@
                                                                                                                                 <c:choose>
                                                                                                                                     <c:when test="${isapproved eq 1}">
                                                                                                                                             <spring:message code="col_sts_opened"/>
-                                                                                                                                            <c:set value="${approvedon}" var="approvedOn"/>
-<%--                                                                                                                                             Remove Seconds from date time --%>
-                                                                                                                                            ${approvedOn}	
+                                                                                                                                           ${approvedon} 	
                                                                                                                                     </c:when>
                                                                                                                                     <c:otherwise><spring:message code="col_status_ope_pending"/></c:otherwise>
                                                                                                                                 </c:choose>
@@ -222,7 +194,6 @@
                                                             </table>
                                                     </td>
                                             </tr>
-                                                
 							<%--Start: Bidder Listing --%>
 							<c:choose>
 								<c:when test="${isopened eq 1}"><%-- Bidded bidder listing shown after tender envelope open --%>
@@ -250,7 +221,7 @@
 											<c:set var="bidderCompanyId" value="${bidderData[1]}"/>
 											<c:set var="bidderEnvelopeId" value="${bidderData[2]}"/>
 											<c:set var="bidderConsortiumId" value="${bidderData[3]}"/>
-											<c:set var="bidderIsApproved" value="${bidderData[4]}"/>
+											<c:set var="bidderIsApproved" value="${not empty bidderData[4] ? bidderData[4] : 0}"/>
 											<c:set var="bidderEncodedName" value="${bidderData[5]}"/>
 											<c:set var="bidderPartnerType" value="${bidderData[6]}"/>
 											<c:set var="bidderRemarks" value="${bidderData[7]}"/>
@@ -261,7 +232,7 @@
 													<c:if test="${envelopeid eq bidderEnvelopeId}">
 														<tr class="border-top-none">
 															<c:set value="${fn:replace(bidderCompanyName,'label_consort_with',conrtiumWith)}" var="companyNames"/>
-															<c:set value="${fn:substring(companyNames,0,fn:length(companyNames)-1)}" var="companyNames"/>
+															<c:set value="${fn:substring(companyNames,0,fn:length(companyNames))}" var="companyNames"/>
 															<%--Start: Consortium Logic to display bidder's company name Encoded --%>
 															<c:if test="${tenderData.isEncodedName eq 1 and (envId eq 4 or envId eq 5)}"><%-- For Multi Envelope Tender encoded is yes and price bid/Techno-commercial envelope Then show encoded name--%>
 																<c:set value="${bidderEncodedName}" var="companyNames"/>
@@ -273,11 +244,9 @@
 																		<c:choose>	
 																			<c:when test="${isEnbleBidderwiseReport eq 'N'}">${companyNames}</c:when>
 																			<c:when test="${tenderData.isConsortiumAllowed eq 1}">
-																				<%--<abc:href href="etender/bidder/bidderwisereport/${tenderId}/${bidderEnvelopeId}/1/1/${encConsortiumId}/1" title="${toolTipBidderAbstReport}" label="${companyNames}"/>--%>
                                                                                                                                                                 ${companyNames}
 																			</c:when>
 																			<c:otherwise>
-																				<%--<abc:href href="etender/bidder/bidderwisereport/${tenderId}/${bidderEnvelopeId}/0/1/${encBidderId}/1" title="${toolTipBidderAbstReport}"  label="${companyNames}"/>--%>
                                                                                                                                                                 ${companyNames}
 																			</c:otherwise>
 																		</c:choose> 
@@ -285,7 +254,7 @@
                                                                     <c:if test="${tblTender.isEvaluationRequired eq 1}">
                                                                      <td width="50%">
 																		<c:choose>
-																			<c:when test="${tenderData.resultSharing eq '2'}"><%-- For Manual Result Sharing --%>
+																			<c:when test="${tenderData.autoResultSharing eq '1'}"><%-- For Manual Result Sharing --%>
 																				<c:choose>
 																					<c:when test="${tenderShareReportDataMap.shareReport eq '1' or (tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId))}"><%--For All Bidders , For Qualified Bidders and Participated Bidders --%>
 																						<c:choose>
@@ -308,7 +277,7 @@
 																					<c:otherwise>---</c:otherwise>
 																				</c:choose>
 																			</c:when>
-																			<c:when test="${tenderData.resultSharing eq '1'}"><%-- For Auto Result Sharing --%>
+																			<c:when test="${tenderData.autoResultSharing eq '0'}"><%-- For Auto Result Sharing --%>
 																				<c:choose>
 																				<c:when test="${empty bidderIsApproved }">
 																							${vPending}
@@ -318,7 +287,7 @@
 																							${vEligible}
 																							</div>
 																					</c:when>
-																					<c:when test="${bidderIsApproved eq 0}">
+																					<c:when test="${ bidderIsApproved eq 0}">
 																							<div data-toggle="tooltip" data-placement="left" title="" data-original-title="${bidderRemarks}">
 																							${vNotEligible}
 																							</div> 
@@ -335,11 +304,9 @@
 																		<c:choose>
 																			<c:when test="${isEnbleBidderwiseReport eq 'N'}">${companyNames}</c:when>
 																			<c:when test="${tenderData.isConsortiumAllowed eq 1}">
-																				<%--<abc:href href="etender/bidder/bidderwisereport/${tenderId}/${bidderEnvelopeId}/1/1/${encConsortiumId}/1" title="${toolTipBidderAbstReport}" label="${companyNames}"/>--%>
                                                                                                                                                                 ${companyNames}
 																			</c:when>
 																			<c:otherwise>
-																				<%--<abc:href href="etender/bidder/bidderwisereport/${tenderId}/${bidderEnvelopeId}/0/1/${encBidderId}/1" title="${toolTipBidderAbstReport}" label="${companyNames}"/>--%>
                                                                                                                                                                 ${companyNames}
 																			</c:otherwise>
 																		</c:choose> 
@@ -347,7 +314,7 @@
                                                                                                                                         <c:if test="${tblTender.isEvaluationRequired eq 1}">
                                                                                                                                             <td width="50%">
 																		<c:choose>
-																			<c:when test="${tenderData.resultSharing eq '2' and (tenderShareReportDataMap.shareReport eq '1' or (tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId)))}"><%--For All Bidders , For Qualified Bidders and Participated Bidders --%>
+																			<c:when test="${tenderData.autoResultSharing eq '1' and (tenderShareReportDataMap.shareReport eq '1' or (tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId)))}"><%--For All Bidders , For Qualified Bidders and Participated Bidders --%>
 																					<c:choose>
 																					<c:when test="${empty bidderIsApproved}">
 																						${vPending}
@@ -361,7 +328,7 @@
 																					</c:choose>
 																							
 																			</c:when>
-																			<c:when test="${tenderData.resultSharing eq '1'}">
+																			<c:when test="${tenderData.autoResultSharing eq '0'}">
 																			<div data-toggle="tooltip" data-placement="left" title="" data-original-title="${bidderRemarks}">
 																							<c:choose>
 																					<c:when test="${empty bidderIsApproved}">
@@ -389,7 +356,7 @@
 												<c:otherwise><%-- Single Envelope Case --%>
 													<tr class="border-top-none">
 														<c:set value="${fn:replace(bidderCompanyName,'label_consort_with',conrtiumWith)}" var="companyNames"/>
-														<c:set value="${fn:substring(companyNames,0,fn:length(companyNames)-1)}" var="companyNames"/>
+														<c:set value="${fn:substring(companyNames,0,fn:length(companyNames))}" var="companyNames"/>
 														<c:if test="${tenderData.isEncodedName eq 1 and (envId eq 4 or envId eq 5)}"><%-- For Multi Envelope Tender encoded is yes and price bid/Techno-commercial envelope Then show encoded name--%>
 															<c:set value="${bidderEncodedName}" var="companyNames"/>
 														</c:if>	
@@ -398,11 +365,9 @@
 																<c:choose>
 																	<c:when test="${isEnbleBidderwiseReport eq 'N'}">${companyNames}</c:when>
 																	<c:when test="${tenderData.isConsortiumAllowed eq 1}"><%-- If it's a consortium case then pass consortiumId other wise pass bidderId --%>
-																		<%--<abc:href href="etender/bidder/bidderwisereport/${tenderId}/${envelopeid}/1/1/${encConsortiumId}/1" title="${toolTipBidderAbstReport}" label="${companyNames}"/>--%>
                                                                                                                                                 ${companyNames}
 																	</c:when>
 																	<c:otherwise><%-- If it's a consortium case then pass consortiumId other wise pass bidderId --%>
-																		<%--<abc:href href="etender/bidder/bidderwisereport/${tenderId}/${envelopeid}/0/1/${encBidderId}/1" title="${toolTipBidderAbstReport}" label="${companyNames}"/>--%>
                                                                                                                                                 ${companyNames}
 																	</c:otherwise>
 																</c:choose> 
@@ -410,9 +375,9 @@
                                                                                                                         <c:if test="${tblTender.isEvaluationRequired eq 1}">
                                                                                                                             <td width="50%">
 																<c:choose>
-																	<c:when test="${tenderData.resultSharing eq '2'}"><%-- For Manual Result Sharing --%>
+																	<c:when test="${tenderData.autoResultSharing eq '1'}"><%-- For Manual Result Sharing --%>
 																		<c:choose>
-																			<c:when test="${tenderShareReportDataMap.shareReport eq '1' or (tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId))}"><%--For All Bidders , For Qualified Bidders and Participated Bidders --%>
+																			<c:when test="${sessionUserTypeId eq 1 or tenderShareReportDataMap.shareReport eq '1' or (tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId))}"><%--For All Bidders , For Qualified Bidders and Participated Bidders --%>
 																				<c:choose>
 																				<c:when test="${empty bidderIsApproved }">
 																							${vPending}
@@ -433,9 +398,9 @@
 																			<c:otherwise>---</c:otherwise>
 																		</c:choose>
 																	</c:when>
-																	<c:when test="${tenderData.resultSharing eq '1'}"><%-- For Auto Result Sharing --%>
+																	<c:when test="${sessionUserTypeId eq 1 or tenderData.autoResultSharing eq '0'}"><%-- For Auto Result Sharing --%>
 																		<c:choose>
-																		<c:when test="${empty bidderIsApproved }">
+																		<c:when test="${empty bidderIsApproved}">
 																							${vPending}
 																							</c:when>
 																			<c:when test="${bidderIsApproved eq 1}">
@@ -527,8 +492,20 @@
 														verifyCstatus=2 Cancelled form 
 														committeeMember=It has user Id who are committe member and logged in system
 													--%>
+													<c:choose>
+														<c:when test="${!fromOfficer}">
+															<spring:url var="urlIndividual" value="/etender/bidder/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
+															<spring:url var="urlComparative" value="/etender/bidder/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
+														</c:when>
+														<c:otherwise>
+														<spring:url var="urlIndividual" value="/etender/buyer/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
+														<spring:url var="urlComparative" value="/etender/buyer/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
+														</c:otherwise>
+													</c:choose>
+													
+													
 														<c:choose>
-														<c:when test="${tenderData.resultSharing eq '2'}"><%-- Result sharing Manual case Logic --%>
+														<c:when test="${tenderData.autoResultSharing eq '1'}"><%-- Result sharing Manual case Logic --%>
 															<c:choose>
 																<c:when test="${false and verifyOpenCount eq 0}"><%-- If openCount=0 Means no bidded form verify  --%>
 																	<td>${verifyFormName}<c:if test="${verifyIsMandatory eq 1}"><span class="red"> *</span></c:if></td>
@@ -547,43 +524,36 @@
 																		<c:otherwise>
 																			<td class="a-left">
 																				<c:choose>
-																					<c:when test="${(tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId))}"><%-- For Qualified Bidders And Participated Bidders --%>
+																					<c:when test="${sessionUserTypeId eq 1 or (tenderShareReportDataMap.shareReport eq '2' and fn:contains(qualifiedBidders,currentUserId)) or (tenderShareReportDataMap.shareReport eq '3' and fn:contains(participatedBidders,currentUserId))}"><%-- For Qualified Bidders And Participated Bidders --%>
 																						<c:choose>
 																							<c:when test="${verifyShareIndividualReport eq '1' and verifyShareComparativeReport eq '1'}">
-																								<spring:url var="urlIndividual" value="/etender/bidder/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
-																								<a href="${urlIndividual}">${linkIndiv}</a> |
-																								<spring:url var="urlComparative" value="/etender/bidder/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
+																								
+																								<a href="${urlIndividual}">${linkIndiv}</a> 
 																								<a href="${urlComparative}">${linkCompare}</a>
 																							</c:when>
 																							<c:when test="${verifyShareIndividualReport eq '0' and verifyShareComparativeReport eq '0'}">---</c:when>
 																							<c:otherwise>
 																								<c:if test="${verifyShareIndividualReport  eq '1'}">
-																									<spring:url var="urlIndividual" value="/etender/bidder/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
-																									<a href="${urlIndividual}">${linkIndiv}</a> |
+																									<a href="${urlIndividual}">${linkIndiv}</a> 
 																								</c:if>
 																								<c:if test="${verifyShareComparativeReport eq '1'}">
-																									<spring:url var="urlComparative" value="/etender/bidder/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
 																								<a href="${urlComparative}">${linkCompare}</a>
 																								</c:if>
 																							</c:otherwise>
 																						</c:choose>
 																					</c:when>
-																					<c:when test="${tenderShareReportDataMap.shareReport eq '1'}"> <%-- For All Bidders --%>
+																					<c:when test="${sessionUserTypeId eq 1 or tenderShareReportDataMap.shareReport eq '1'}"> <%-- For All Bidders --%>
 																						<c:choose>
 																							<c:when test="${verifyShareIndividualReport eq '1' and verifyShareComparativeReport eq '1'}">
-																								<spring:url var="urlIndividual" value="/etender/bidder/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
-																								<a href="${urlIndividual}">${linkIndiv}</a> |
-																								<spring:url var="urlComparative" value="/etender/bidder/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
+																								<a href="${urlIndividual}">${linkIndiv}</a> 
 																								<a href="${urlComparative}">${linkCompare}</a>
 																							</c:when>
 																							<c:when test="${verifyShareIndividualReport eq '0' and verifyShareComparativeReport eq '0'}">---</c:when>
 																							<c:otherwise>
 																								<c:if test="${verifyShareIndividualReport  eq '1'}">
-																									<spring:url var="urlIndividual" value="/etender/bidder/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
-																									<a href="${urlIndividual}">${linkIndiv}</a> |
+																									<a href="${urlIndividual}">${linkIndiv}</a> 
 																								</c:if>
 																								<c:if test="${verifyShareComparativeReport eq '1'}">
-																									<spring:url var="urlComparative" value="/etender/bidder/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
 																									<a href="${urlComparative}">${linkCompare}</a>
 																								</c:if>
 																							</c:otherwise>
@@ -614,9 +584,7 @@
  																		<c:when test="${verifyFinalCount eq 0}"><td colspan="3" class="a-left"><span class="m-top1 noticeMsg a-left">${vFormNoBidded}</span></td></c:when> 
 																		<c:otherwise>
 																			<td class="a-left">
-																				<spring:url var="urlIndividual" value="/etender/bidder/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
-																					<a href="${urlIndividual}">${linkIndiv}</a> |
-																				<spring:url var="urlComparative" value="/etender/bidder/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
+																					<a href="${urlIndividual}">${linkIndiv}</a> 
 																					<a href="${urlComparative}">${linkCompare}</a>
 																			</td>
 																		</c:otherwise>
@@ -627,15 +595,20 @@
 														</c:choose>	
 												</tr>
 											</c:if>
-											<c:if test="${((tenderData.resultSharing eq '2' and tenderShareReportDataMap.showL1Report eq 1) or tenderData.resultSharing eq '1') and verifyCnt.count eq fn:length(bidderFormList) and mandatoryFormsCount ne 0 and mandatoryFormsCount eq mandatoryFormVerifiedCount and (envId eq 4 or envId eq 5)}"><%-- isRebateForm =1 , all forms are verified, and pricebid or technocommercial envelope  --%>
+											<c:if test="${((tenderData.autoResultSharing eq '1' and tenderShareReportDataMap.showL1Report eq 1) or tenderData.autoResultSharing eq '0') and verifyCnt.count eq fn:length(bidderFormList) and mandatoryFormsCount ne 0 and mandatoryFormsCount eq mandatoryFormVerifiedCount and (envId eq 4 or envId eq 5)}"><%-- isRebateForm =1 , all forms are verified, and pricebid or technocommercial envelope  --%>
 												<tr>
+													<td>Report</td>
 													<td class="a-left">
-														<c:choose>
-															<c:when test="${tenderResult eq 1}"><spring:url var="urlL1" value="etender/bidder/l1h1report/${tenderId}/1/1"/>
-																<a href="${urlL1}">${l1Report}</a>
-															</c:when>
-															<c:otherwise>${l1Report}</c:otherwise>
-														</c:choose>	
+															<c:choose>
+																<c:when test="${!fromOfficer}">
+																	<spring:url var="urlL1" value="/etender/bidder/l1h1report/${tenderId}/1/1/${verifyFormId}"/>
+																</c:when>
+																<c:otherwise>
+																	<spring:url var="urlL1" value="/etender/buyer/l1h1report/${tenderId}/1/1/${verifyFormId}"/>
+																</c:otherwise>
+															</c:choose>
+															
+															<a href="${urlL1}">${l1Report}</a>
 													</td>
 												</tr>
 											</c:if>												
@@ -652,7 +625,7 @@
 									<tr>
 										<td>
 											<div class="m-top1 noticeMsg a-left">
-													<spring:message code="msg_env_not_open"/>
+													<label class="black"> <spring:message code="msg_env_not_open"/></label>
 											</div>
 	                                       </td>
 	                                   </tr>
@@ -670,7 +643,14 @@
 									
                                  </c:otherwise>
 							</c:choose>
-					</c:if>							
+					</c:if>
+					<c:if test="${isopened eq 1 and !fromOfficer}">
+					<tr>
+						<td>Seek clarification
+                        	<a href="${pageContext.servletContext.contextPath}/etender/bidder/viewQueries/${tenderId}/${envelopeid}/${sessionObject.bidderId}">Response</a>
+                        </td>
+					</tr>
+					</c:if>
 							<%--End: Forms Listing --%>
                                                    
                                         <%--</table>--%>
@@ -692,15 +672,104 @@
 		</td>
 	</tr>
 </table>
+<c:if test="${!fromOfficer}">
+<div>
+	<table width="100%">
+		<tr>
+            		<td>	
+                                            		View purchase order
+                                            	</td>
+                                            	<td>
+                                            		<c:choose>
+                                            			<c:when test="${poId ne 0}">
+                                            				<a href="${pageContext.servletContext.contextPath}/etender/bidder/getpurchaseorderdashboardbidder/${tenderId}">Dashboard</a>
+                                            			</c:when>
+                                            			<c:otherwise>
+                                            				Purchase order not generated yet.
+                                            			</c:otherwise>
+                                            		</c:choose>
+                                            		
+                                            	</td>
+                                            </tr>
+                                            </table>
+</div>
+</c:if>
+
+                              </c:if>  
+                                    <c:if test="${tblTender.isAuction eq 1}">
+                                        <div class="box-body">
+							<div class="row">
+
+								<div class="col-lg-12 col-md-12 col-xs-12">
+									<table class="table table-striped table-responsive text-center">
+										<thead>
+											<tr>
+                                                                                            <th class="text-center">No.</th>
+												<th  class="text-center">Bid Value</th>
+												<th  class="text-center">Bid Time</th>
+                                                                                                <th class="text-center">Is Valid Or Not?</th>
+												
+											</tr>
+										</thead>
+										<tbody class="row" id="dvMainDocumentForm">
+                                                                                    <c:set var="i" value="0"/>
+                                                                                    <c:forEach var="entry" items="${bidHistory}">
+                                                                                        <c:set var="i" value="${i+1}"/>
+                                                                                        
+                                                                                        <tr>
+                                                                                             <td class="control-label">${i}</td>
+                                                                                            <td class="control-label">
+                                                                                                <c:if test="${tblTender.biddingType eq 2}">
+                                                                                                    ${entry.bidValue / ExchangeRate}
+                                                                                                </c:if>
+                                                                                                <c:if test="${tblTender.biddingType ne 2}">
+                                                                                                    ${entry.bidValue}
+                                                                                                </c:if>
+                                                                                                
+                                                                                            </td>
+                                                                                            <fmt:formatDate value="${entry.bidDateTime}" var="formattedDate"  type="date" pattern="dd-MMM-yyyy HH:mm:ss" />
+                                                                                            <td class="control-label">${formattedDate}</td>
+                                                                                            <td class="control-label">
+                                                                                                <c:if test="${entry.isValid eq 1}">
+                                                                                                    Valid
+                                                                                                </c:if>
+                                                                                                <c:if test="${entry.isValid eq 0}">
+                                                                                                    InValid
+                                                                                                </c:if>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    </c:forEach>
+                                                                                    </tbody>
+                                                                            <tfoot>
+                                                                                <tr>
+                                                                                        <td colspan="3" align="center">
+                                                                                            <input type="hidden" id="PriceSummryColumn" name="PriceSummryColumn">
+                                                                                                <input type="hidden" id="formId" value="${formId}" name="formId">
+                                                                                             <input type="hidden" id="tenderId" value="${tenderId}" name="tenderId">
+                                                                                                
+                                                                                                 <c:if test="${not empty PriceSummaryColumn}">
+                                                                                            
+                                                                                                <button type="submit" class="btn btn-submit" id="btnSubmitForm" onclick="return callForEvaluationColumn();">Submit</button>
+                                                                                             <button type="button" class="btn btn-submit">Reset</button></c:if>
+                                                                                        </td>
+                                                                                    </tr>
+                                                                            </tfoot>
+									</table>
+								</div>
+
+							</div>
+						</div>
+                                    </c:if>
+
+            </div>
 </div>
 </div>
 </div>
-</div>
+                             
+                                        
 </div>
 </div>
 </div>
 </section>
 </div>
-</div>
-</body>
-</html>
+<%@include file="../../includes/footer.jsp"%>

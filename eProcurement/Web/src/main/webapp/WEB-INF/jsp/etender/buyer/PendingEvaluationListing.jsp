@@ -1,186 +1,74 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@include file="../../includes/head.jsp"%>
 <jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../../includes/header.jsp"%>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-<script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-	<div class="content-wrapper">
+<%@include file="../../includes/masterheader.jsp"%>
+<div class="content-wrapper">
+<section class="content-header">
+<c:choose>
+<c:when test="${committeeType eq 1}">
+<h1><spring:message code="lbl_tender_opening" /></h1>
+</c:when>
+<c:when test="${committeeType eq 2}">
+<h1><spring:message code="lbl_tender_evaluation" /></h1>
+</c:when>
+</c:choose>
 	
-		<section class="content-header" style="cursor: pointer;">
-			<h1><a onclick="showHideSearch()">Search</a></h1>
-			<c:if test="${not empty successMsg}">
-			<div class="alert alert-success">${successMsg}</div>
-			</br>
-			</c:if>
-			<div class="clearfix"></div>
-		</section>
-		
-		
-		
-		<section class="content">
-			<div class="row">
-				<div class="col-md-12">
-					<div class="box">
-						<div class="box-body">
-							<form id="tenderListForm" style="display: none;">
-								<div class="row">
-									<div class="col-md-3">
-										<div class="form_filed"><spring:message code="fields_tenderid" /></div>
-									</div>
-									<div class="col-md-3">
-										<input type="text" class="searchLike form-control"
-											columnname="tenderId">
-									</div>
-									<div class="col-md-3">
-										<div class="form_filed"><spring:message code="fields_refenceno" /></div>
-									</div>
-									<div class="col-md-3">
-										<input type="text" class="searchLike form-control"
-											columnname="tenderNo">
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-md-3">
-										<div class="form_filed"><spring:message code="field_brief" /></div>
-									</div>
-									<div class="col-md-3">
-										<input type="text" class="searchLike form-control"
-											columnname="tenderBrief">
-									</div>
-									<div class="col-md-3">
-										<div class="form_filed"><spring:message code="fields_tender_keywords" /></div>
-									</div>
-									<div class="col-md-3">
-										<input type="text" class="searchLike form-control"
-											columnname="keywordText">
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-md-3">
-										<div class="form_filed"><spring:message code="lbl_due_date" /></div>
-									</div>
-									<div class="col-md-3">
-										<select name="dateFrom1" class="dateFrom1 form-control" id="dateFrom1"
-											onchange="checkBetween1(this);">
-											<option value="searchEqual">equal</option>
-											<option value="searchNotEqual">not equal</option>
-											<option value="searchLessThen">less</option>
-											<option value="searchLessThenEqual">less or equal</option>
-											<option value="searchGreaterThen">greater</option>
-											<option value="searchGreaterEqual">greater or equal</option>
-											<option value="searchBetweenDate">between</option>
-										</select>
-									</div>
-									<div class="col-md-3">
-										<input id="submissionEndDate" columnname="submissionEndDate"
-											name="submissionEndDate" type="text" datepicker="yes"
-											placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true"
-											class="form-control">
-									</div>
-									<div class="col-md-3" id="div_submissionEndDate_to"
-										style="display: none;">
-										<input id="submissionEndDate_to" name="submissionEndDate_to"
-											columnname="submissionEndDate" type="text" datepicker="yes"
-											placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true"
-											class="form-control">
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-md-3">
-										<div class="form_filed"><spring:message code="field_bidopeningstartdate" /></div>
-									</div>
-									<div class="col-md-3">
-										<select name="dateFrom" class="dateFrom form-control" id="dateFrom"
-											onchange="checkBetween(this);">
-											<option value="searchEqual">equal</option>
-											<option value="searchNotEqual">not equal</option>
-											<option value="searchLessThen">less</option>
-											<option value="searchLessThenEqual">less or equal</option>
-											<option value="searchGreaterThen">greater</option>
-											<option value="searchGreaterEqual">greater or equal</option>
-											<option value="searchBetweenDate">between</option>
-										</select>
-									</div>
-									<div class="col-md-3">
-										<input id="bidOpeningDate" columnname="openingDate"
-											name="bidOpeningDate" type="text" datepicker="yes"
-											placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true"
-											class="form-control">
-									</div>
-									<div class="col-md-3" id="div_bidOpeningDate_to"
-										style="display: none;">
-										<input id="bidOpeningDate_to" name="bidOpeningDate_to"
-											columnname="openingDate" type="text" datepicker="yes"
-											placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true"
-											class="form-control">
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-md-3"><div class="form_filed">Search In</div></div>
-									<div class="col-md-3">
-										<select name="searchToTab" id="searchToTab"
-											class="form-control">
-											<option value="">Select</option>
-											<option selected="selected" value="1">Pending</option>
-										</select>
-									</div>
-								</div>
-								<div class="row">
-								<div class="col-md-3"></div>
-									<div class="col-md-3">
-										<input type="hidden" name="jsonSearchCriteria"
-											id="jsonSearchCriteria"> <input type="button"
-											onclick="searchForList()" class="btn btn-submit"
-											value="Search"> <input type="hidden"
-											name="defaultOrder" id="defaultOrder" value="1:desc">
-										<input type="reset" class="btn btn-submit" value="Clear"
-											onclick="location.reload();">
-									</div>
-									
-								</div>
-							</form>
-							
-							<div class="row">
+</section>
+
+<section class="content">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-body" style="overflow: auto;width: 100%;">
+					<div class="row">
 								<div class="col-md-12">
-									<section class="">
-									<ul class="nav nav-tabs">
-										<li class="active listingTab" tabindex="26"><a href="#">Pending
-												(${tenderEvaluationCount.pending})</a></li>
-									</ul>
-									<div id="listingDiv"></div>
-								</section>
-								</div>								
+									<c:if test="${not empty successMsg}">
+										<div class="alert alert-success">${successMsg}</div>
+									</c:if>
+								</div>
 							</div>
-							
-						</div>
-					</div>
+		<form id="tenderListForm" style="display: none;">
+		<c:choose>
+			<c:when test="${committeeType eq 1}">
+					<input type="hidden" class="searchEqual isEvaluationDone" columnName="t.isEvaluationDone" value="0">
+			</c:when>
+			<c:when test="${committeeType eq 2}">
+					<input type="hidden" class="searchEqual isEvaluationDone" columnName="t.isEvaluationDone" value="0">
+			</c:when>
+		</c:choose>
+			<input type="hidden" class="searchEqual" columnName="c.committeeType" value="${committeeType}">
+		</form>
+		<div class="row">
+	<div class="col-md-12">
+		<section class="">
+				<div class="nav-tabs-custom">
+					<ul class="nav nav-tabs"> 
+					  <li class="active listingTab" isEvaluationDone="0" tabindex="26"><a href="#">Pending 
+					   <span class="pull-right-container">
+                                                <small class="label pull-right bg-light-white txt-light-blue mar-left-5">${tenderEvaluationPendingCount.pending}
+                                                </small>
+                                                </span></a></li>
+					  <li class="listingTab" isEvaluationDone="1"  tabindex="26" ><a href="#">Processed  <span class="pull-right-container">
+                                                <small class="label pull-right bg-light-white txt-light-blue mar-left-5"> ${tenderEvaluationProcessCount.pending}</small>
+                                                </span></a></li>
+					</ul>
+				</div> 
+				<div id="listingDiv">
+				</div>
+    	</section>
+	</div>
+		</div>
+		
 				</div>
 			</div>
-		</section>
-					
+		</div>
 	</div>
-	<%@include file="../../includes/footer.jsp"%>
-	</div>
-	<script type="text/javascript">
+</section>
+
+</div>
+
+<script type="text/javascript">
 $(document).ready(function(){
-	toDateFormate = '<spring:message code="client_dateformate_hhmm" />';
-	$("[dateBox='true']").each(function(){
-		$(this).datetimepicker({
-		  format:'d/m/Y H:i'
-		});
-	});
 	loadListPage('listingDiv',26,'tenderListForm');
-	checkBetween($("#dateFrom"));
-	checkBetween1($("#dateFrom1"));
 });
 function showHideSearch(){
 	if($("#tenderListForm").css("display") == "none"){
@@ -206,6 +94,8 @@ function callActionItem(cthis){
 }
 $(".listingTab").click(function(){
 	var tabIndex = $(this).attr("tabindex");
+	var isEvaluationDone = $(this).attr("isEvaluationDone");
+	$(".isEvaluationDone").val(isEvaluationDone);
 	loadListPage('listingDiv',tabIndex,'tenderListForm');
 	$(".listingTab").removeClass("active");
 	$(this).addClass("active");
@@ -260,5 +150,4 @@ function searchForList(){
 	}
 }
 </script>
-</body>
-</html>
+<%@include file="../../includes/footer.jsp"%>

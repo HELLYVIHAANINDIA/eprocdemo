@@ -1,28 +1,18 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@include file="../../includes/head.jsp"%>
 <jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../../includes/header.jsp"%>
-</head>
-	
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-	
+<%@include file="../../includes/masterheader.jsp"%>
 <div class="content-wrapper">
-
 <section class="content-header">
-<!-- 		onsubmit="return validation();" -->
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a>
-<form id="tenderDtBean" name="tenderDtBean" onsubmit="return validation();" action="${pageContext.servletContext.contextPath}/etender/buyer/submittendercorrigendum" method="post" >
-<div class="main_container o-hidden" id="temp">
+<h1><spring:message code="link_create_corrigendum"/></h1>
+<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="pull-right"><< Go To Tender Dashboard</a>
+<spring:message code="link_goback_tenderdashbord" var="goBack"/>
+</section>
 
-          <div class="panel-container">
-               <div class="page-title prefix_1 o-hidden">
-                  <h1 class="pull-left grid_12">
-                      <spring:message code="link_create_corrigendum"/></h1>
-                      <c:if test="${not empty tblCorrigendum}">
+
+
+<form id="tenderDtBean" name="tenderDtBean" onsubmit="return validation();" action="${pageContext.servletContext.contextPath}/etender/buyer/submittendercorrigendum" method="post" >
+<div id="temp">
+ <c:if test="${not empty tblCorrigendum}">
                        <c:forEach items="${tblCorrigendum}" var="items"> 
                        	<c:if test="${items.cstatus eq 0}">
                         	<input type="hidden" name="corrigendumId" id="corrigendumId" value="${items.corrigendumId}">
@@ -30,41 +20,48 @@
                        	</c:if>
                        </c:forEach>
                        </c:if>
-                  </div>
-                        <div class="page-title prefix_1 o-hidden">
-                            <span class="pull-right go-back"><spring:message code="link_goback_tenderdashbord" var="goBack"/>
-<%--                                 <abc:href href="etender/buyer/tenderdashboard/${tenderId}/4" label="${goBack}"/> --%>
-                            </span>
-                        </div> 
-                        <div class="clearfix mini-formfield p-bottom-none">
-                            <font size="1" class="pull-right mandatory">(<b class="red">*</b>) <spring:message code="msg_mandatoryFields"></spring:message></font>
-                            <table class="tableView m-bottom" width="100%" cellspacing="0" cellpadding="0" border="0">
-                                <tr>
-                                    <td width="20%" class="f-bold v-a-middle"><spring:message code="lbl_create_corrigendum_text"/><span id='errSpanCorrigendumTextMsg' class='mandatory'>*</span></td>
-
-	                                   <td>
-	                                   	<textarea  class="form-control corrigendumText"  id="corrigendumText" name="corrigendumText" title="Details" cols="20" rows="10" >${corrigendumText}</textarea> 
-	                                   </td>
-                                </tr>
-                                <tr>
-                                    <td class="v-a-top" colspan="2">
-                                    
-                                    <input type="hidden" name="tenderId" id="tenderId" value="${tenderId}">
+<section class="content">
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="box">
+				<div class="box-header with-border">
+					<h3 class="box-title"></h3>
+					<font size="1" class="pull-right mandatory"><spring:message code="msg_mandatoryFields"/></font>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-xs-2">
+						<spring:message code="lbl_create_corrigendum_text"/><span id='errSpanCorrigendumTextMsg' class='mandatory red'>*</span>
+						</div>
+						<div class="col-xs-10">
+						<textarea  class="form-control corrigendumText"  id="corrigendumText" tovalid="true"  validarr="required@@length:0,1000" name="corrigendumText" title="Details" cols="20" rows="10" >${corrigendumText}</textarea>
+						</div>
+						<div class="col-xs-2"></div>
+						<div class="col-xs-10">
+						<input type="hidden" name="tenderId" id="tenderId" value="${tenderId}">
                                     <spring:message code="label_submit" var="submitBtn"/>
-                                        <button type="submit" class="blue-button-small prefix1_4">${submitBtn}</button> 
+                                        <button type="submit" class="btn btn-submit">${submitBtn}</button> 
                                         <span class="pull-right go-back"><spring:message code="link_goback_tenderdashbord" var="goBack"/>
-<%--                                             <abc:href href="etender/buyer/tenderdashboard/${tenderId}/4" label="${goBack}"/> --%>
                                         </span>
-                                    </td>
-                                </tr>
-                            </table>                           
-                        </div>     
-					</div></div></form>
-         	</section></div>
-	<%@include file="../../includes/footer.jsp"%>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
+</section>
+                   
+</div>
+
+</form>
+</div>
+
+
 <script type="text/javascript">
 $("#corrigendumText").wysihtml5();
+function validation(){
+	var vbool = valOnSubmit();
+	return disableBtn(vbool);
+}
 </script>
-</body>
-</html>
+<%@include file="../../includes/footer.jsp"%>

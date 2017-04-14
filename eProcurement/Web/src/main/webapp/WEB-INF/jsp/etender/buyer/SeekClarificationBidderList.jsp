@@ -1,16 +1,7 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<script type="text/javascript" src="${pageContext.servletContext.contextPath}/resources/js/print/jquery.txt"></script>
-<script type="text/javascript">
-function isEnvelopeOpened(){
-                jAlert('<spring:message code="msg_env_not_open"/>');
-                return false;
-            }
-</script>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
+
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>
 <spring:message code="col_action" var='vAction'/> 
 <spring:message code="msg_env_not_open" var="vEnvNotOpen"/>
@@ -20,11 +11,6 @@ function isEnvelopeOpened(){
 	<c:when test="${biddingVariant eq 1}"><spring:message code="link_Itemwisebreak_report_lowest" var="linkItemwiseBreakupReport"/></c:when>
     <c:otherwise><spring:message code="link_Itemwisebreak_report_heighest" var="linkItemwiseBreakupReport"/></c:otherwise>
 </c:choose>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
 
 <div class="content-wrapper">
 	<section class="content">
@@ -96,7 +82,7 @@ function isEnvelopeOpened(){
 								</tr>
 								</thead>
 													<%--Start: Bidder Listing --%>
-												<c:if test="${isevaluated eq 0}">
+												<c:if test="${isevaluated eq 1}">
 													<tr>
 														<td>
 															<table  class="table">
@@ -136,14 +122,21 @@ function isEnvelopeOpened(){
 																				<th>${bidderCompanyName}</th>
                                                                                 <th>
                                                                                 <c:set var="key" value="${tenderId}_${envelopeid}_${bidderBidderId}"/>
-                                                                                <c:if test="${bidderClarificationDtl[key] eq 0}">	
-                                                                                <a href="${pageContext.servletContext.contextPath}/etender/buyer/configuredate/${tenderId}/${envelopeid}/${bidderBidderId}/${sessionObject.officerId}/0">Configure Date</a> |
-                                                                                </c:if>
-                                                                                <c:if test="${bidderClarificationDtl[key] gt 0}">
-<%-- 																					<a href="${pageContext.servletContext.contextPath}/etender/buyer/reconfiguredate/1/1/9/133/1">Re-Configure Date</a> |  --%>
-																					<a href="${pageContext.servletContext.contextPath}/etender/buyer/createSeekClarificationQueryView/${tenderId}/${envelopeid}/${bidderBidderId}/0/0/${bidderClarificationDtl[key]}">Post Query</a> |
-																					<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewClarificationQueries/${tenderId}/${envelopeid}/${bidderBidderId}/0">View Clarification/Response</a>
-																				</c:if>	
+                                                                                <c:choose>
+                                                                                	<c:when test="${envOpenStatus[envelopeid] and !envEvalStatus[envelopeid]}">
+                                                                                		<c:if test="${bidderClarificationDtl[key] eq 0}">	
+                                                                                			<a href="${pageContext.servletContext.contextPath}/etender/buyer/configuredate/${tenderId}/${envelopeid}/${bidderBidderId}/${sessionObject.officerId}/0">Configure Date</a>
+                                                                                		</c:if>
+                                                                                		<c:if test="${bidderClarificationDtl[key] gt 0}">
+		<%-- 																				<a href="${pageContext.servletContext.contextPath}/etender/buyer/reconfiguredate/1/1/9/133/1">Re-Configure Date</a> |  --%>
+																							<a href="${pageContext.servletContext.contextPath}/etender/buyer/createSeekClarificationQueryView/${tenderId}/${envelopeid}/${bidderBidderId}/0/0/${bidderClarificationDtl[key]}">Post Query</a> |
+																							<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewClarificationQueries/${tenderId}/${envelopeid}/${bidderBidderId}/0">View Clarification/Response</a>
+																						</c:if>
+                                                                                	</c:when>
+                                                                                	<c:when test="${envOpenStatus[envelopeid] and envEvalStatus[envelopeid]}">
+                                                                                		<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewClarificationQueries/${tenderId}/${envelopeid}/${bidderBidderId}/0">View Clarification/Response</a>
+                                                                                	</c:when>
+                                                                                </c:choose>
 																				</th>	
 																			</tr>
 																			</c:if>
@@ -165,10 +158,11 @@ function isEnvelopeOpened(){
 		</div>
 		</div>
 	</section>
-</div>
-
-</div>
-
-</body>
-
-</html>
+	</div>
+<script type="text/javascript">
+function isEnvelopeOpened(){
+                jAlert('<spring:message code="msg_env_not_open"/>');
+                return false;
+            }
+</script>
+<%@include file="../../includes/footer.jsp"%>

@@ -1,16 +1,7 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@include file="../../includes/header.jsp"%>
-<style type="text/css">
-.pullright{
-	float: right;
-}
-.pullleft{
-	float: left;
-}
-</style>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
+
 <spring:message code="link_create" var="createlink" />
 <spring:message code="link_tender_edit" var="editlink" />
 <spring:message code="link_tender_view" var="viewlink" />
@@ -43,215 +34,237 @@
 <spring:message code = "link_tender_deletepricesummary_report"  var = "var_deletePriceSummary"/>
 <spring:message code = "link_orginizeform"      var = "link_orginizeform" />
 <spring:message code = "link_view"              var = "link_view" />                        
-       <style>
-       .customCls {
-    background: #f0f0f0;
-    border: 1px solid #b1c2ca;
-    width: 100%;
-}
-       
-</style>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
       
-	<div class="content-wrapper">
-	
+
+<div class="content-wrapper">	
 	<section class="content-header">
 
-			<c:if test="${not empty successMsg}">				
-				<span class="alert alert-success">
-					<spring:message code="${successMsg}" />
-				</span>			
-			</c:if>
-			
-			<c:if test="${not empty errorMsg}">
-				<span class="alert alert-danger">
-					<spring:message code="${errorMsg}"/>
-				</span>
-			</c:if>
-
-  			<h1 href="#c">
-				View summary
-			</h1>
+		<h1>
+                    <c:if test="${tblTender.isAuction eq 1}">Bidding Auction Dashboard</c:if>
+                    <c:if test="${tblTender.isAuction eq 0}">Bidding Tender Dashboard</c:if>
+                    </h1>
+		 	 <c:if test="${tblTender.isAuction eq 1}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/1" class="pull-right">
+                        << Go To Auction Listing</a></c:if>
+                    <c:if test="${tblTender.isAuction eq 0}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/0" class="pull-right">
+                        << <spring:message code="lbl_go_to_tender_listing" /></a></c:if>
+                        
+                        
+                        <br/>
+      <c:if test="${not empty successMsg}">
+			<div><span class="alert alert-success"><spring:message code="${successMsg}"/></span></div>
+		</c:if>
+		<c:if test="${not empty errorMsg}">
+			<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
+		</c:if>
 	</section>
 	
 	<section class="content">
 		<div class="row">
 			<div class="col-md-12">
 				<div class="box">
+<!-- 					<div class="box-header with-border"> -->
+<%-- 						<h3 class="box-title" href="#c"><spring:message code="lbl_view_summary" /></h3> --%>
+<!-- 					</div> -->
+					
 					<div class="box-body">
 						<div class="row">
-							<div class="col-md-3">
-								<div class="vt"><spring:message code="fields_tenderid"/></div>
-							</div>
-							<div class="col-md-3"><div class="vt">${tblTender.tenderId}</div></div>
-							<div class="col-md-3">
-								<div class="vt"><spring:message code="fields_refenceno"/></div>
-							</div>
-							<div class="col-md-3">
-								<div class="vt">${tblTender.tenderNo}</div>
+							<div class="col-md-12">
+										<div class="row"></div>
+  		<div class="panel-heading" href="#c" style="background:lightgreen;border:1px solid #374850;">
+			<spring:message code="lbl_view_summary" />
+		</div>
+		<div class="row" style="border-bottom: 1px solid #f4f4f4; line-height:40px;">
+			<div class="col-md-2">
+                            <c:if test="${tblTender.isAuction eq 0}">
+								<spring:message code="fields_tenderid"/>
+                            </c:if>
+				 			<c:if test="${tblTender.isAuction eq 1}">
+                              <spring:message code="lbl_auction_id" />
+                            </c:if>
+				
+			</div>
+			<div class="col-md-2">${tblTender.tenderId}</div>
+			<div class="col-md-2">
+                            <c:if test="${tblTender.isAuction eq 0}">
+			<spring:message code="fields_refenceno"/>
+                            </c:if>
+				 <c:if test="${tblTender.isAuction eq 1}">
+                                <spring:message code="lbl_auction_ref_no" />
+                            </c:if>
+			
+			</div>
+			<div class="col-md-2">
+				${tblTender.tenderNo}
+			</div>
+		</div>
+		<div class="row" style="border-bottom: 1px solid #f4f4f4; line-height:40px;">
+			<div class="col-md-2">
+                             <c:if test="${tblTender.isAuction eq 0}">
+				<spring:message code="field_brief"/>
+                            </c:if>
+				 <c:if test="${tblTender.isAuction eq 1}">
+                                Auction brief
+                            </c:if>
+				
+			</div>
+			<div class="col-md-10">${tblTender.tenderBrief}</div>
+		</div>
+		<div class="row" style="border-bottom: 1px solid #f4f4f4; line-height:40px;">
+			<div class="col-md-2">
+                            <c:if test="${tblTender.isAuction eq 0}">
+				<spring:message code="field_tender_detail"/>
+                            </c:if>
+				 <c:if test="${tblTender.isAuction eq 1}">
+                            <spring:message code="lbl_auction_description" />
+                            </c:if>
+				
+			</div>
+			<div class="col-md-10">${tblTender.tenderDetail}</div>
+		</div>
+		<div class="row">
+		
+                    <c:if test="${tblTender.isAuction eq 0}">
+			<div class="col-md-3 pullright" style="float: right;"><a href="${pageContext.servletContext.contextPath}/etender/bidder/viewtender/${tblTender.tenderId}/0"><spring:message code="label_tender_view"/></a></div>
+                            </c:if>
+				 <c:if test="${tblTender.isAuction eq 1}">
+                 <div class="col-md-3 pullright red" style="float: right;"><a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0"><spring:message	code="label_auction_view" /></a></div>
+                            </c:if>
+			
+		</div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="row" >
+			<div class="col-md-12">
+				<div class="box">
+					<div class="box-header with-border">
+						<div id="countdown" class="col-md-6 pullleft red"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="row"  style="display: none;">
+			<div class="col-md-12">
+				<div class="box">
+					<div class="box-header with-border importantMsgDiv" data-toggle="collapse" href="#collapse9">
+						<h3 class="box-title"><a><spring:message code="lbl_important_message"/></a></h3>
+					</div>
+					<div class="box-body">
 						<div class="row">
-							<div class="col-md-3">
-								<div class="vt"><spring:message code="field_brief"/></div>
-							</div>
-							<div class="col-md-9"><div class="vt">${tblTender.tenderBrief}</div></div>
-						</div>
-						<div class="row">
-							<div class="col-md-3">
-								<div class="vt"><spring:message code="field_tender_detail"/></div>
-							</div>
-							<div class="col-md-6">
-							<div class="vt">${tblTender.tenderDetail}</div>
-							</div>
-							<div class="col-md-3">
-								<a href="${pageContext.servletContext.contextPath}/etender/bidder/viewtender/${tblTender.tenderId}">
-									<spring:message code="label_view"/>
-								</a>
+							<div class="col-md-12">
+								 <div id="collapse9" class="panel-collapse collapse importantMsg">
+		
+								 </div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+		  		<div class="box-header with-border">
+			  		<div class="col-md-3">
+						<h3 class="box-title"><a><spring:message code="lbl_declaration/Consent" /></a></h3>
+					</div>
+					<div class="col-md-9">
 						
-						<div class="row">
-						
-								<div class="col-md-12 pn">
-									<div class="panel-heading customCls importantMsgDiv"
-										data-toggle="collapse" href="#collapse9"
-										style="display: none;">
-										<h4 class="panel-title">
-											<a><spring:message code="lbl_important_message" /> </a>
-										</h4>
-									</div>
-									<div id="collapse9" class="panel-collapse collapse importantMsg pnl">
-									</div>
-								</div>
-
-								<div class="col-md-12 pn">
-									<div class="panel-heading customCls" data-toggle="collapse"
-										href="#collapse1">
-										<h4 class="panel-title">
-											<a>Declaration</a>
-										</h4>
-									</div>
-									<div id="collapse1" class="panel-collapse pnl">
-										<div class="row">
-											<div class="col-md-3">Tems & Condition</div>
-											<div class="col-md-9">
-												<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/2">
-													<c:choose>
-														<c:when test="${!isRepeated}">
-															<spring:message code="lbl_acc_rej" />
-														</c:when>
-														<c:when test="${isRepeated}">
-															View
-														</c:when>
-													</c:choose>
-												</a>
-											</div>
-										</div>
-									</div>
-								</div>
-
-								<c:if test="${tblTender.isPreBidMeeting eq 1}">
-									<div class="col-md-12 pn">
-										<div class="panel-heading customCls" data-toggle="collapse"
-											href="#collapse1">
-											<h4 class="panel-title">
-												<a>Prebid</a>
-											</h4>
-										</div>
-										<div id="collapse1" class="panel-collapse pnl">
-											<div class="row">
-												<div class="col-md-3">Prebid</div>
-												<div class="col-md-9">
-													<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/8">View
-														minutes of meetings</a>
-												</div>
-											</div>
-										</div>
-									</div>
-								</c:if>
-
-								<div class="col-md-12 pn">
-									<div class="panel-heading customCls" data-toggle="collapse"
-										href="#collapse3">
-										<h4 class="panel-title">
-											<a>Prepare Bid</a>
-										</h4>
-									</div>
-									<div id="collapse3" class="panel-collapse pnl">
-										<div class="row">
-											<div class="col-md-3">
-												<spring:message code="field_notice" />
-											</div>
-											<div class="col-md-9">
-												<c:if test='${tblTender.isAuction eq 0}'>
-													<a
-														href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/5">Fill
-														Form</a>
-												</c:if>
-												<c:if test='${tblTender.isAuction eq 1}'>
-													<a
-														href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/5">Bidding
-														Hall</a>
-
-
-												</c:if>
-											</div>
-										</div>
-									</div>
-								</div>
-
-								<div class="col-md-12 pn">
-									<div class="panel-heading customCls" data-toggle="collapse"
-										href="#collapse4">
-										<h4 class="panel-title">
-											<a>Final Submission</a>
-										</h4>
-									</div>
-									<div id="collapse4" class="panel-collapse pnl">
-										<div class="row">
-											<div class="col-md-3">
-												<spring:message code="field_notice" />
-											</div>
-											<div class="col-md-9">
-												<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/6">Final
-													Submission</a>
-											</div>
-										</div>
-									</div>
-								</div>
-
-								<div class="col-md-12 pn">
-									<div class="panel-heading customCls" data-toggle="collapse"
-										href="#collapse5">
-										<h4 class="panel-title">
-											<a>Result</a>
-										</h4>
-									</div>
-									<div id="collapse5" class="panel-collapse pnl">
-										<div class="row">
-											<div class="col-md-3">
-												<spring:message code="field_notice" />
-											</div>
-											<div class="col-md-9">
-												<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/7">Result</a>
-											</div>
-										</div>
-									</div>
-								</div>
-
-							</div>
+						<c:choose>
+						<c:when test="${!isRepeated}">
+							<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/2"><spring:message code="lbl_acc_rej"/></a>
+						</c:when>
+						<c:when test="${isRepeated}">
+							<spring:message code="lbl_agreed" />
+						</c:when>
+						</c:choose>
 						
 					</div>
 				</div>
 			</div>
 		</div>
-	</section>
-			
+		</div>
+		<c:if test="${isRepeated}">
+		<c:if test="${tblTender.isPreBidMeeting eq 1}">
+		<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+		  		<div class="box-header with-border">
+			  		<div class="col-md-3">
+						<h3 class="box-title"><a><spring:message code="tab_tender_prebid" /></a></h3>
+					</div>
+					<div class="col-md-9">
+						<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/8"><spring:message code="lbl_view_minutes_of_meetings" /></a>
+					</div>
+				</div>
+			</div>
+		</div>
+		</div>
+		</c:if>
+		
+		<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+		  		<div class="box-header with-border">
+			  		<div class="col-md-3"><h3 class="box-title"><a><spring:message code="lbl_prepare_bid" /></a></h3></div>
+					<div class="col-md-9">
+						<c:if test='${tblTender.isAuction eq 0}'>
+	                       	<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/5"><spring:message code="lbl_fill_form" /></a>
+	    				</c:if>
+                         <c:if test='${tblTender.isAuction eq 1}'>
+                             <c:if test="${isRepeated}">
+                                 <c:if test="${bid eq 0}">
+                                     <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewFormForEdit/${tblTender.tenderId}/${formId}"><spring:message code="lbl_bidding_hall" /></a>
+                                 </c:if>
+                                 <c:if test="${bid ne 0}">
+                                      <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${formId}/${bid}/false"><spring:message code="lbl_bidding_hall" /></a>
+                                 </c:if>
+                             </c:if>
+                                 <c:if test="${!isRepeated}">
+                                    <spring:message code="lbl_not_agreed_terms_and_conditions" />
+                                 </c:if>
+                         </c:if>
+					</div>
+				</div>
+			</div>
+		</div>
+		</div>
+	
+	<c:if test='${tblTender.isAuction eq 0}'>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+		  		<div class="box-header with-border">
+		        	<div class="col-md-3"><h3 class="box-title"><a><spring:message code="lbl_final_submission" /></a></h3></div>
+					<div class="col-md-9">
+						<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/6"><spring:message code="lbl_final_submission" /></a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	</c:if>
+		
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+		  		<div class="box-header with-border">
+					<div class="col-md-3"><h3 class="box-title"><a>Result</a></h3></div>
+					<div class="col-md-9">
+						<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tblTender.tenderId}/7">View</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	  </div>
+	 </c:if>
+</section>
 </div>
 
 <script type="text/javascript">
@@ -271,10 +284,41 @@ $(document).ready(function(){
 			$("#importantMsgDiv").hide();
 		},
 	});
+var endDate;
+       endDate = '${submissionEndDate}';
+       
+    var find = '-';
+   	var re = new RegExp(find, 'g');
+   	endDate = endDate.replace(re, '/');
+   	endDate = new Date(endDate);
+	var timeOverMsg = 'Bidding time is over.';
+	var msgAppended = 'Remaining bidding time :';
+	var submissionDateOver = '${submissionDateOver}';
+        
+	if(submissionDateOver == 'true'){
+           
+		showRemaining(endDate,msgAppended,timeOverMsg);
+	}else{
+           
+		timer = setInterval(function(){
+		showRemaining(endDate,msgAppended,timeOverMsg)}, 1000);
+	}
 });
-</script>
 
+</script>
+<style type="text/css">
+.pullright{
+	float: right;
+}
+.pullleft{
+	float: left;
+}
+</style>
+ <style>
+       .customCls{
+       	background:gainsboro;border:1px solid #374850;
+       	width:94%
+       }
+       
+       </style>
 <%@include file="../../includes/footer.jsp"%>
-</div>
-</body>
-</html>

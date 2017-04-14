@@ -1,14 +1,28 @@
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/ajaxfileupload.js" type="text/javascript"></script>
-        <script type="text/javascript">
+
+<script
+	src="${pageContext.servletContext.contextPath}/resources/js/ajaxfileupload.js"
+	type="text/javascript"></script>
+<script type="text/javascript">
+        var registerDocObjId = 0;
         	var tenderId= '${tenderId}';
-   	 		var objectId= '${objectId}';
+        	var objectId= '${objectId}';
+        	if(registerDocObjId=='7' || registerDocObjId=='6'){
+        		objectId=registerDocObjId;
+        	}else{
+        		objectId= '${objectId}';
+        	}
+   	 		
         	getBriefcaseContent(1, objectId, tenderId);
 	        getDocDetails();
 	         function specialTrim(str) {
 	            return str.replace(/>\s+</g, '><');
 	        } 
 	        function getBriefcaseContent(tabId, objectId,tenderId) {
+	        	if(registerDocObjId=='7' || registerDocObjId=='6'){
+	        		objectId=registerDocObjId;
+	        	}else{
+	        		objectId='${objectId}';
+	        	}
                 var linkId='${linkId}';
                 var briefCaseContent;
                 var TenderId = '${tenderId}';
@@ -59,7 +73,7 @@
 	               	 $('.errtxtDocDesc').remove();
 	               	 $("#docDescError").html("<div class='errtxtDocDesc validationMsg' style='color:red;'><spring:message code='msg_tender_docbrief_empty' /></div>");
 	               	 count++;
-	                }else if(!BRIEF.test($("#txtDocDesc").val())){
+	                }else if(!rgx_brief.test($("#txtDocDesc").val())){
 	               	 $('.errtxtDocDesc').remove();
 	               	 $("#docDescError").html("<div class='errtxtDocDesc' style='color:red;'><spring:message code='msg_tender_invalidDocBrief' /></div>");
 	               	 count++;
@@ -89,8 +103,14 @@
 	            if(fbool){
 	    	        $('#docDescError').html('');
 	    	        $('#fileError').html("");
+	    	        var url = "";
+	    	        if(registerDocObjId=='7' || registerDocObjId=='6'){
+	    	           url = '${pageContext.servletContext.contextPath}/ajax/submitbriefcasefileupload?txtDocDesc='+$("#txtDocDesc").val()+'&txtobjectId='+registerDocObjId+'&txtChildId=${childId}&txtSubChildId=${subChildId}&txtTenderId=${tenderId}&txtOtherSubChildId=${otherSubChildId}&selDocCheckList='+$("#selDocCheckList").val();	
+	    	        }else{
+	    	          url = '${pageContext.servletContext.contextPath}/ajax/submitbriefcasefileupload?txtDocDesc='+$("#txtDocDesc").val()+'&txtobjectId=${objectId}&txtChildId=${childId}&txtSubChildId=${subChildId}&txtTenderId=${tenderId}&txtOtherSubChildId=${otherSubChildId}&selDocCheckList='+$("#selDocCheckList").val();	
+	    	        }
 	    	        $.ajaxFileUpload({
-	    	            url:'${pageContext.servletContext.contextPath}/ajax/submitbriefcasefileupload?txtDocDesc='+$("#txtDocDesc").val()+'&txtobjectId=${objectId}&txtChildId=${childId}&txtSubChildId=${subChildId}&txtTenderId=${tenderId}&txtOtherSubChildId=${otherSubChildId}',
+	    	            url:url,
 	    	            fileElementId:'fileToUpload',
 	    	            dataType: "text",
 	    	            secureuri:true,
@@ -98,13 +118,15 @@
 	    	            	//alert("ddddeeeee"+data);
 	    	                var index=data.toString().indexOf("Error:");
 	    	                 if( index < 0){
-	    	                    var strRemove="&nbsp;&nbsp;<a href='#' onclick=\"removeFile('"+$.trim(data.toString())+"');\">Remove</a>";
+	    	                    var strRemove="&nbsp;&nbsp;<a href='javascript:' onclick=\"removeFile('"+$.trim(data.toString())+"');\">Remove</a>";
 	    	                    if($('#txtHidDocIds').val() != '')
 	    	                        $('#txtHidDocIds').val($('#txtHidDocIds').val()+",");
 	    	                    //$('#uploadFile').val('');
                                 $('#fileToUpload').val('');
 	    	                    $("#txtDocDesc").val('');
+	    	                    $("#fileToUploadName").val('');
 	    	                    $("#fileCount").val(parseInt($("#fileCount").val(),10) + 1);
+	    	                    
 	    	                    $("#successDiv").show();
 	    	                    $('#successDiv').html('<spring:message code="msg_tender_docuploadsuccessfully" />');
 	    	                    getDocDetails();
@@ -136,19 +158,25 @@
 	        	if($(obj).val()!=""){
 	        		$(".err").remove();	
 	        		$("#fileError").html("");
-	        		//document.getElementById("uploadFile").value = $(obj).val();
+	        		$("#fileToUploadName").val($(obj).val());
 	        	}
 	        } 
 	        
 	        function getDocDetails(){
 	        	 var tabId=$("#txtTabId").val() != undefined ? $("#txtTabId").val() : 0;
-	        	 var objectId = '${objectId}';
+	        	 var objectId="";
+	        	 if(registerDocObjId=='7' || registerDocObjId=='6'){
+	         		objectId=registerDocObjId;
+	         	}else{
+	         		objectId= '${objectId}';
+	         	}
 	              $.post("${pageContext.servletContext.contextPath}/ajax/getbriefcaseuploadeddocs", {
 	            	 tenderId: '${tenderId}',
-	            	 objectId : '${objectId}',
+	            	 objectId : objectId,
 	            	 childId : '${childId}',
 	            	 subChildId : '${subChildId}',
-	            	 otherSubChildId : '${otherSubChildId}'
+	            	 otherSubChildId : '${otherSubChildId}',
+	            	 bidderId : '${bidderId}'
 	            },
 	            function(j)
 	            {
@@ -160,8 +188,8 @@
 	                		if(obj.length>0){
 		                	    for(var i=0;i<obj.length;i++)
 		                	    {
-		                	    	var strRemove="&nbsp;&nbsp;<a href='#' onclick=\"removeFile('"+obj[i]["officerDocId"]+"','"+obj[i]["cStatus"]+"');\">Remove</a>";
-		                	    	var strCancel="&nbsp;&nbsp;<a href='#' onclick=\"cancelFile('"+obj[i]["officerDocId"]+"','"+obj[i]["cStatus"]+"');\"> Cancel </a>";
+		                	    	var strRemove="&nbsp;&nbsp;<a href='javascript:' onclick=\"removeFile('"+obj[i]["officerDocId"]+"','"+obj[i]["cStatus"]+"');\">Remove</a>";
+		                	    	var strCancel="&nbsp;&nbsp;<a href='javascript:' onclick=\"cancelFile('"+obj[i]["officerDocId"]+"','"+obj[i]["cStatus"]+"');\"> Cancel </a>";
 		                	    	var docId = obj[i]["officerDocId"];
 		                	    	var cStatus=obj[i]["cStatus"];
 		                	    	var status='';
@@ -172,26 +200,39 @@
 		                	    	}else{
 		                	    		status='Cancelled';
 		                	    	}
-		                	    	var strDownload="&nbsp;&nbsp;<a href='${pageContext.servletContext.contextPath}/ajax/downloadbriefcasefile/"+docId+"'\" \">Download</a>";
-		                	        var tr="<tr>";
+		                	    	var strDownload="&nbsp;&nbsp;<a href='${pageContext.servletContext.contextPath}/ajax/downloadbriefcasefile/"+docId+"'>Download</a>";
+		                	        var tr="<tr id='doclstId' officerDocId='"+docId+"'>";
 		                	        var td0="<td>"+obj[i]["Sr.No"]+"</td>";
-		                	        var td1="<td>"+obj[i]["fileName"]+"</td>";
-		                	        var td2="<td>"+obj[i]["description"]+"</td>";
-		                	        var td3="<td>"+obj[i]["fileSize"]+"</td>";
-		                	        var td4="<td>"+obj[i]["createdOn"]+"</td>";
-		                	        var td5="<td>"+status+"<input type='hidden' class='officerDocId' value='"+obj[i]["officerDocId"]+"'></td>"
-		                	        if(cStatus==1){
-		                	        	var td6="<td>";
-		                	        	if(objectId==1){
-		                	        		td6=td6+strCancel+"|";	
+		                	        if(objectId==10){
+		                	        	var mandatoryDocName = "-";
+		                	        	if(obj[i]["mandatoryDocName"]!=null){
+		                	        		mandatoryDocName=obj[i]["mandatoryDocName"];
 		                	        	}
-		                	        	td6=td6+strDownload+"</td></tr>";
+		                	        	var td1="<td>"+mandatoryDocName+"</td>";
+		                	        }else{
+		                	        	var td1="";		                	        		
+		                	        }
+		                	        var td2="<td>"+obj[i]["fileName"]+"</td>";
+		                	        var td3="<td>"+obj[i]["description"]+"</td>";
+		                	        var td4="<td>"+obj[i]["fileSize"]+"</td>";
+		                	        var td5="<td>"+obj[i]["createdOn"]+"</td>";
+		                	        if(objectId==1){//bidder registration and tenderauthority dont need status column
+		                	        	var td6="<td>"+status+"</td>"
+		                	        }else{
+		                	        	var td6="";		                	        		
+		                	        }
+		                	        if(cStatus==1){
+		                	        	var td7="<td>";
+		                	        	if(objectId==1){
+		                	        		td7=td7+strCancel+"|";	
+		                	        	}
+		                	        	td7=td7+strDownload+"</td></tr>";
 		                	    	}else if(cStatus==0){
-		                	    		var td6="<td>"+strRemove+"|"+strDownload+"</td></tr>";
+		                	    		var td7="<td>"+strRemove+"|"+strDownload+"</td></tr>";
 		                	    	}else{
-		                	    		var td6="<td>"+strDownload+"</td></tr>";
+		                	    		var td7="<td>"+strDownload+"</td></tr>";
 		                	    	}
-		                	       $("#DocLst").append(tr+td0+td1+td2+td3+td4+td5+td6); 
+		                	       $("#DocLst").append(tr+td0+td1+td2+td3+td4+td5+td6+td7);
 		                	    }
 	                	    }else{
 	                	    	$("#DocLst").append("<tr><td colspan=\"7\">No documents found</td></tr>");
@@ -203,7 +244,12 @@
 	        
 	        function removeFile(obj,cStatusDoc){
 	        	var tenderId= '${tenderId}';
-           	 	var objectId= '${objectId}';
+	        	var objectId="";
+	        	 if(registerDocObjId=='7' || registerDocObjId=='6'){
+	         		objectId=registerDocObjId;
+	         	}else{
+	         		objectId= '${objectId}';
+	         	}
 	            if(confirm('<spring:message code="msg_tender_cnfrm_deletedoc" />')){
 	   	    	 $(".successMsg").hide();
 	   	          $.post("${pageContext.servletContext.contextPath}/ajax/deletebriefcasefile", {
@@ -269,32 +315,38 @@
 	   	    	  });
 	       }
         </script>
-    </head>
-				
-<div class="successMsg alert alert-success" id="successDiv" style="display: none;"></div>
-                            <div>
-                                    <form enctype="multipart/form-data">
-                                            <div id="briefCaseContent">
 
-                                             </div>                                 
-                                    </form>
-                            </div>
+<div class="successMsg alert alert-success" id="successDiv"
+	style="display: none;"></div>
+
+
+<div>
+	<form enctype="multipart/form-data">
+		<div id="briefCaseContent"></div>
+	</form>
+</div>
 
 <div id="viewUploadedFile">
-<table class="table table-striped table-responsive" style="margin-top:15px;">
-										<thead>
-												<tr>
-													<th>Sr.No.</th>
-													<th>Document Name</th>
-													<th>Document Brief</th>
-													<th>Size</th>
-													<th>Date</th>
-													<th>Status</th>
-													<th>Action</th>
-												</tr>
-										</thead>
-										<tbody id="DocLst">
-											
-										</tbody>	
-									</table>
+	<table class="table table-striped table-responsive"
+		style="margin-top: 10px;">
+		<thead>
+			<tr>
+				<th>Sr.No.</th>
+				<c:if test="${objectId eq 10}">
+					<th>Mandatory document name</th>
+				</c:if>
+				<th>Document Name</th>
+				<th>Document Brief</th>
+				<th>Size</th>
+				<th>Date</th>
+				<c:if test="${objectId eq 1}">
+					<th>Status</th>
+				</c:if>
+				<th>Action</th>
+			</tr>
+		</thead>
+		<tbody id="DocLst">
+
+		</tbody>
+	</table>
 </div>

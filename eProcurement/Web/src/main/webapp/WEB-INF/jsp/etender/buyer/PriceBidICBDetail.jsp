@@ -1,40 +1,18 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<script src="${pageContext.request.contextPath}/resources/js/tender/tendercreate.js"></script>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
-<script type="text/javascript">
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 
-	function validateChng(){
-		var vbool = true;
-		$('[id^="txtExchangeRate"]').each(function () {
-			if($(this).val() == ''){
-				vbool = false;
-				alert('Please Enter Currency Exchange Rate');
-				return vbool;
-			}
-		});
-        return disableBtn(vbool);
-    }
-</script>         	
+       	
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
 <div class="content-wrapper">
 	<section class="content">
 		<div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="box">
 				<div class="box-header with-border">
-				<div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a></div>
+				<div class="pull-right">
+				<a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/1"><< Go To Tender Opening</a>
+				<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a></div>
+				
 					<h3 class="box-title">
         	<c:choose>
 				<c:when test="${oprType eq 1}">
@@ -68,6 +46,14 @@
 										<c:forEach items="${ICBDetails}" var="ICBDtls" varStatus="count">
 											<input type="hidden" name="hdCurrencyId${count.index}" value="${ICBDtls[0]}"/>
 											<input type="hidden" name="hdTenderCurrencyId${count.index}" value="${ICBDtls[3]}"/>
+											<input type="hidden" name="hdTenderDefault${count.index}" value="${ICBDtls[2]}"/>
+											<c:if test="${ICBDtls[2] eq 1}">
+												<tr>
+													<td>${ICBDtls[1]} (Base Currency)</td>
+													<td>${ICBDtls[4]}</td>
+													<td style="display: none;"><input value="${ICBDtls[4]}" id="txtExchangeRate${count.index}" name="txtExchangeRate${count.index}" type="text" title="Exchnage Rate"></td>
+												</tr>
+											</c:if>
 											<c:if test="${ICBDtls[2] eq 0}">
 													<tr><td>${ICBDtls[1]}</td>
 													<c:choose>
@@ -75,13 +61,12 @@
 															<td>${ICBDtls[4]}</td>
 														</c:when>
 														<c:otherwise>
-															<td><input id="txtExchangeRate${count.index}" name="txtExchangeRate${count.index}" type="text" title="Exchnage Rate"></td>
+															<td><input id="txtExchangeRate${count.index}" validarr="required" tovalid="true" onblur="validateTextComponent(this)" value="${ICBDtls[4]}" name="txtExchangeRate${count.index}" type="text" title="Exchnage Rate"></td>
 														</c:otherwise>
 													</c:choose>
 													</tr>
 											</c:if>
 										</c:forEach>
-									</tr>
 									<c:if test="${oprType eq 1}">
 									<tr>
 										<td colspan="${fn:length(ICBDetails)}">
@@ -99,10 +84,20 @@
 		</div>
 		</div>
 	</section>
-</div>
+	</div>
+<script type="text/javascript">
 
-</div>
-
-</body>
-
-</html>
+function validateChng(){
+	var vbool = true;
+	$('[id^="txtExchangeRate"]').each(function () {
+		if($(this).val() == '' || $(this).val() == 0 || $(this).val() == '0.0'){
+			vbool = false;
+			alert('Please Enter Currency Exchange Rate');
+			return vbool;
+		}
+	});
+    return disableBtn(vbool);
+}
+</script> 
+<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
+   <%@include file="../../includes/footer.jsp"%>

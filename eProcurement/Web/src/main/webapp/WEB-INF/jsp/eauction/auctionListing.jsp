@@ -1,189 +1,230 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../includes/header.jsp"%>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-<script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
-</head>
+<%@include file="./../includes/head.jsp"%>
+ <%@include file="./../includes/masterheader.jsp"%>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../includes/leftaccordion.jsp"%>
-     
-<div class="content-wrapper">
+ <div class="content-wrapper">
 
 <section class="content-header">
-<h1><div class="pull-left" style="cursor:pointer;"><a href="${pageContext.servletContext.contextPath}/eBid/Bid/createAuction/0">Create Auction</a></div></h1>
-<h1><div class="pull-right" style="cursor:pointer;"><a onclick="showHideSearch()">Search</a></div>
-<div class="successMsg">  ${successMsg}</div>
-<div class="clearfix"/></div>
+	<h1>
+<%-- 		<div class="pull-left" style="cursor:pointer;"><a href="${pageContext.servletContext.contextPath}/eBid/Bid/createAuction/0">Create Auction</a></div>
+ --%>		<div class="pull-right" style="cursor:pointer;"><a onclick="showHideSearch()"><spring:message code="lbl_advance_auction_search" /></a></div>
+	</h1>
 </section>
 
 <section class="content">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-body">
+							<form id="tenderListForm" style="display: none;">
+								<div class="row">
+									<div class="col-md-3">
+										<%-- <spring:message code="fields_tenderid" /> --%>
+										<spring:message code="lbl_auction_id" />
+									</div>
+									<div class="col-md-3">
+										<input type="text" class="searchLike form-control"
+											columnname="tenderId">
+									</div>
+									<div class="col-md-3">
+										<%-- <spring:message code="fields_refenceno" /> --%>
+										<spring:message code="lbl_auction_ref_no" />
+									</div>
+									<div class="col-md-3">
+										<input type="text" class="searchLike form-control"
+											columnname="tenderNo">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-3">
+										<%-- <spring:message code="field_brief" /> --%>
+										<spring:message code="lbl_auction_brief" />
+									</div>
+									<div class="col-md-3">
+										<input type="text" class="searchLike form-control"
+											columnname="tenderBrief">
+									</div>
+									<div class="col-md-3">
+										<spring:message code="fields_tender_keywords" />
+									</div>
+									<div class="col-md-3">
+										<input type="text" class="searchLike form-control"
+											columnname="keywordText">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-3">
+										<spring:message code="lbl_due_date" />
+									</div>
+									<div class="col-md-3">
+										<select name="dateFrom1" class="dateFrom1" id="dateFrom1"
+											onchange="checkBetween1(this);" class="form-control">
+											 <option value="searchEqual"><spring:message code="lbl_equal" /></option>
+                     <option value="searchNotEqual"><spring:message code="lbl_not_equal" /></option>
+                     <option value="searchLessThen"><spring:message code="lbl_less" /></option>
+                     <option value="searchLessThenEqual"><spring:message code="lbl_less_or_equal" /></option>
+                     <option value="searchGreaterThen"><spring:message code="lbl_greater" /></option>
+                     <option value="searchGreaterEqual"><spring:message code="lbl_grater_or_equal" /></option>
+                     <option value="searchBetweenDate"><spring:message code="lbl_between" /></option>
+										</select>
+									</div>
+									<div class="col-md-3">
+										<input id="submissionEndDate" columnname="submissionEndDate"
+											name="submissionEndDate" type="text" datepicker="yes"
+											placeholder="${client_dateformate_hhmm}" title="Date" dateBox="true"
+											class="form-control">
+									</div>
+									<div class="col-md-3" id="div_submissionEndDate_to"
+										style="display: none;">
+										<input id="submissionEndDate_to" name="submissionEndDate_to"
+											columnname="submissionEndDate" type="text" datepicker="yes"
+											placeholder="${client_dateformate_hhmm}" title="Date" dateBox="true"
+											class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-3">
+										<spring:message code="field_bidopeningstartdate" />
+									</div>
+									<div class="col-md-3">
+										<select name="dateFrom" class="dateFrom" id="dateFrom"
+											onchange="checkBetween(this);" class="form-control">
+											 <option value="searchEqual"><spring:message code="lbl_equal" /></option>
+                     <option value="searchNotEqual"><spring:message code="lbl_not_equal" /></option>
+                     <option value="searchLessThen"><spring:message code="lbl_less" /></option>
+                     <option value="searchLessThenEqual"><spring:message code="lbl_less_or_equal" /></option>
+                     <option value="searchGreaterThen"><spring:message code="lbl_greater" /></option>
+                     <option value="searchGreaterEqual"><spring:message code="lbl_grater_or_equal" /></option>
+                     <option value="searchBetweenDate"><spring:message code="lbl_between" /></option>
+										</select>
+									</div>
+									<div class="col-md-3">
+										<input id="bidOpeningDate" columnname="openingDate"
+											name="bidOpeningDate" type="text" datepicker="yes"
+											placeholder="${client_dateformate_hhmm}" title="Date" dateBox="true"
+											class="form-control">
+									</div>
+									<div class="col-md-3" id="div_bidOpeningDate_to"
+										style="display: none;">
+										<input id="bidOpeningDate_to" name="bidOpeningDate_to"
+											columnname="openingDate" type="text" datepicker="yes"
+											placeholder="${client_dateformate_hhmm}" title="Date" dateBox="true"
+											class="form-control">
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-3"><spring:message code="field_search_for" /></div>
+									<div class="col-md-3">
+										<select name="searchToTab" id="searchToTab"
+											class="form-control">
+											<option value=""><spring:message code="col_select" /></option>
+											 <option selected="selected" value="18"><spring:message code="lbl_all" /></option>
+                     <option value="1"><spring:message code="col_open_pending" /></option>
+                     <option value="6"><spring:message code="lbl_live" /></option>
+                     <option value="4"><spring:message code="lbl_future" /></option>
+                     <option value="5"><spring:message code="lbl_archive" /></option>
+                     <option value="17"><spring:message code="lbl_cancel" /></option>
+										</select>
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md-3">
+										<input type="hidden" name="jsonSearchCriteria"
+											id="jsonSearchCriteria"> <input type="button"
+											onclick="searchForList()" class="btn-sm form-control"
+											value="Search"> <input type="hidden"
+											name="defaultOrder" id="defaultOrder" value="1:desc">
 
-<div class="row">
-
-<div class="col-md-12">
-
-<div class="box">
-
-<div class="box-header with-border">
-<h3 class="box-title"></h3>
-</div>
-
-<div class="box-body">
-
-<form id="tenderListForm" style="display: none;">
-
-			<div class="row">
-				<div class="col-md-3">
-					<div class="vt"><spring:message code="fields_tenderid" /></div>
-				</div> 
-				<div class="col-md-3">
-					<input type="text" class="searchLike form-control" columnname="tenderId">
-				</div>
-				<div class="col-md-3">
-					<div class="vt"><spring:message code="fields_refenceno" /></div>
-				</div>
-				<div class="col-md-3">
-					<input type="text" class="searchLike form-control" columnname="tenderNo">
-				</div>
+									</div>
+									<div class="col-md-3">
+										<input type="reset" class="btn-sm form-control" value="Clear"
+											onclick="location.reload();">
+									</div>
+								</div>
+							</form>
+							
+							<div class="row">
+								<div class="col-md-12">
+									<section class="">
+									<div class="nav-tabs-custom">
+										<ul class="nav nav-tabs">
+											<li class="active listingTab" tabindex="29">
+												<a href="#"><spring:message code="col_open_pending" />
+												 	<span class="pull-right-container">
+                                                		<small class="label pull-right bg-light-white txt-light-blue mar-left-5 pendingCount">
+                                                			${auctionCount.pending}
+ 														</small>
+ 													</span>		                                               		
+                                            	</a>
+											</li>
+											<li class="listingTab" tabindex="30">
+												<a href="#"><spring:message code="lbl_live" />
+													<span class="pull-right-container">
+                                                		<small class="label pull-right bg-light-white txt-light-blue mar-left-5 liveCount">
+															${auctionCount.live}
+														</small>
+ 													</span>		
+												</a>
+											</li>
+											<li class="listingTab" tabindex="32">
+												<a href="#"><spring:message code="lbl_future" />
+													<span class="pull-right-container">
+		                                           		<small class="label pull-right bg-light-white txt-light-blue mar-left-5 futureCount">
+															${auctionCount.future}
+														</small>
+		 											</span>		
+												</a>
+											</li>
+											<li class="listingTab" tabindex="33">
+												<a href="#"><spring:message code="lbl_archive" />
+													<span class="pull-right-container">
+                                                		<small class="label pull-right bg-light-white txt-light-blue mar-left-5  archiveCount">
+															${auctionCount.archive}
+														</small>
+		 											</span>
+												</a>
+											</li>
+											<li class="listingTab" tabindex="34">
+												<a href="#"><spring:message code="lbl_cancel" />
+													<span class="pull-right-container">
+                                               			<small class="label pull-right bg-light-white txt-light-blue mar-left-5 cancelCount">
+															${auctionCount.cancel}
+														</small>
+		 											</span>	
+												</a>
+											</li>
+											<li class="listingTab" tabindex="35">
+												<a href="#"><spring:message code="lbl_all" />
+													<span class="pull-right-container">
+                                                		<small class="label pull-right bg-light-white txt-light-blue mar-left-5  allCount">
+															${auctionCount.total}
+														</small>
+		 											</span>			
+												</a>
+											</li>
+										</ul>
+										</div>
+										<div id="listingDiv"></div>
+									</section>
+								</div>
+							</div>
+							
+						</div>
 			</div>
-			
-			<div class="row">
-				<div class="col-md-3">
-					<div class="vt"><spring:message code="field_brief" /></div>
-				</div>
-				<div class="col-md-3">
-					<input type="text" class="searchLike form-control" columnname="tenderBrief">
-				</div>
-					<div class="col-md-3">
-					<div class="vt"><spring:message code="fields_tender_keywords" /></div>
-				</div>
-				<div class="col-md-3">
-					<input type="text" class="searchLike form-control" columnname="keywordText">
-				</div>
-			</div>
-			
-			<div class="row">
-				<div class="col-md-3">
-					<div class="vt"><spring:message code="lbl_due_date" /></div>
-				</div> 
-                 <div class="col-md-3">
-                     <select name="dateFrom1" class="dateFrom1 form-control" id="dateFrom1" onchange="checkBetween1(this);">
-                     <option value="searchEqual">equal</option>
-                     <option value="searchNotEqual">not equal</option>
-                     <option value="searchLessThen">less</option>
-                     <option value="searchLessThenEqual">less or equal</option>
-                     <option value="searchGreaterThen">greater</option>
-                     <option value="searchGreaterEqual">greater or equal</option>
-                     <option value="searchBetweenDate">between</option>
-                     </select>
-                 </div>
-                 <div class="col-md-3">
-                 	<input id="submissionEndDate" columnname="submissionEndDate" name="submissionEndDate" type="text" datepicker="yes" placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true" class="form-control">
-                 </div>
-           		<div class="col-md-3" id="div_submissionEndDate_to" style="display: none;">
-	               <input id="submissionEndDate_to" name="submissionEndDate_to" columnname="submissionEndDate"  type="text" datepicker="yes" placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true" class="form-control">
-	            </div>
-			</div>
-			
-			<div class="row">
-				<div class="col-md-3">
-					<div class="vt"><spring:message code="field_bidopeningstartdate" /></div>
-				</div> 
-                 <div class="col-md-3">
-                     <select name="dateFrom" class="dateFrom form-control" id="dateFrom form-control" onchange="checkBetween(this);">
-                     <option value="searchEqual">equal</option>
-                     <option value="searchNotEqual">not equal</option>
-                     <option value="searchLessThen">less</option>
-                     <option value="searchLessThenEqual">less or equal</option>
-                     <option value="searchGreaterThen">greater</option>
-                     <option value="searchGreaterEqual">greater or equal</option>
-                     <option value="searchBetweenDate">between</option>
-                     </select>
-                 </div>
-                 <div class="col-md-3">
-                 	<input id="bidOpeningDate" columnname="openingDate" name="bidOpeningDate" type="text" datepicker="yes" placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true" class="form-control">
-                 </div>
-           		<div class="col-md-3" id="div_bidOpeningDate_to" style="display: none;">
-	               <input id="bidOpeningDate_to" name="bidOpeningDate_to" columnname="openingDate"  type="text" datepicker="yes" placeholder="DD/MM/YYYY HH:MM" title="Date" dateBox="true" class="form-control">
-	            </div>
-			</div>
-			
-			<div class="row">
-				<div class="col-md-3">
-					<div class="vt">Search In</div>
-				</div>
-				<div class="col-md-3">
-					<select name="searchToTab" id="searchToTab" class="form-control">
-                     <option value="">Select</option>
-                     <option selected="selected" value="18">All</option>
-                     <option value="1">Pending</option>
-                     <option value="6">Live</option>
-                     <option value="4">Future</option>
-                     <option value="5">Archive</option>
-                     <option value="17">Cancel</option>
-                    </select>
-				</div>
-			</div>
-			
-			<div class="row">
-				
-				<div class="col-md-3"></div>
-				
-				<div class="col-md-3">
-					<input type="hidden" name="jsonSearchCriteria" id="jsonSearchCriteria"> <input type="button" onclick="searchForList()" class="btn btn-submit" value="Search">
-					<input type="hidden" name="defaultOrder" id="defaultOrder" value="1:desc">
-					<input type="reset" class="btn btn-submit" value="Clear" onclick="location.reload();">
-				</div>
-				
-				
-					
-				
-			</div>
-</form>
-
-<div class="clearfix"/></div>
-
-<section class="">
-		<ul class="nav nav-tabs">
-		  <li class="active listingTab" tabindex="29"><a href="#">Pending (${auctionCount.pending})</a></li>
-		  <li class="listingTab" tabindex="30"><a href="#">Live (${auctionCount.live})</a></li>
-		  <li class="listingTab" tabindex="32"><a href="#" >Future (${auctionCount.future})</a></li>
-		  <li class="listingTab" tabindex="33"><a href="#" >Archive (${auctionCount.archive})</a></li>
-		  <li class="listingTab" tabindex="34"><a href="#" >Cancel (${auctionCount.cancel})</a></li>
-		  <li class="listingTab" tabindex="35"><a href="#" >All (${auctionCount.total})</a></li>
-		</ul>
-	<div id="listingDiv">
+		</div>
 	</div>
 </section>
 
-</div>
 
 </div>
 
-</div>
 
-</div>
-
-</section>
-
-</div>
-
-<%@include file="../includes/footer.jsp"%>
-
-</div>
 
 <script type="text/javascript">
 $(document).ready(function(){
 	toDateFormate = '<spring:message code="client_dateformate_hhmm" />';
 	$("[dateBox='true']").each(function(){
 		$(this).datetimepicker({
-		  format:'d/m/Y H:i'
+			format:'d-M-Y H:i'
 		});
 	});
 	loadListPage('listingDiv',29,'tenderListForm');
@@ -201,20 +242,20 @@ function callActionItem(cthis){
 	var actionname = $(cthis).attr("actionname").toLowerCase();
         var colIndx = getColumnIndex('Auction Id.');
 	colIndx++;
-	if(actionname == "edit"){
+	if(actionname.toLowerCase() == "edit"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child('+colIndx+')').html()
 		window.location = "${pageContext.servletContext.contextPath}/eBid/Bid/createAuction/"+tenderId
-	}else if(actionname == "view"){
+	}else if(actionname.toLowerCase() == "view"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child('+colIndx+')').html()
 		window.location = "${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/"+tenderId+"/0"
-	}else if(actionname == "dashboard"){
+	}else if(actionname.toLowerCase() == "dashboard"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child('+colIndx+')').html()
 		window.location = "${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/"+tenderId
 	}
-        else if(actionname == "viewreport")
+        else if(actionname.toLowerCase() == "viewreport")
         {
             var tenderId = $(cthis).closest("tr").find('td:nth-child('+colIndx+')').html()
-            window.location = "${pageContext.servletContext.contextPath}/eBid/Bid/viewAuctionResult/"+tenderId
+            window.location = "${pageContext.servletContext.contextPath}/eBid/Bid/viewResult/"+tenderId
             
         }
 }
@@ -223,6 +264,7 @@ $(".listingTab").click(function(){
 	loadListPage('listingDiv',tabIndex,'tenderListForm');
 	$(".listingTab").removeClass("active");
 	$(this).addClass("active");
+	reSetCountIfNowMatch(2);
 })
 function checkBetween1(obj)
 {
@@ -274,5 +316,4 @@ function searchForList(){
 	}
 }
 </script>
-</body>
-</html>
+<%@include file="../includes/footer.jsp"%>

@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 <%@page import="com.eprocurement.etender.enumeration.UserEnum"%>
 <%@page import="com.eprocurement.etender.enumeration.DataTypeEnum"%>
 <%@page import="com.eprocurement.etender.model.TblTenderCell"%>
@@ -10,9 +10,6 @@
 <%@page import="java.util.List"%>
 <%@page import="com.eprocurement.etender.model.TblTenderForm"%>
 <%@page import="java.util.Map"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-        <%@include file="../../includes/header.jsp"%>
 
         <%
         
@@ -36,8 +33,8 @@
             String value="";
             
             ArrayList DataTypeMessage=new ArrayList();
-            DataTypeMessage.add("Enter value in Small Text (Max. 300 characters)");
-            DataTypeMessage.add("Enter value in Long text");
+            DataTypeMessage.add("Enter value in Small Text (Max. 2000 characters)");
+            DataTypeMessage.add("Enter value in Long text (Max. 10000 characters)");
             DataTypeMessage.add("Number(with .)");
             DataTypeMessage.add(" Number (without .)");
             DataTypeMessage.add("All Numbers");
@@ -46,25 +43,17 @@
             DataTypeMessage.add("");
             DataTypeMessage.add("");
         %>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
         <div class="content-wrapper">
-        
             <section class="content-header">
             	<c:choose>
             	<c:when test="${sessionUserTypeId eq 1}">
-                	<h1>Create/Fill Bidding Form</h1>
+                	<h1><spring:message code="lbl_create_fill_bidding_form" /></h1>
                 </c:when>
                 <c:when test="${sessionUserTypeId eq 2}">
-                	<h1>Fill Form</h1>
+                	<h1><spring:message code="lbl_fill_form" /></h1>
                 </c:when>
                 </c:choose>
             </section>
-            
             <section class="content">
                   <div class="row">
                     <div class="col-lg-12 col-md-12">
@@ -75,19 +64,19 @@
                                     <div class="col-md-12">
                                                         
                                                         <div class="col-sm-2 col-md-2">
-                                                            <div class="form_filed text-black text-right" >Form Name :</div>
+                                                            <div class="form_filed text-black text-right" ><spring:message code="lbl_form" /> :</div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
                                                             <div class="form_filed pull-left">${FormBean.FormName}</div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
-                                                            <div class="form_filed text-right text-black">Envelope:</div>
+                                                            <div class="form_filed text-right text-black"><spring:message code="lbl_envelop" /></div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
                                                             <div class="form_filed  pull-left">${FormBean.envelopeName}</div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
-                                                            <div class="form_filed text-black text-right">Created On :</div>
+                                                            <div class="form_filed text-black text-right"><spring:message code="lbl_createdon" /></div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
                                                             <div class="form_filed pull-left">${FormBean.CreatedOn}</div>
@@ -101,11 +90,10 @@
                                                             <c:if test="${FormBean.IsDocReq eq 1}">
                                                                 <c:set var="DocReqVal" value="Yes"/>
                                                             </c:if>
-                                                        
-                                                           
+                                                        <c:if test="${tblTender.isAuction eq 0}">
                                      <div class="col-md-12">
                                                         <div class="col-sm-2 col-md-2">
-                                                            <div class="form_filed text-right text-black">Is Document Require :</div>
+                                                            <div class="form_filed text-right text-black"><spring:message code="lbl_is_document_require" /></div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
                                                             <div class="form_filed  pull-left">${DocReqVal}</div>
@@ -119,7 +107,7 @@
                                                             </c:if>
                                                        
                                                         <div class="col-sm-2 col-md-2">
-                                                            <div class="form_filed  text-right text-black">Is Mandatory :</div>
+                                                            <div class="form_filed  text-right text-black"><spring:message code="lbl_is_mandatory" /></div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
                                                             
@@ -134,7 +122,7 @@
                                                             </c:if>
                                                         
                                                         <div class="col-sm-2 col-md-2">
-                                                            <div class="form_filed text-right text-black">Is Price Bid Form:</div>
+                                                            <div class="form_filed text-right text-black"><spring:message code="lbl_is_price_bid_form" /></div>
                                                         </div>
                                                         <div class="col-sm-2 col-md-2">
                                                             <div class="form_filed  pull-left">${IsPriceBid}</div>
@@ -142,6 +130,9 @@
                                                         
                                                         
                                                     </div>
+                                                        </c:if>                 
+                                                           
+                                     
                                                     </div>
                               
                                                     
@@ -155,7 +146,7 @@
 				</div>
                             </div>
               
-<form id="tenderDtBean" name="tenderDtBean" action="/eProcurement/eBid/Bid/updateBiddingFormValue" method="get"  onsubmit="if(valOnSubmit()){return createJson();} else {return false ;}"  novalidate>
+                                                        <form id="tenderDtBean" name="tenderDtBean" action="${pageContext.servletContext.contextPath}/eBid/Bid/updateBiddingFormValue" method="post"  onsubmit="if(valOnSubmit()){return createJson();} else {return false ;}"  novalidate>
 
                 <div class="row">
                     <div class="col-lg-12 col-md-12">
@@ -167,17 +158,28 @@
                             <spring:message code="lbl_back_dashboard" var='backDashboard'/>
  <c:choose>
                         <c:when test="${sessionUserTypeId eq 2}">
-                             <a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tenderId}/5" class="btn btn-submit"><< ${backDashboard}</a>
+                             <a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tenderId}/5">
+                                 <c:if test="${tblTender.isAuction eq 0}">
+                                     << ${backDashboard}
+                                 </c:if>
+                                 <c:if test="${tblTender.isAuction eq 1}">
+                                     << <spring:message code="lbl_go_back_to_auction_dashboard" />
+                                 </c:if>
+                                 </a>
                         </c:when>
                         <c:otherwise>
-                            <div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="btn btn-submit"><< ${backDashboard}</a></div>                                                
+                            <div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"> <c:if test="${tblTender.isAuction eq 0}">
+                                     << ${backDashboard}
+                                 </c:if>
+                                 <c:if test="${tblTender.isAuction eq 1}">
+                                     << <spring:message code="lbl_go_back_to_auction_dashboard" />
+                                 </c:if></a></div>                                                
                         </c:otherwise>
                         </c:choose>
                                          </div>
                            
                             <div class="box-body">
                                 <div class="row">
-                                
                                         <div class="col-md-12">
                                             <h3 style="padding-top:0px;margin-top:0px;"><%=tblTenderForm.getFormHeader()%></h3>
                                         </div>
@@ -191,15 +193,14 @@
                                         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 
                                         	<div class="box">
-
+                                                    <c:if test="${tblTender.isAuction eq 0}">
 						<div class="box-header with-border">
 							<h3 class="box-title"><b><%=tblTenderTable.getTableName()%></b></h3>
 						</div>
-                        
-                        <div class="box-header with-border">
+                                                <div class="box-header with-border">
 							<h3 class="box-title"><%=tblTenderTable.getTableHeader()%></h3>
 						</div>
-
+</c:if>
 						<div class="box-body">
 							<div class="row">
 								<div class="col-lg-12 col-md-12 col-xs-12">
@@ -209,7 +210,7 @@
                                                                                             <%for(TblTenderColumn obj:lstCol)
                                                                                             {
                                                                                                 %>
-                                                                                                <th>Column Name: <%=obj.getColumnHeader()%><br>Filled By: <%=UserEnum.getNameById(obj.getFilledBy()).replaceAll("_", " ")%><br> Data Type: <%=DataTypeEnum.getNameById(obj.getDataType()).replaceAll("_", " ")%></th>
+                                                                                                <th><spring:message code="lbl_column_name" /><%=obj.getColumnHeader()%><br><spring:message code="lbl_filled_by" /><%=UserEnum.getNameById(obj.getFilledBy()).replaceAll("_", " ")%><br> <spring:message code="lbl_data_type" /><%=DataTypeEnum.getNameById(obj.getDataType()).replaceAll("_", " ")%></th>
                                                                                                 <%}
                                                                                                     %>
 											</tr>
@@ -272,7 +273,7 @@
                                                                                                                         {
                                                                                                                         %>
                                                                                                                         <input type="text" 
-                                                                                                                               validarr="required@@length:0,300" tovalid="true" onblur="validateTxtComp(this)" 
+                                                                                                                               validarr="required@@length:0,2000" tovalid="true" onblur="validateTextComponent(this)" 
                                                                                                                                title="<%=TblTenderColumn.getColumnHeader()%>"
                                                                                                                                placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType()-1)%>" 
                                                                                                                                colKey="<%=TblTenderColumn.getColumnId()%>" 
@@ -291,18 +292,19 @@
                                                                                                                         if(isTextBox && isShown)
                                                                                                                         {
                                                                                                                         %>
-                                                                                                                        <input type="text" 
-                                                                                                                               validarr="required@@length:0,1000" tovalid="true" onblur="validateTxtComp(this)" 
+                                                                                                                        <textarea validarr="required@@length:0,10000" tovalid="true" onblur="validateTextComponent(this)" 
                                                                                                                                title="<%=TblTenderColumn.getColumnHeader()%>"
                                                                                                                                placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType()-1)%>" 
-                                                                                                                               colKey="<%=TblTenderColumn.getColumnId()%>" 
-                                                                                                                               value="<%=value%>" id="<%=TblTenderColumn.getColumnId() + "_" + i%>"
-                                                                                                                               >
+                                                                                                                               colKey="<%=TblTenderColumn.getColumnId()%>" id="<%=TblTenderColumn.getColumnId() + "_" + i%>" ><%=value%></textarea>
+                                                                                                                            
+                                                                                                                        
+                                                                                                                      
 
                                                                                                                         <%}
                                                                                                                          else if(!isTextBox && isShown)
                                                                                                                         {%>
-                                                                                                                        <input type="text" disabled="true" value="<%=value%>">
+                                                                                                                        <textarea disabled="true"><%=value%></textarea>
+                                                                                                                        
                                                                                                                         <%}
                                                                                                                         
                                                                                                                         break;
@@ -311,7 +313,7 @@
                                                                                                                         {
                                                                                                                         %>
                                                                                                                         <input type="number" 
-                                                                                                                               validarr="required@@numwithdecimal:2" tovalid="true" onblur="validateTxtComp(this)" 
+                                                                                                                               validarr="required@@numanduptodecimal:2" tovalid="true" onblur="validateTextComponent(this)" 
                                                                                                                                title="<%=TblTenderColumn.getColumnHeader()%>"
                                                                                                                                placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType()-1)%>" 
                                                                                                                                colKey="<%=TblTenderColumn.getColumnId()%>" 
@@ -331,7 +333,7 @@
                                                                                                                         {
                                                                                                                         %>
                                                                                                                         <input type="number" 
-                                                                                                                               validarr="required@@numeric" tovalid="true" onblur="validateTxtComp(this)" 
+                                                                                                                               validarr="required@@numeric" tovalid="true" onblur="validateTextComponent(this)" 
                                                                                                                                title="<%=TblTenderColumn.getColumnHeader()%>"
                                                                                                                                placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType()-1)%>" 
                                                                                                                                colKey="<%=TblTenderColumn.getColumnId()%>" 
@@ -350,7 +352,7 @@
                                                                                                                         {
                                                                                                                         %>
                                                                                                                         <input type="number" 
-                                                                                                                               validarr="required@@numanduptodecimal:2" tovalid="true" onblur="validateTxtComp(this)" 
+                                                                                                                               validarr="required@@numanduptodecimal:2" tovalid="true" onblur="validateTextComponent(this)" 
                                                                                                                                title="<%=TblTenderColumn.getColumnHeader()%>"
                                                                                                                                placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType()-1)%>" 
                                                                                                                                colKey="<%=TblTenderColumn.getColumnId()%>" 
@@ -381,7 +383,7 @@
                                                                                                                         {
                                                                                                                         %>
                                                                                                                          <input type="date" 
-                                                                                                                               validarr="required@@length:0,15" tovalid="true" onblur="validateTxtComp(this)" 
+                                                                                                                               validarr="required@@length:0,15" tovalid="true" onblur="validateTextComponent(this)" 
                                                                                                                                title="<%=TblTenderColumn.getColumnHeader()%>"
                                                                                                                                colKey="<%=TblTenderColumn.getColumnId()%>" 
                                                                                                                                value="<%=value%>" id="<%=TblTenderColumn.getColumnId() + "_" + i%>"
@@ -394,7 +396,7 @@
                                                                                                                         break;
                                                                                                                     case 8:
                                                                                                                     %>
-                                                                                                                    <select colKey="<%=TblTenderColumn.getColumnId()%>" ><option>--Select--</option></select>
+                                                                                                                    <select colKey="<%=TblTenderColumn.getColumnId()%>" ><option><spring:message code="lbl_select" /></option></select>
                                                                                                                     <%
                                                                                                                         break;
                                                                                                                     case 9:
@@ -447,11 +449,11 @@
                                            <div class="col-md-12 text-center"> 
 		                                    <c:choose>
 		                                    	<c:when test="${sessionUserTypeId eq 1}">
-		                                    		<button type="submit" class="btn btn-submit" id="btnSubmitForm">Submit</button>
-		                                        <button type="button" class="btn btn-submit">Reset</button>
+		                                    		<button type="submit" class="btn btn-submit" id="btnSubmitForm"><spring:message code="label_submit" /></button>
+		                                     
 		                                    	</c:when>
 		                                    	<c:when test="${sessionUserTypeId eq 2}">
-		                                    		<button type="submit" class="btn btn-submit" id="btnSubmitForm">Submit</button>
+		                                    		<button type="submit" class="btn btn-submit" id="btnSubmitForm"><spring:message code="label_submit" /></button>
 		                                    	</c:when>
 		                                    </c:choose>
                                     	</div>
@@ -462,16 +464,12 @@
                 </div>
                                             <input type="hidden" id="hdnFormId" name="hdnFormId" value="<%=tblTenderForm.getFormId()%>">
                                             <input type="hidden" id="txtJson" name="txtJson">
-                                                <input type="hidden" value="<%=tenderId%>" name="hdntenderId">
+                                                <input type="hidden" value="<%=tenderId%>" name="tenderId">
                     </form>       
             </section>
         </div>
-<script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
 <script src="${pageContext.servletContext.contextPath}/resources/PageJS/ViewBiddingForm.js" type="text/javascript"></script>
 <%@include file="../../includes/footer.jsp"%>
-</div>
-    </body>
-</html>
-      
+
 
 	

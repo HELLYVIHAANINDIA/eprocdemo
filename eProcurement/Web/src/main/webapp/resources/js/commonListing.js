@@ -187,6 +187,9 @@ var dateCol = new Array();
 $("th[coldisplayname*='Date']").each(function(){
 	dateCol.push($(this).parent().children().index($(this)));
 });
+$("th[coldisplayname*=' date']").each(function(){
+	dateCol.push($(this).parent().children().index($(this)));
+});
 var srnocol = getColumnIndex("srno");
 var resultLength = 10;
 var defaultOrder = $("#defaultOrder").val();
@@ -217,8 +220,11 @@ var $dataTableObj = $("#"+divId).find('#listingTable').DataTable( {
     	"sAjaxSource" : "/eProcurement/etender/commonDataGrid",
     	"aaSorting": [orderColIndx,orderType],
     	 "language": {
-    	      "emptyTable": "No record found."
+    	      "emptyTable": "No record found.",
+    	      "search": "_INPUT_",
+    	      "searchPlaceholder": "Search"
     	    },
+    	    
     	dom: 'Blfrtip',
     	"fnServerParams": function ( aoData ) {
     		 aoData.push({ "name": "actionItem", "value": $('#actionItem').val() },
@@ -260,38 +266,48 @@ var $dataTableObj = $("#"+divId).find('#listingTable').DataTable( {
     	 	    var col = $(this).parent().children().index($(this));
     	 	   $('td', nRow).eq(col).addClass("hideColumn");
     		});
+    	 	var processed = new Object();
     	 	for(var indx in dateCol){
     	 		var colIndx = dateCol[indx];
-    	 		var tdVal = $('td', nRow).eq(colIndx).html();
-                        
-    	 		$('td', nRow).eq(colIndx).html(convertDateStringFormate(tdVal,'yyyy-mm-dd HH:mm',CLIENT_DATE_FORMATE));
+    	 		if(processed[colIndx] == undefined){
+	    	 		var tdVal = $('td', nRow).eq(colIndx).html();
+	    	 		$('td', nRow).eq(colIndx).html(convertDateStringFormate(tdVal,'yyyy-mm-dd HH:mm',CLIENT_DATE_FORMATE));
+    	 		}else{
+    	 			processed[colIndx] = colIndx;
+    	 		}
     	 	}
     	},
     	buttons: [
-                  {
-                      extend: 'pdf',
-                      footer: true,
-                      exportOptions: {
-                          //columns: [':visible' ]
-                              columns: "thead th:not(.noExport)"
-                      }
-                  },
-                  {
-                      extend: 'print',
-                      footer: true,
-                      exportOptions: {
-                          columns: "thead th:not(.noExport)"
-                      }
-                     
-                  },
-                  {
-                      extend: 'excel',
-                      footer: false,
-                      exportOptions: {    
-                          //columns: [':visible' ]
-                              columns: "thead th:not(.noExport)"
-                      }
-                  }         
+  				  {
+					    extend: 'print',
+					    footer: true,
+					    exportOptions: {
+					        //columns: [':visible' ]
+					            columns: "thead th:not(.noExport)"
+					    },
+				   },
+				  {
+					    text:'PDF',
+					    footer: true,
+					    action: function ( e, dt, node, config ) {
+		                    exportContent("listingTable",$("#fileNameForExport").val(),0);
+		                },
+					    exportOptions: {
+					        //columns: [':visible' ]
+					            columns: "thead th:not(.noExport)"
+					    },
+				  },
+				  {
+					    text:'Excel',
+					    footer: true,
+					    action: function ( e, dt, node, config ) {
+		                    exportContent("listingTable",$("#fileNameForExport").val(),4);
+		                },
+					    exportOptions: {
+					        //columns: [':visible' ]
+					            columns: "thead th:not(.noExport)"
+					    },
+				  }
                ],
 
     	aoColumnDefs: [
@@ -348,3 +364,22 @@ function formateVal(obj,val){
 	}
 	return val;
 }
+
+function reSetCountIfNowMatch(type){
+	$.ajax({
+ 		type : "POST",
+ 		contentType : "application/json",
+ 		url : contextPath+"/etender/buyer/tenderListingCount/"+type,
+ 		success : function(Obj) {
+			$(".archiveCount").html(Obj.archive);
+			$(".cancelCount").html(Obj.cancel);
+			$(".futureCount").html(Obj.future);
+			$(".liveCount").html(Obj.live);
+			$(".pendingCount").html(Obj.pending);
+			$(".totalCount").html(Obj.total);
+				
+ 		}
+ 	});	
+}
+
+	

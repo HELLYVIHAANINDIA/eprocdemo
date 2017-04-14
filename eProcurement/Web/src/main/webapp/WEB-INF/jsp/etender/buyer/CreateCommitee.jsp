@@ -1,292 +1,28 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>          
+<%@include file="../../includes/head.jsp"%>
+       <%@include file="../../includes/masterheader.jsp"%>
+                
         <spring:message code="title_tender_createcomitee" var="titlecommittee"/>
         <spring:message code="lbl_create_prebid_committee" var="lblcreateprebidcommittee"/>
         <spring:message code="lbl_edit_prebid_committee" var="lbleditprebidcommittee"/>
         <spring:message code="lbl_view_prebid_committee" var="lblviewprebidcommittee"/>
         
-        <title>${titlecommittee}</title>    
-        <script type="text/javascript">
-        var VALIDATE_MSG_REQUIRED = 'Please enter';
-        var VALIDATE_MSG_SELECT = 'Please select';
-        var grandParentDeptJson = '${grandParentDeptJson}';
-        var grandParentDeptJsonObj = jQuery.parseJSON(grandParentDeptJson);
-        var grandParentDeptId = '${grandParentDeptId}';
-        $(function() {	     	
-	     	//fill organization combo on load
-        	$('#grandParentDeptIdDiv').html('');
-	     	$.each(grandParentDeptJsonObj, function (key, value) {
-	     	var granPId = value.value; 
-	     	if(granPId==grandParentDeptId){
-	     		$('#grandParentDeptIdDiv').html(value.label);
-	     	}	
-// 	    	$('#grandParentDeptId').append($('<option>',
-// 	    		 {
-// 	    		    value: value.value,
-// 	    		    text : value.label
-// 	    		}));
-	    	 });
-        	});
-        
-        getDesignations();
-     	getParentDepartmentsByGrandparentDept();
-            
-            function validate(){
-            	var vbool = valOnSubmit();
-            	if($('#searchValue').val()=="" || $('#searchValue').val()=='undefind'){
-            		vbool=true;
-            	}
-            	if(vbool){
-                	var addedMember = $("#memberCount").val();
-            		if(addedMember <= parseInt(0)){
-            			alert('<spring:message code="add_mim_one_committee_member"/>');
-                		return false;
-                	}
-            	}
-            	return disableBtn(vbool);
-            }
-            
-            function showHideDiv(){
-            	var keyword = $("#selSearch").val();
-            	if(keyword =='name' || keyword =='email'){
-            		$('#Hirarchy').hide();
-            		$('#nonHirarchy').show();
-            	}else{
-            		$('#nonHirarchy').hide();
-            		$('#Hirarchy').show();
-            	}
-            }
-            
-            
-            function searchAjax() {
-            	var data = {};
-            	var keyword = $("#selSearch").val();
-            	var searchValue = "";
-            	if(keyword =='name' || keyword =='email'){
-            		searchValue = $("#searchValue").val();
-            	}else{
-            		var grandParentDept = '${grandParentDeptId}';
-            		var parentDept = $('#selDepartment').val();
-            		var subDept = $('#subDept').val();
-            		var designation = $('#selDesignation').val();
-            		if(parentDept=='-1' && subDept=='-1' && designation=='-1' && grandParentDept=='-1'){
-            			alert('Please select hirarchy');
-            		}else if(parentDept>0 && subDept=='-1' && designation=='-1' && grandParentDept>0 ){
-            			searchValue = parentDept;
-            			keyword="deptId";	
-            		}else if(parentDept>0 && subDept=='-1' && designation>0 && grandParentDept>0){
-            			searchValue = designation;
-            			keyword="designationId";
-            		}else if(parentDept>0 && subDept>0 && designation>0 && grandParentDept>0){
-            			searchValue = designation;
-            			keyword="designationId";
-            		}else if(parentDept>0 && subDept>0 && designation=='-1' && grandParentDept>0 ){
-            			searchValue = subDept;
-            			keyword="deptId";	
-            		}else if(parentDept=='-1' && subDept=='-1' && designation=='-1' && grandParentDept>0 ){
-            			searchValue = grandParentDept;
-            			keyword="deptId";	
-            		}else if(parentDept=='-1' && subDept=='-1' && designation>0 && grandParentDept>0 ){
-            			searchValue = designation;
-            			keyword="designationId";	
-            		}
-            	}
-            	
-            	$.ajax({
-            		type : "POST",
-            		contentType : "application/json",
-            		url : "${pageContext.servletContext.contextPath}/etender/buyer/officers/"+searchValue+"/"+keyword,
-            		data : data,
-            		timeout : 100000,
-            		success : function(data) {
-            			console.log("SUCCESS: ", data);
-            			var obj = jQuery.parseJSON(data);
-            			$('#selName').html('');
-            		     $.each(obj, function (key, value) {
-            		    $('#selName').append($('<option>',
-            		    		 {
-            		    		    value: value.value,
-            		    		    text : value.label,
-            		    		}));
-            		     });
-            		},
-            		error : function(e) {
-            			console.log("ERROR: ", e);
-            		},
-            		done : function(e) {
-            			console.log("DONE");
-            		}
-            	});
-            }
-            
-            function getParentDepartmentsByGrandparentDept() {
-            	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
-            			var data = {};
-                    	var searchValue = '${grandParentDeptId}'+"@@0";
-                    	
-                    	$.ajax({
-                    		type : "POST",
-                    		contentType : "application/json",
-                    		url : "${pageContext.servletContext.contextPath}/common/user/getsubdepartments/"+searchValue,
-                    		data : data,
-                    		timeout : 100000,
-                    		success : function(data) {
-                    			var obj = jQuery.parseJSON(data);
-                    			$('#selDepartment').html('');
-                    		     $.each(obj, function (key, value) {
-                    		    $('#selDepartment').append($('<option>',
-                    		    		 {
-                    		    		    value: value.value,
-                    		    		    text : value.label
-                    		    		}));
-                    		     });
-                    			console.log("SUCCESS: ", data);
-                    			$.unblockUI({});
-                    		},
-                    		error : function(e) {
-                    			console.log("ERROR: ", e);
-                    			$.unblockUI({});
-                    		},
-                    		done : function(e) {
-                    			console.log("DONE");
-                    			$.unblockUI({});
-                    		}
-                    	});
-                    	return true;
-           		 }
-            
-            
-           	 function getSubDepartments() {
-            	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
-            			var data = {};
-                    	var searchValue = $("#selDepartment").val()+"@@1";
-                    	$.ajax({
-                    		type : "POST",
-                    		contentType : "application/json",
-                    		url : "${pageContext.servletContext.contextPath}/common/user/getsubdepartments/"+searchValue,
-                    		data : data,
-                    		timeout : 100000,
-                    		success : function(data) {
-                    			var obj = jQuery.parseJSON(data);
-                    			$('#subDept').html('');
-                    		     $.each(obj, function (key, value) {
-                    		    $('#subDept').append($('<option>',
-                    		    		 {
-                    		    		    value: value.value,
-                    		    		    text : value.label
-                    		    		}));
-                    		     });
-                    			console.log("SUCCESS: ", data);
-                    			$.unblockUI({});
-                    		},
-                    		error : function(e) {
-                    			console.log("ERROR: ", e);
-                    			$.unblockUI({});
-                    		},
-                    		done : function(e) {
-                    			console.log("DONE");
-                    			$.unblockUI({});
-                    		}
-                    	});
-                    	return true;
-            }
-            
-            
-            function getDesignations() {
-            	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
-            	var data = {};
-            	var subDeptId = $("#subDept").val();
-            	var parentDeptId = $("#selDepartment").val();
-//             	var grandParentDeptId = $('#grandParentDeptId').val();
-            	var grandParentDeptId = '${grandParentDeptId}';
-            	var searchValue = "";
-//             	if(parentDeptId>0 && subDeptId>0 && grandParentDeptId>0){
-//             		searchValue = subDeptId;	
-//             	}else if (parentDeptId>0 && subDeptId=='-1' && grandParentDeptId>0){
-//             		searchValue = parentDeptId;
-//             	}else if (parentDeptId=='-1' && subDeptId=='-1' && grandParentDeptId>0){
-            	searchValue = grandParentDeptId;
-//             	}else{
-//             		alert("please select organization");
-//             	}
-            	
-            	$.ajax({
-            		type : "POST",
-            		contentType : "application/json",
-            		url : "${pageContext.servletContext.contextPath}/common/user/getdesignationbydeptid/"+searchValue,
-            		data : data,
-            		timeout : 100000,
-            		success : function(data) {
-            			var obj = jQuery.parseJSON(data);
-            			$('#selDesignation').html('');
-            		     $.each(obj, function (key, value) {
-            		    $('#selDesignation').append($('<option>',
-            		    		 {
-            		    		    value: value.value,
-            		    		    text : value.label
-            		    		}));
-            		     });
-            			console.log("SUCCESS: ", data);
-            			$.unblockUI({});
-            		},
-            		error : function(e) {
-            			console.log("ERROR: ", e);
-            			$.unblockUI({});
-            		},
-            		done : function(e) {
-            			console.log("DONE");
-            			$.unblockUI({});
-            		}
-            	});
-            }
-            
-            
-            
-            function removeRow(id)
-            {
-                $('#'+id).remove();
-                var totalMemberCount = parseInt($("#memberCount").val()) - 1;
-        		$("#memberCount").val(totalMemberCount);
-            }
-            $(document).on('click', '#addOfficer', function(){
-            	var selNameVal = $('#selName').val();
-            	var name = selNameVal.split('@@')[0];
-            	var email = selNameVal.split('@@')[1];
-            	var designation = selNameVal.split('@@')[2];
-            	var department = selNameVal.split('@@')[3];
-            	var id = selNameVal.split('@@')[4];
-            	var data = '<tr id="'+id+'"><td>'+name+'</td><td>'+email+'</td><td>'+designation+'</td><td>'+department+'</td><td><a href="#" onclick="removeRow('+id+')">remove</a><input type="hidden" name="hdofficerId" value="'+id+'" /></td></tr>';
-            	if($("#" + id).length == 0) {
-            		$( "#officerLstTbl" ).append(data);
-            		var totalMemberCount = parseInt($("#memberCount").val()) + 1;
-            		$("#memberCount").val(totalMemberCount);
-            	} else {
-            		alert('this record already exists');
-            	}
-            });
-            
-           </script>
-</head>
-
-<body>
-
-<%@include file="../../includes/AfterLoginTop.jsp"%>
-                    
-<div class="content-wrapper">
+     <div class="content-wrapper">   
+       
+    
 <c:set var="var_total_member" value="0" />
-		<section class="content-header">
+
+<section class="content-header">
+</section>
 <section class="content">
-				<div class="col-lg-9 col-md-9 col-sm-9 col-xs-12">
+	<div class="row">
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 				
 					<div class="box">
-					<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a>
+					<div class="pull-right">
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a>
+					</div>
 						<div class="box-header with-border">
+							
 <%-- 									<h4 class="box-title">${message}</h3> --%>
 									<c:choose>
 										<c:when test="${operType eq 'Edit'}">
@@ -317,7 +53,7 @@
 											<div class="form_filed">Search</div>
 										</div>
 										<div class="col-lg-5">
-											<input type="text" class="form-control"  id="searchValue" title="Search value"  validarr="required@@length:0,100" tovalid="true" onblur="javascript:{validateTxtComp(this)}"  >
+											<input type="text" class="form-control"  id="searchValue" title="Search value"  validarr="required@@length:0,100" tovalid="true" onblur="javascript:{validateTextComponent(this)}"  >
 										</div>
 										<div>
 											<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
@@ -433,8 +169,267 @@
 						</div>
 					</div>
 				</div>
+			</div>
 </section>
-</section>
-</div>  
-    </body>
-</html>
+</div>
+ <script type="text/javascript">
+        var VALIDATE_MSG_REQUIRED = 'Please enter';
+        var VALIDATE_MSG_SELECT = 'Please select';
+        var grandParentDeptJson = '${grandParentDeptJson}';
+        var grandParentDeptJsonObj = jQuery.parseJSON(grandParentDeptJson);
+        var grandParentDeptId = '${grandParentDeptId}';
+        $(function() {	     	
+	     	//fill organization combo on load
+        	$('#grandParentDeptIdDiv').html('');
+	     	$.each(grandParentDeptJsonObj, function (key, value) {
+	     	var granPId = value.value; 
+	     	if(granPId==grandParentDeptId){
+	     		$('#grandParentDeptIdDiv').html(value.label);
+	     	}	
+// 	    	$('#grandParentDeptId').append($('<option>',
+// 	    		 {
+// 	    		    value: value.value,
+// 	    		    text : value.label
+// 	    		}));
+	    	 });
+        	});
+        
+        getDesignations();
+     	getParentDepartmentsByGrandparentDept();
+            
+            function validate(){
+            	var vbool = valOnSubmit();
+            	if($('#searchValue').val()=="" || $('#searchValue').val()=='undefind'){
+            		vbool=true;
+            	}
+            	if(vbool){
+                	var addedMember = $("#memberCount").val();
+            		if(addedMember <= parseInt(0)){
+            			alert('<spring:message code="add_mim_one_committee_member"/>');
+                		return false;
+                	}
+            	}
+            	return disableBtn(vbool);
+            }
+            
+            function showHideDiv(){
+            	var keyword = $("#selSearch").val();
+            	if(keyword =='name' || keyword =='email'){
+            		$('#Hirarchy').hide();
+            		$('#nonHirarchy').show();
+            	}else{
+            		$('#nonHirarchy').hide();
+            		$('#Hirarchy').show();
+            	}
+            }
+            
+            
+            function searchAjax() {
+            	var data = {};
+            	var keyword = $("#selSearch").val();
+            	var searchValue = "";
+            	if(keyword =='name' || keyword =='email'){
+            		searchValue = $("#searchValue").val();
+            	}else{
+            		var grandParentDept = '${grandParentDeptId}';
+            		var parentDept = $('#selDepartment').val();
+            		var subDept = $('#subDept').val();
+            		var designation = $('#selDesignation').val();
+            		if(parentDept=='-1' && subDept=='-1' && designation=='-1' && grandParentDept=='-1'){
+            			alert('Please select hirarchy');
+            		}else if(parentDept>0 && subDept=='-1' && designation=='-1' && grandParentDept>0 ){
+            			searchValue = parentDept;
+            			keyword="deptId";	
+            		}else if(parentDept>0 && subDept=='-1' && designation>0 && grandParentDept>0){
+            			searchValue = designation;
+            			keyword="designationId";
+            		}else if(parentDept>0 && subDept>0 && designation>0 && grandParentDept>0){
+            			searchValue = designation;
+            			keyword="designationId";
+            		}else if(parentDept>0 && subDept>0 && designation=='-1' && grandParentDept>0 ){
+            			searchValue = subDept;
+            			keyword="deptId";	
+            		}else if(parentDept=='-1' && subDept=='-1' && designation=='-1' && grandParentDept>0 ){
+            			searchValue = grandParentDept;
+            			keyword="deptId";	
+            		}else if(parentDept=='-1' && subDept=='-1' && designation>0 && grandParentDept>0 ){
+            			searchValue = designation;
+            			keyword="designationId";	
+            		}
+            	}
+            	
+            	$.ajax({
+            		type : "POST",
+            		contentType : "application/json",
+            		url : "${pageContext.servletContext.contextPath}/etender/buyer/officers/"+searchValue+"/"+keyword,
+            		data : data,
+            		timeout : 100000,
+            		success : function(data) {
+            			console.log("SUCCESS: ", data);
+            			var obj = jQuery.parseJSON(data);
+            			$('#selName').html('');
+            		     $.each(obj, function (key, value) {
+            		    $('#selName').append($('<option>',
+            		    		 {
+            		    		    value: value.value,
+            		    		    text : value.label,
+            		    		}));
+            		     });
+            		},
+            		error : function(e) {
+            			console.log("ERROR: ", e);
+            		},
+            		done : function(e) {
+            			console.log("DONE");
+            		}
+            	});
+            }
+            
+            function getParentDepartmentsByGrandparentDept() {
+            			blockUI();
+            			var data = {};
+                    	var searchValue = '${grandParentDeptId}'+"@@0";
+                    	
+                    	$.ajax({
+                    		type : "POST",
+                    		contentType : "application/json",
+                    		url : "${pageContext.servletContext.contextPath}/common/user/getsubdepartments/"+searchValue,
+                    		data : data,
+                    		timeout : 100000,
+                    		success : function(data) {
+                    			var obj = jQuery.parseJSON(data);
+                    			$('#selDepartment').html('');
+                    		     $.each(obj, function (key, value) {
+                    		    $('#selDepartment').append($('<option>',
+                    		    		 {
+                    		    		    value: value.value,
+                    		    		    text : value.label
+                    		    		}));
+                    		     });
+                    			console.log("SUCCESS: ", data);
+                    			unBlockUI();
+                    		},
+                    		error : function(e) {
+                    			console.log("ERROR: ", e);
+                    			unBlockUI();
+                    		},
+                    		done : function(e) {
+                    			console.log("DONE");
+                    			unBlockUI();
+                    		}
+                    	});
+                    	return true;
+           		 }
+            
+            
+           	 function getSubDepartments() {
+           				blockUI();
+            			var data = {};
+                    	var searchValue = $("#selDepartment").val()+"@@1";
+                    	$.ajax({
+                    		type : "POST",
+                    		contentType : "application/json",
+                    		url : "${pageContext.servletContext.contextPath}/common/user/getsubdepartments/"+searchValue,
+                    		data : data,
+                    		timeout : 100000,
+                    		success : function(data) {
+                    			var obj = jQuery.parseJSON(data);
+                    			$('#subDept').html('');
+                    		     $.each(obj, function (key, value) {
+                    		    $('#subDept').append($('<option>',
+                    		    		 {
+                    		    		    value: value.value,
+                    		    		    text : value.label
+                    		    		}));
+                    		     });
+                    			console.log("SUCCESS: ", data);
+                    			unBlockUI();
+                    		},
+                    		error : function(e) {
+                    			console.log("ERROR: ", e);
+                    			unBlockUI();
+                    		},
+                    		done : function(e) {
+                    			console.log("DONE");
+                    			unBlockUI();
+                    		}
+                    	});
+                    	return true;
+            }
+            
+            
+            function getDesignations() {
+            	blockUI();
+            	var data = {};
+            	var subDeptId = $("#subDept").val();
+            	var parentDeptId = $("#selDepartment").val();
+//             	var grandParentDeptId = $('#grandParentDeptId').val();
+            	var grandParentDeptId = '${grandParentDeptId}';
+            	var searchValue = "";
+//             	if(parentDeptId>0 && subDeptId>0 && grandParentDeptId>0){
+//             		searchValue = subDeptId;	
+//             	}else if (parentDeptId>0 && subDeptId=='-1' && grandParentDeptId>0){
+//             		searchValue = parentDeptId;
+//             	}else if (parentDeptId=='-1' && subDeptId=='-1' && grandParentDeptId>0){
+            	searchValue = grandParentDeptId;
+//             	}else{
+//             		alert("please select organization");
+//             	}
+            	
+            	$.ajax({
+            		type : "POST",
+            		contentType : "application/json",
+            		url : "${pageContext.servletContext.contextPath}/common/user/getdesignationbydeptid/"+searchValue,
+            		data : data,
+            		timeout : 100000,
+            		success : function(data) {
+            			var obj = jQuery.parseJSON(data);
+            			$('#selDesignation').html('');
+            		     $.each(obj, function (key, value) {
+            		    $('#selDesignation').append($('<option>',
+            		    		 {
+            		    		    value: value.value,
+            		    		    text : value.label
+            		    		}));
+            		     });
+            			console.log("SUCCESS: ", data);
+            			unBlockUI();
+            		},
+            		error : function(e) {
+            			console.log("ERROR: ", e);
+            			unBlockUI();
+            		},
+            		done : function(e) {
+            			console.log("DONE");
+            			unBlockUI();
+            		}
+            	});
+            }
+            
+            
+            
+            function removeRow(id)
+            {
+                $('#'+id).remove();
+                var totalMemberCount = parseInt($("#memberCount").val()) - 1;
+        		$("#memberCount").val(totalMemberCount);
+            }
+            $(document).on('click', '#addOfficer', function(){
+            	var selNameVal = $('#selName').val();
+            	var name = selNameVal.split('@@')[0];
+            	var email = selNameVal.split('@@')[1];
+            	var designation = selNameVal.split('@@')[2];
+            	var department = selNameVal.split('@@')[3];
+            	var id = selNameVal.split('@@')[4];
+            	var data = '<tr id="'+id+'"><td>'+name+'</td><td>'+email+'</td><td>'+designation+'</td><td>'+department+'</td><td><a href="#" onclick="removeRow('+id+')">remove</a><input type="hidden" name="hdofficerId" value="'+id+'" /></td></tr>';
+            	if($("#" + id).length == 0) {
+            		$( "#officerLstTbl" ).append(data);
+            		var totalMemberCount = parseInt($("#memberCount").val()) + 1;
+            		$("#memberCount").val(totalMemberCount);
+            	} else {
+            		alert('this record already exists');
+            	}
+            });
+            
+           </script>
+           <%@include file="../../includes/footer.jsp"%>

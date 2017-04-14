@@ -1,8 +1,5 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+	<%@include file="../../includes/head.jsp"%>
+	<%@include file="../../includes/masterheader.jsp"%>
 <spring:message code="lbl_live" var="meetingLive" />
 <spring:message code="lbl_not_started" var="meetingNotStart" />
 <spring:message code="lbl_close" var="meetingOver" />
@@ -10,19 +7,14 @@
 <spring:message code="lbl_offline" var="offlineMode" />
 <c:set var="meetingMode"
 	value="${tblTender.preBidMode eq 1 ? onlineMode : offlineMode}" />
-</head>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
 
 <div class="content-wrapper">
 	<section class="content">
-		<div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="box">
 				<div class="box-header with-border">
-					<h3 class="box-title">Bid Opening</h3>
+					<h3 class="box-title">Tender Opening</h3>
 				</div>
 				<div class="box-body">
 					<div class="row">
@@ -55,12 +47,6 @@
 				</div>
 			</div>
 		</div>
-		</div>
 	</section>
-</div>
-
-</div>
-
-</body>
-
-</html>
+	</div>
+	<%@include file="../../includes/footer.jsp"%>

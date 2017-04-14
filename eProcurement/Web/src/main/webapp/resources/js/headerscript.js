@@ -2,20 +2,19 @@
     var VALIDATE_MSG_NO_SPACE = 'Space is not allowed';
     var VALIDATE_MSG_INVALID_EMAIL = 'Please enter valid email ID';
     var VALIDATE_MSG_INVALID_EMAIL_MSGBOX = 'Allows Min. 6 Max. 1000 alphanumeric and Special Characters(@,.,-,_)';
-    var CLIENT_DATETIME = new Date();
+    var cal_months_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var CLIENT_DATETIME=new Date();
     var yr =  CLIENT_DATETIME.getFullYear();
     var Hours =  CLIENT_DATETIME.getHours();
     var mins =  CLIENT_DATETIME.getMinutes();
-    var tDate=new Date();
 	if(CLIENT_DATE_FORMATE_WHM.toUpperCase() == 'DD-MMM-YYYY'){
-   		var cal_months_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-   		dateFormatString = tDate.getDate()+ '/' + cal_months_names[tDate.getMonth()] + '/' +  tDate.getFullYear()+' '+getFullNumber(Hours)+':'+getFullNumber(mins)+":00";
+   		dateFormatString = CLIENT_DATETIME.getDate()+ '/' + cal_months_names[CLIENT_DATETIME.getMonth()] + '/' +  CLIENT_DATETIME.getFullYear()+' '+getFullNumber(Hours)+':'+getFullNumber(mins)+":00";
         CLIENT_DATETIME=dateFormatString;
 	}
-    $("#currentTime").val(tDate);
+    //$("#currentTime").val(tDate);
     var DATETIMEFORMATE_CALENDAR=CLIENT_DATE_FORMATE_WHM.toUpperCase().replace(/DD/g,'%d').replace(/MMM/g,'%mmm').replace(/MM/g,'%m').replace(/YYYY/g,'%Y')+' %H:%M';
     var DATEFORMATE_CALENDAR=CLIENT_DATE_FORMATE_WHM.toUpperCase().replace(/DD/g,'%d').replace(/MMM/g,'%mmm').replace(/MM/g,'%m').replace(/YYYY/g,'%Y');
-    
+    var VALIDATE_MSG_INVALID_CONF_EMAIL ="E-mail id do not match"
     var VALIDATE_MSG_EMAIL_INVALID = 'Allows Min. 6 Max. 50 alphanumeric and Special Characters(@,.,-,_)';
     var VALIDATE_MSG_MINIMUM = 'Minimum';
     var VALIDATE_MSG_CHARS_ALLOWED = 'characters';
@@ -42,7 +41,7 @@
     var VALIDATE_MSG_INVALID_CLIENT_NAME = 'Invalid client name';
     var VALIDATE_MSG_NUM_DECIMAL = 'Invalid number it must contain decimal upto';
     var VALIDATE_MSG_INVALID_CONF_PASSWORD = 'Confirm password does not match with';
-    var VALIDATE_MSG_SAME_PASSWORD_AS_LOGINID = 'Password cannot be same as email ID';
+    var VALIDATE_MSG_SAME_PASSWORD_AS_LOGINID = 'Password cannot be same as Email Id';
     var VALIDATE_MSG_SELECT = 'Please select';
     var VALIDATE_MSG_COMMAINVALID='Allows Max. 100 alphanumeric and Special Characters (), -, ,/,Space,&';
     var VALIDATE_MSG_TXTAREA='characters numbers and special characters (/ , - , ., ,&#39;,&,(,), comma, space)';
@@ -111,18 +110,58 @@
 	    else
 	        return number;
 	}
-
-    function getFullNumber(number){
-        if(number < 10)
-            return '0' + number;
-        else
-            return number;
-    }
-
+getClientDateTime();
+function startTime() {
+  var h = getFullNumber(lastDateTime.getHours());
+  var m = getFullNumber(lastDateTime.getMinutes());
+  lastDateTime.setSeconds(lastDateTime.getSeconds()+1);
+  var s = getFullNumber(lastDateTime.getSeconds());
+  var dispalyDateTime = lastDateTime.getDate()+ '-' + cal_months_names[lastDateTime.getMonth()] + '-' +  lastDateTime.getFullYear()+' '+h+':'+m+':'+s
+  $('#dispalyDateTime').html(dispalyDateTime);
+}
+function getClientDateTime(){
+	$.ajax({
+		type : "GET",
+		async:false,
+		url : contextPath+"/common/user/getClientDateTime",
+		success : function(data) {
+			lastDateTime = new Date(data);
+			setInterval(function(){
+				startTime();
+			},1000);
+		},
+		error : function(e) {
+			console.log(e);	
+		},
+	});
+}
+function customeTextComponent(obj){
+	var validarrtext = $(obj).attr("validarrtext");
+	  $(obj).attr("validarr",validarrtext);
+	  $(obj).attr("tovalid",true);
+	  validateTextComponent($(obj));
+	  $(obj).removeAttr("validarr");
+	  $(obj).attr("tovalid",false);
+}
 function loginValidate(){
+	
+  var validarrtext = $('#j_username').attr("validarrtext");
+  $('#j_username').attr("validarr",validarrtext);
+  $('#j_username').attr("tovalid",true);
+  
+  var validarrtext = $('#j_password').attr("validarrtext");
+  $('#j_password').attr("validarr",validarrtext);
+  $('#j_password').attr("tovalid",true);
+	
   var flag1  = validateTextComponent($('#j_username'));
   var flag2  = validateTextComponent($('#j_password'));
   if(flag1 && flag2){
+	  
+	  $('#j_username').removeAttr("validarr");
+	  $('#j_username').attr("tovalid",false);
+	  $('#j_password').removeAttr("validarr");
+	  $('#j_password').attr("tovalid",false);
+  
 		var createPdfForm = document.createElement("form");
 		createPdfForm.method = "POST";
 		createPdfForm.action = contextPath+"/submitLogin";
@@ -143,11 +182,11 @@ function loginValidate(){
   }
   return false;
 }
-function validate(){
+/*function validate(){
    var vbool = valOnSubmit();
    return disableBtn(vbool);
 }
-
+*/
 function submitLogout(){
 	$('#formLogout').submit();
 }
@@ -192,6 +231,7 @@ function setClickFunctionToDataGrid(){
         },500);
 	}
 	var exportContent = function(exportId,fileName,generateType){
+		var htmlData;
 	if (generateType == 5) {
 			var html = '<HTML>\n<HEAD>\n<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bootstrap.min.css">\n';
 			if (document.getElementsByTagName != null) {
@@ -208,7 +248,7 @@ function setClickFunctionToDataGrid(){
 			}
 			html += '\n</BO' + 'DY>\n</HT' + 'ML>';
 			html = removeScriptTag(html);
-			var htmlData = $("<div/>").html($(html));
+			htmlData = $("<div/>").html($(html));
 			$(htmlData).find(".noExport").remove();
 			printHtml($(htmlData).html());	
 			return;
@@ -216,18 +256,17 @@ function setClickFunctionToDataGrid(){
 		var createPdfForm = document.createElement("form");
 		createPdfForm.method = "POST";
 		createPdfForm.action = contextPath+"/exportDataFromPage";
-		var htmlData = $("<div/>").html($("#" + exportId).clone());
+		htmlData = $("<div/>").html($("#" + exportId).clone());
 		var data = $(htmlData).html();
 		data = removeScriptTag(data);
 		data = '<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bootstrap.min.css">' + data;
-		console.log(data);
 		data = data.replace(/>\s+</g, "><");
 		$(data).find(".noExport").remove();
 		
           $(data).find('a').each(function() {
               $(this).attr('href','#');
           });
-         var htmlData = $("<div/>").html($(data));
+         htmlData = $("<div/>").html($(data));
 		 $(htmlData).find(".noExport").remove();
          $(htmlData).find(".goBack").remove();
 		var exportData = $("<input>", {

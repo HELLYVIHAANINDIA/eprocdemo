@@ -1,26 +1,7 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<script src="${pageContext.request.contextPath}/resources/js/tender/tendercreate.js"></script>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
-<script type="text/javascript">
-	
-	function validate(){
-         	var vbool = valOnSubmit();
-         	return disableBtn(vbool);
-	return true;
-    }
-</script>
-</head>
-       
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-         	
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
+    
 <div class="content-wrapper">
 	<section class="content">
 		<div class="row">
@@ -61,23 +42,23 @@
 					                    <spring:message code="label_shre_rprt"         var="vShareReports"/>
 	                    
                             <table  class="table table-striped table-responsive">
-                                <tr>
-								                                        <th class="a-left"><label><spring:message code="field_view_rslt"/></label></th>
-								                                        <td>
-								                                                <c:choose>
-								                                                        <c:when test="${opType eq 'view'}">${showResultBeforeLogin}</c:when>
-								                                                        <c:otherwise>
-								                                                        	<select name="shareResult" id="shareResult">
-										                                                     	<option value="">Select</option>
-											                                                    <option value="1">Yes</option>
-											                                                    <option value="0">No</option>
-										                                                 	</select>
-								                                                        </c:otherwise>
-								                                                </c:choose>
-								                                        </td>
-								                                	</tr>
+<!--                                 <tr> -->
+<%-- 								                                        <th class="a-left"><label><spring:message code="field_view_rslt"/></label></th> --%>
+<!-- 								                                        <td> -->
+<%-- 								                                                <c:choose> --%>
+<%-- 								                                                        <c:when test="${opType eq 'view'}">${showResultBeforeLogin}</c:when> --%>
+<%-- 								                                                        <c:otherwise> --%>
+<!-- 								                                                        	<select name="shareResult" id="shareResult"> -->
+<!-- 										                                                     	<option value="">Select</option> -->
+<!-- 											                                                    <option value="1">Yes</option> -->
+<!-- 											                                                    <option value="0">No</option> -->
+<!-- 										                                                 	</select> -->
+<%-- 								                                                        </c:otherwise> --%>
+<%-- 								                                                </c:choose> --%>
+<!-- 								                                        </td> -->
+<!-- 								                                	</tr> -->
 								                                    <tr>
-								                                        <th class="a-left"><label>Share L1 Report</label></th>
+								                                        <th><label>Share L1 Report</label></th>
 								                                        <td>
 								                                                <c:choose>
 								                                                        <c:when test="${opType eq 'view'}">${showL1Report}</c:when>
@@ -91,6 +72,21 @@
 								                                                </c:choose>
 								                                        </td>
 								                                	</tr>
+								                                	<tr>
+								                                	<th >Share Reports with</th>
+								                                	 <td>
+                                                                        	<c:choose>
+                                                                                    <c:when test="${opType eq 'view'}">${shareReport}
+                                                                                    </c:when>
+                                                                                    <c:otherwise>
+                                                                                    	<c:forEach items="${chartListWith}" var="reportsWith" varStatus="counter">
+                                                                                    		<input type="radio" value="${reportsWith}" name="rptwith">${reportsWith}
+                                                                                    	</c:forEach>
+                                                                                    </c:otherwise>
+                                                                                 </c:choose>
+                                                                        	
+                                                                        </td>
+                                                                      </tr>
                                     <c:set value="," var="formIds"/>
                                     <tr>
                                         <td colspan="2">
@@ -107,7 +103,6 @@
                                                                  <tr class="table">
                                                                      <th >${vformName}</th>
                                                                      <th >${vShareReports}</th>
-                                                                     <th >Share Reports with</th>
                                                                  </tr>
                                                                  
                                                                         <tr rowspan="2">
@@ -162,23 +157,12 @@
                                                                                     </c:when>
                                                                                     <c:otherwise>
                                                                                     	<c:forEach items="${chartList}" var="reports" varStatus="counter">
-                                                                                    			<input type="checkbox" value="${reports}" name="reports_${tndrFormData[0]}">${reports}
+                                                                                    			<input type="checkbox" value="${reports}" name="reports_${tndrFormData[0]}_${counter.index}">${reports}
+                                                                                    			<c:set value="${counter.index}" var="shareReportCount"/>
                                                                                     	</c:forEach>
-                                                                                    	
+                                                                                    	<input type="hidden" name="hdShareReportCount" value="${shareReportCount}"/>
                                                                                     </c:otherwise>
                                                                             </c:choose>	
-                                                                        </td>
-                                                                        <td>
-                                                                        	<c:choose>
-                                                                                    <c:when test="${opType eq 'view'}">${shareReport}
-                                                                                    </c:when>
-                                                                                    <c:otherwise>
-                                                                                    	<c:forEach items="${chartListWith}" var="reportsWith" varStatus="counter">
-                                                                                    		<input type="radio" value="${reportsWith}" name="rptwith">${reportsWith}
-                                                                                    	</c:forEach>
-                                                                                    </c:otherwise>
-                                                                                 </c:choose>
-                                                                        	
                                                                         </td>
                                                                     </tr>
                                                                     </table>
@@ -214,12 +198,17 @@
 				</div>
 			</div>
 		</div>
-	</div>
+		</div>
+		</div>
 	</section>
-</div>
-
-</div>
-
-</body>
-
-</html>
+	</div>
+<script type="text/javascript">
+	
+	function validate(){
+         	var vbool = valOnSubmit();
+         	return disableBtn(vbool);
+	return true;
+    }
+   </script>
+   <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
+   <%@include file="../../includes/footer.jsp"%>

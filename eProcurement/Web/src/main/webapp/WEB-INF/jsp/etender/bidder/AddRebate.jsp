@@ -1,86 +1,14 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
-<script type="text/javascript">
-$(document).ready(function() {
-	var formListLength= "${fn:length(rebateFormList)}";
-	var rtnValue = 0;
-	var totalValue=0;
-	for (var encVal=0; encVal<formListLength; encVal++){
-		rtnValue = $('#encryptValues_'+encVal).html();
-		totalValue = parseFloat(totalValue) + parseFloat(rtnValue);
-	}
-// 	var decimalUpto = 5;
-// 	$('#totalValue').html(totalValue.toFixed(decimalUpto));
-	$('#totalValue').html(totalValue);
-});
-     function getRebateAmt(){
-    		 var percentage = $('#txtRebatePerc').val();
-        	 var totalAmt = $('#totalValue').html();
-        	 var rbtAmount =   parseFloat(totalAmt) * parseFloat(percentage)/100;
-//         	 var decimalUpto = 5;
-//         	 $('#rebateAmt').html(rbtAmount.toFixed(decimalUpto));
-        	 $('#rebateAmt').html(rbtAmount);
-        	 var finalAmt;
-        	 var biddingVariant = '${biddingVariant}';
-        	 if(biddingVariant == 1){
-        		 finalAmt=parseFloat(totalAmt) - parseFloat(rbtAmount);	 
-        	 }else{
-        		 finalAmt=parseFloat(totalAmt) + parseFloat(rbtAmount);
-        	 }
-        	 
-        	 $('#finalAmt').html(finalAmt);
-//         	 $('#finalAmt').html(finalAmt.toFixed(decimalUpto));
-        	 
-        	 /*** View time check condition  **/
-    		 if("${addEdtFlage}" != 3){
-    			 if(!$("#txtRebatePerc").attr("readonly")){
-    			 }
-    		 }
-    		 /*** End View time check condition  **/
-     }
-     function clearData(){
-    	 if(!$("#txtRebatePerc").attr("readonly")){
-    		 $('#rebateAmt').html("");
-         	 $('#finalAmt').html("");	 
-    	 }
-     }
-     function validateChng(){
-   		 $('#perEncVal').val($('#finalAmt').html());
-         var vbool = false;
-         var divFinalAmt = document.getElementById("finalAmt");
-         var divRebateAmt = document.getElementById("rebateAmt");
-         
-         if(divFinalAmt.textContent == ''){
-        	 alert("Please enter rebate details");
-        	 vbool = false;
-         }else if(divRebateAmt.textContent == '0'){
-        	 alert("Zero value is not allowed");
-        	 vbool = false;
-         }else{
-        	 vbool = true;
-         }
-         return disableBtn(vbool);
-     }
-</script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
+<%@include file="../../includes/head.jsp"%>
+        <%@include file="../../includes/masterheader.jsp"%>
 
 <div class="content-wrapper">
-
-<section class="content">
-	<div class="row">
+   <section class="content">
+   	  <div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="box">
 				<div class="box-header with-border">
 					<spring:message code="lbl_back_dashboard" var='backDashboard'/>
-					<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}" class="btn btn-submit"><< ${backDashboard}</a>
+					<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"><< ${backDashboard}</a>
 				</div>
 				<c:if test="${not empty successMsg}">
 					<div><span class="label label-success"><spring:message code="${successMsg}"/></span></div>
@@ -118,7 +46,7 @@ $(document).ready(function() {
 		                         
 								<form:form action="${postUrl}" onsubmit="return validateChng();" method="post">
                                  <div class="clearfix table-border">
-                                 	<font size="1" class="pull-right mandatory">(<b class="red">*</b>) <spring:message code="msg_mandatoryFields"></spring:message></font>
+                                 	<font size="1" class="pull-right mandatory"><spring:message code="msg_mandatoryFields"></spring:message></font>
                                 		<table class="table table-striped table-responsive">
                                 			<input type="hidden" name="hdTenderId" value="${tenderId}"/>
                                 			<input type="hidden" name="hdCompanyId" value="${companyId}"/>
@@ -133,14 +61,14 @@ $(document).ready(function() {
                                  			</tr>
                                      			<c:set var="srNo" value="1" scope="page"/>
                                      			<c:set var="encryptValues" value=""/>
-                                 			<c:forEach items="${rebateFormList}"  var="rebateFormList" varStatus="count" >
+                                 			<c:forEach items="${rebateFormList}"  var="TenderRebateDetailBean" varStatus="count" >
                                                 <tr>
 	                                                <td>${srNo}</td>
-                                                	<td>${rebateFormList[0]}</td>
-                                                	<td>${rebateFormList[1]}</td>
-                                                	<td>${rebateFormList[2]}</td>
-                                                	<td class="a-center"><div id="encryptValues_${count.index}">${rebateFormList[3]}</div></td>
-                                                	<input type="hidden" id="oldRebateAmt" name="oldRebateAmt" value="${rebateFormList[3]}"/>
+                                                	<td>${TenderRebateDetailBean.formName}</td>
+                                                	<td>${TenderRebateDetailBean.tableName}</td>
+                                                	<td>${TenderRebateDetailBean.columnHeader}</td>
+                                                	<td class="a-center"><div id="encryptValues_${count.index}">${TenderRebateDetailBean.GTValue}</div></td>
+                                                	<input type="hidden" id="oldRebateAmt" name="oldRebateAmt" value="${TenderRebateDetailBean.GTValue}"/>
                                                 	<c:set var="srNo" value="${srNo+1}"/>
                                                 </tr>
                                               </c:forEach>
@@ -214,12 +142,70 @@ $(document).ready(function() {
 				</div>
 			</div>
 		</div>
+	   </div>
+	</section>
 	</div>
-</section>
-</div>
-
-</div>
-
-</body>
-
-</html>
+<script type="text/javascript">
+$(document).ready(function() {
+	var formListLength= "${fn:length(rebateFormList)}";
+	var rtnValue = 0;
+	var totalValue=0;
+	for (var encVal=0; encVal<formListLength; encVal++){
+		rtnValue = $('#encryptValues_'+encVal).html();
+		totalValue = parseFloat(totalValue) + parseFloat(rtnValue);
+	}
+	var decimalUpto = '${decimalPoint}';
+	$('#totalValue').html(totalValue.toFixed(decimalUpto));
+// 	$('#totalValue').html(totalValue);
+});
+     function getRebateAmt(){
+    		 var percentage = $('#txtRebatePerc').val();
+        	 var totalAmt = $('#totalValue').html();
+        	 var rbtAmount =   parseFloat(totalAmt) * parseFloat(percentage)/100;
+        	 var decimalUpto = '${decimalPoint}';
+        	 $('#rebateAmt').html(rbtAmount.toFixed(decimalUpto));
+//         	 $('#rebateAmt').html(rbtAmount);
+        	 var finalAmt;
+        	 var biddingVariant = '${biddingVariant}';
+        	 if(biddingVariant == 1){
+        		 finalAmt=parseFloat(totalAmt) - parseFloat(rbtAmount);	 
+        	 }else{
+        		 finalAmt=parseFloat(totalAmt) + parseFloat(rbtAmount);
+        	 }
+        	 
+//         	 $('#finalAmt').html(finalAmt);
+        	 $('#finalAmt').html(finalAmt.toFixed(decimalUpto));
+        	 
+        	 /*** View time check condition  **/
+    		 if("${addEdtFlage}" != 3){
+    			 if(!$("#txtRebatePerc").attr("readonly")){
+    			 }
+    		 }
+    		 /*** End View time check condition  **/
+     }
+     function clearData(){
+    	 if(!$("#txtRebatePerc").attr("readonly")){
+    		 $('#rebateAmt').html("");
+         	 $('#finalAmt').html("");	 
+    	 }
+     }
+     function validateChng(){
+   		 $('#perEncVal').val($('#finalAmt').html());
+         var vbool = false;
+         var divFinalAmt = document.getElementById("finalAmt");
+         var divRebateAmt = document.getElementById("rebateAmt");
+         
+         if(divFinalAmt.textContent == ''){
+        	 alert("Please enter rebate details");
+        	 vbool = false;
+         }else if(divRebateAmt.textContent == '0'){
+        	 alert("Zero value is not allowed");
+        	 vbool = false;
+         }else{
+        	 vbool = true;
+         }
+         return disableBtn(vbool);
+     }
+     </script>
+<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
+<%@include file="../../includes/footer.jsp"%>

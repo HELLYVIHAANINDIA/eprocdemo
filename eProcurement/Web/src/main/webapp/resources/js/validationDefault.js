@@ -2,6 +2,7 @@ var rgx_email_id = /^((([a-z]|\d|[\-_ ]|[\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF
 var rgx_phoneno = /^((\+){0,1}[0-9][0-9](\-){0,1}){0,1}([0-9]+(\-)*[0-9]+)+$/;
 var rgx_alphanumspecial = /^([0-9a-zA-Z\@\*\(\)\-\+\.\s\/\,]*)[a-zA-Z\@\*\(\)\-\+\.\s\,\/]+([0-9a-zA-Z\@\*\(\)\-\+\.\s\/\,]*)$/;
 var rgx_number = /^[0-9]*$/;
+var rgx_number_with_decimal = /^[0-9.\b]+$/;
 var rgx_brief =/^([0-9a-zA-Z\s]*)[0-9a-zA-Z\s\-\/\.\(\)_:&\,\+]+([0-9a-zA-Z\s\-\/\.\(\)_:&\,\+\s]*)$/;
 var rgx_password  = /^((?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$_\.\(\)])[a-zA-Z0-9!@#$_\.\(\)]{8,50})+$/;
 var rgx_fullname = /^([a-zA-Z\'\-\.\s]*)[a-zA-Z]+([a-zA-Z\'\-\.\s]*)$/;
@@ -26,7 +27,10 @@ var rgx_alphanumericspecial_subject = /^([0-9a-zA-Z\s]*)[0-9a-zA-Z\+\-\*\@\.\/\(
 var rgx_numericswithcomma = /^[0-9\,]*$/;
 var rgx_allmoney = "^-?[0-9]+(.?[0-9]{0,5})?$";
 var mandatoryCheckBoxIds=new Array();
-
+//^[+-]?[0-9]{1,9}(?:\.[0-9]{1,decimal})?$
+var rgx_posnegwithdecimal= "^[+-]?\\d.*?\\.\\d{1,decimal}$";
+var rgx_posnegnumbers=/^[+-]?[0-9]*$/;
+var rgx_posneguptodecimal="^\\s*-?[0-9]\\d*(\\.\\d{1,decimal})?\\s*$";
 var  validateTextComponent = function(comp){
    
     var compVal = $.trim($(comp).val());
@@ -57,7 +61,13 @@ var  validateTextComponent = function(comp){
             if(str == 'length'){
                 minlen = parseInt(lenArr[1].split(',')[0]);
                 maxlen = parseInt(lenArr[1].split(',')[1]);
+            }else if(str == 'alphanumericlength'){
+                minlen = parseInt(lenArr[1].split(',')[0]);
+                maxlen = parseInt(lenArr[1].split(',')[1]);
             }else if(str == 'numwithdecimal'){
+                decimalupto = parseInt(lenArr[1]);
+            }else if(str == 'posnegnumwithdecimal')
+            {
                 decimalupto = parseInt(lenArr[1]);
             }else if(str == 'checkloginidpwd'){
                 othercmpId = lenArr[1];
@@ -79,7 +89,6 @@ var  validateTextComponent = function(comp){
         switch (str){
             case 'required':
                 if(tbool && !compValEmpty){
-                    //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_REQUIRED + " " + ($(comp).attr('title')!='' ? $(comp).attr('title') : 'value') + "</div>");
                 	setValidationMsg(comp,compId,VALIDATE_MSG_REQUIRED + " " +titleVal);
                     tbool = false;
                     isreqfired = true;
@@ -91,12 +100,10 @@ var  validateTextComponent = function(comp){
                     	if(compVal.length < 6 || compVal.length > 50 || !(/^[ A-Za-z0-9@.\-_]*$/.test(compVal))){  /* length and special characters*/
                     		if(notcommmsg){
                     			setValidationMsg(comp,compId,VALIDATE_MSG_EMAIL_INVALID);
-                    			//$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_EMAIL_INVALID + "</div>");
                     		}
                 			tbool = false;
                 		}else if(!rgx_email_id.test(compVal)){ /* validate email */
                 			if(notcommmsg){
-                        	     //$(comp).parent().append("<div class='err"+compId+"' style='color:red; padding-top:5px;'>" + VALIDATE_MSG_INVALID_EMAIL + "</div>");
                 				setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_EMAIL);
                 			}
                 			tbool = false;
@@ -104,7 +111,32 @@ var  validateTextComponent = function(comp){
                     
                 }
                 break;
+            case 'alphanumericlength':
                 
+                var tempVal = compVal;
+                
+                if(compId.indexOf('rtf') != -1){
+                     
+                	compVal=compVal.replace(/&nbsp;/g, " ");
+                    compVal = compVal.replace(/(\r\n|\n|\r)/gm, " ").replace(/^\s+|\s+$/g, '');
+                }
+                if(tbool && compValEmpty && minlen!=0 && compVal.length < minlen){
+                  
+                    if(notcommmsg){
+        				setValidationMsg(comp,compId,VALIDATE_MSG_MINIMUM + " " + minlen + " " + VALIDATE_MSG_NUMERICFEWALPHA);
+                    }
+                    tbool = false;
+                }
+             
+                if(tbool && compValEmpty && maxlen!=0 && compVal.length > maxlen){
+                  
+                    if(notcommmsg){
+                      
+                        setValidationMsg(comp,compId,VALIDATE_MSG_MAXIMUM + " " + maxlen + " " + VALIDATE_MSG_NUMERICFEWALPHA);
+                    }
+                    tbool = false;
+                }
+            break;
                 
             case 'length':
            
@@ -118,7 +150,6 @@ var  validateTextComponent = function(comp){
                 if(tbool && compValEmpty && minlen!=0 && compVal.length < minlen){
                   
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_MINIMUM + " " + minlen + " " + VALIDATE_MSG_CHARS_ALLOWED + "</div>");
                         setValidationMsg(comp,compId,VALIDATE_MSG_MINIMUM + " " + minlen + " " + VALIDATE_MSG_CHARS_ALLOWED);
                     }
                     tbool = false;
@@ -128,7 +159,6 @@ var  validateTextComponent = function(comp){
                   
                     if(notcommmsg){
                       
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_MAXIMUM + " " + maxlen + " " + VALIDATE_MSG_CHARS_ALLOWED + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_MAXIMUM + " " + maxlen + " " + VALIDATE_MSG_CHARS_ALLOWED);
                     }
                     tbool = false;
@@ -141,7 +171,6 @@ var  validateTextComponent = function(comp){
                 var beforeDot=compVal.split(".",1);
                 if(tbool && compValEmpty && maxlen!=0 && beforeDot[0].length > maxlen){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_MAXIMUM + " " + maxlen + " " + VALIDATE_NUMBER_LENGTH + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_MAXIMUM + " " + maxlen + " " + VALIDATE_NUMBER_LENGTH);
                     }
                     tbool = false;
@@ -150,18 +179,33 @@ var  validateTextComponent = function(comp){
             case 'numeric':
                 if(tbool && compValEmpty && !rgx_number.test(compVal)){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_ONLY_NUMERIC + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_NUMERIC);
                     }
                     tbool = false;
                 }
                 break;
+            case 'numericdecimal':
+                if(tbool && compValEmpty && !rgx_number_with_decimal.test(compVal)){
+                    if(notcommmsg){
+                    	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_NUMERIC);
+                    }
+                    tbool = false;
+                }
+                break;
+            case 'posnegnumeric':
+                if(tbool && compValEmpty && !rgx_posnegnumbers.test(compVal)){
+                    if(notcommmsg){
+                    	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_NUMERIC);
+                    }
+                    tbool = false;
+                }
+                
+            break;
             case 'numericwithcomma':
             	if(tbool && compValEmpty && !rgx_numericswithcomma.test(compVal))
             	{
             		if(notcommmsg)
             		{
-            			//$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_ONLY_NUMERIC_WITH_COMMA + "</div>");
             			setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_NUMERIC_WITH_COMMA);
             		}
             		tbool =false;	
@@ -170,16 +214,31 @@ var  validateTextComponent = function(comp){
             case 'uptofive':
                 if(tbool && compValEmpty && !rgx_uptofivenum.test(compVal)){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+VALIDATE_MSG_UPTO_FIVE_DECIMAL+"</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_UPTO_FIVE_DECIMAL);
                     }
                     tbool = false;
                 }
                 break;
+            case 'posnegnumwithdecimal':
+                
+                if(tbool && compValEmpty){
+                    rgx_posnegwithdecimal = rgx_posnegwithdecimal.replace('decimal',decimalupto);
+                    var decimalRegex = new RegExp(rgx_posnegwithdecimal);
+                    if(compVal != undefined && compVal.indexOf(".") == -1){
+                    	compVal = compVal+".00";
+                    }
+                    if (!decimalRegex.test(compVal)){
+                        if(notcommmsg){
+                        	setValidationMsg(comp,compId,VALIDATE_MSG_NUM_DECIMAL + " " +decimalupto);
+                        }
+                        tbool = false;
+                    }
+                }
+                
+            break;
             case 'uptonine':
                 if(tbool && compValEmpty && !rgx_uptoninenum.test(compVal)){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+VALIDATE_MSG_UPTO_NINE_NUMERIC+"</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_UPTO_NINE_NUMERIC);
                     }
                     tbool = false;
@@ -188,7 +247,6 @@ var  validateTextComponent = function(comp){
             case 'onetonine':
                 if(tbool && compValEmpty && !rgx_onetoninenum.test(compVal) && parseInt(compVal,10)==0){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+VALIDATE_MSG_UPTO_NINE_NUMERIC+"</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_UPTO_NINE_NUMERIC);
                     }
                     tbool = false;
@@ -197,7 +255,6 @@ var  validateTextComponent = function(comp){
             case 'integeronly':
                 if(tbool && compValEmpty && !rgx_integeronly.test(compVal)){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_ONLY_POSITIVE + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_POSITIVE);
                     }
                     tbool = false;
@@ -209,7 +266,6 @@ var  validateTextComponent = function(comp){
             case 'phoneno':
                 if(tbool && compValEmpty && !rgx_phoneno.test(compVal)){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_PHONE + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_PHONE);
                     }
                     tbool = false;
@@ -220,7 +276,6 @@ var  validateTextComponent = function(comp){
             case 'alphanumspecial':
                 if(tbool && compValEmpty && (/\-{2}/.test(compVal) || !rgx_alphanumspecial.test(compVal))){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_ONLY_ALPHA_NUM_SPECIAL + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_ALPHA_NUM_SPECIAL);
                     }
                     tbool = false;
@@ -232,10 +287,8 @@ var  validateTextComponent = function(comp){
                 if(tbool && compValEmpty && !rgx_password.test(compVal)){
                     if(notcommmsg){
                     	if(compVal.length < 8 || compVal.length > 50 ||  (/^(?=.*\d)(?=.*[a-zA-Z])(?=.*[\{\}\'\"\?\^\|\[\]\-\_<>\:\;\+\*\`\~\\]).{6,}$/.test(compVal))){
-                    		//$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_PASSWORD + "</div>");
                     		setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_PASSWORD);
                     	}else{
-                    		//$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_PASSWORD_SPECIAL_CHAR +"</div>");
                     		setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_PASSWORD_SPECIAL_CHAR);
                     	}
                     }
@@ -248,7 +301,6 @@ var  validateTextComponent = function(comp){
             case 'fullname':
                 if(tbool && compValEmpty && (/\-{2}/.test(compVal) || !rgx_fullname.test(compVal))){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_FULL_NAME + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_FULL_NAME);
                     }
                     tbool = false;
@@ -261,7 +313,6 @@ var  validateTextComponent = function(comp){
             case 'website':
                 if(tbool && compValEmpty && (/\-{2}/.test(compVal) || !rgx_website.test(compVal) && !rgx_url.test(compVal))){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_WEBSITE + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_WEBSITE);
                     }
                     tbool = false;
@@ -279,7 +330,6 @@ var  validateTextComponent = function(comp){
                     }
                     if (!decimalRegex.test(compVal)){
                         if(notcommmsg){
-                            //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_NUM_DECIMAL + " " +decimalupto+"</div>");
                         	setValidationMsg(comp,compId,VALIDATE_MSG_NUM_DECIMAL + " " +decimalupto);
                         }
                         tbool = false;
@@ -292,7 +342,6 @@ var  validateTextComponent = function(comp){
 				if(tbool && compValEmpty){
 					if(eval(compVal)==0){
 						if(notcommmsg){
-							//$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_NOZERO +"</div>");
 							setValidationMsg(comp,compId,VALIDATE_NOZERO);
 						}
 						tbool = false; 
@@ -304,7 +353,6 @@ var  validateTextComponent = function(comp){
             case 'confirmpwd':
                 if(tbool && compValEmpty && compVal != $('#txt'+othercmpId).val()){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_CONF_PASSWORD +' ' + $('#txt'+othercmpId).attr('title') + "</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_CONF_PASSWORD +' ' + $('#txt'+othercmpId).attr('title'));
                     }
                     tbool = false;
@@ -313,8 +361,7 @@ var  validateTextComponent = function(comp){
             case 'confirmemail':
                 if(tbool && compValEmpty && compVal != $('#txt'+othercmpId).val()){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_INVALID_CONF_EMAIL +' ' + $('#txt'+othercmpId).attr('title') + "</div>");
-                    	setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_CONF_EMAIL +' ' + $('#txt'+othercmpId).attr('title'));
+                    	setValidationMsg(comp,compId,VALIDATE_MSG_INVALID_CONF_EMAIL);
                     }
                     tbool = false;
                 }
@@ -323,7 +370,6 @@ var  validateTextComponent = function(comp){
 			 case 'checkloginidpwd':
 				if(tbool && compValEmpty && compVal == $('#txt'+othercmpId).val()){
 					if(notcommmsg){
-						//$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_SAME_PASSWORD_AS_LOGINID + "</div>");
 						setValidationMsg(comp,compId,VALIDATE_MSG_SAME_PASSWORD_AS_LOGINID);
 					}
 					tbool = false;
@@ -335,7 +381,6 @@ var  validateTextComponent = function(comp){
             case 'tenderbrief':
                 if(tbool && compValEmpty && (/\-{2}/.test(compVal) || !rgx_tenderbrief.test(compVal) || maxlen<compVal.length)){
                     if(notcommmsg){
-                        //$(comp).parent().append("<div class='err"+compId+"' style='color:red;'>"+VALIDATE_MSG_ALLOW_MAX+" "+maxlen+" "+VALIDATE_MSG_TENDERBRIEF+"</div>");
                     	setValidationMsg(comp,compId,VALIDATE_MSG_ALLOW_MAX+" "+maxlen+" "+VALIDATE_MSG_TENDERBRIEF);
                     }
                     tbool = false;
@@ -351,7 +396,6 @@ var  validateTextComponent = function(comp){
                         if(compVal.indexOf('.', 0)==-1){
                             if (!rgx_number.test(compVal)){
                                 if(notcommmsg){
-                                    //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_ONLY_NUMERIC + "</div>");
                                 	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_NUMERIC);
                                 }
                                 tbool = false;
@@ -360,14 +404,12 @@ var  validateTextComponent = function(comp){
                             var number=compVal.split('.')[0];
                             if (!rgx_number.test(number)){
                                 if(notcommmsg){
-                                    //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_ONLY_NUMERIC + "</div>");
                                 	setValidationMsg(comp,compId,VALIDATE_MSG_ONLY_NUMERIC);
                                 }
                                 tbool = false;
                             }else{
                                 if (!decimalRegex.test(compVal)){
                                     if(notcommmsg){
-                                        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+VALIDATE_MSG_MAXIMUM+" "+uptodecimal +" "+VALIDATE_MSG_DECIMALPOINT+"</div>");
                                     	setValidationMsg(comp,compId,VALIDATE_MSG_MAXIMUM+" "+uptodecimal +" "+VALIDATE_MSG_DECIMALPOINT);
                                     }
                                     tbool = false;
@@ -382,7 +424,6 @@ var  validateTextComponent = function(comp){
         }
     }
     if(!tbool && !isreqfired && !notcommmsg){
-        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+$(comp).attr("validationmsg")+"</div>");
         setValidationMsg(comp,compId,$(comp).attr("validationmsg"));
         
     }
@@ -395,6 +436,15 @@ function valOnSubmit(){
     var  vbool = true;
     var txtAreaValArr = new Array();
     var cnt=0;
+    $("select[isrequired='true']").each(function(){
+        if(!$(this).is(':disabled')  && !validateCombo(this)){
+            cnt=cnt+1;
+            if(cnt==1){
+                $(this).focus();
+            }
+            vbool = false;
+        }
+    });
     $("input[tovalid='true']").each(function(){
         if(!$(this).is(':disabled')  && !validateTextComponent(this)){
             cnt=cnt+1;
@@ -425,15 +475,6 @@ function valOnSubmit(){
                     txtAreaValArr.push(this);
                 }
             }            
-        }
-    });
-    $("select[isrequired='true']").each(function(){
-        if(!$(this).is(':disabled')  && !validateCombo(this)){
-            cnt=cnt+1;
-            if(cnt==1){
-                $(this).focus();
-            }
-            vbool = false;
         }
     });
     $("input[datepicker='yes']").each(function(){
@@ -496,7 +537,6 @@ function dynamicCheckBoxValidation(vbool){
 				}
 	   	 	 });
     		 if(chkBool){
-    			//$("#errDiv"+compName).parent().parent().append("<span class='err"+compName+"' style='color:red;'><br/>" + VALIDATE_MSG_SELECT + " " +($(comp).attr('title')!='' ? $(comp).attr('title') : 'value')+"</span>");
     			 setValidationMsg(comp,compId,VALIDATE_MSG_SELECT + " " +($(comp).attr('title')!='' ? $(comp).attr('title') : 'value'));
     			cnt++;
     		 }
@@ -520,7 +560,6 @@ function validateCombo(comp){
 	}
     //comVal==-1 add by Pooja
     if(compVal=='' || compVal==null || compVal==-1){
-        //$(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_SELECT + " " +($(comp).attr('title')!='' ? $(comp).attr('title') : 'value')+"</div>");
         setValidationMsg(comp,compId,VALIDATE_MSG_SELECT + " " +($(comp).attr('title')!='' ? $(comp).attr('title') : 'value'));
         tbool = false;
     }
@@ -609,32 +648,26 @@ function validateEmptyDt(comp){
     if($(comp).val()!='' && tbool && !$(comp).attr('readonly')){
     	if(dateFormateArry[0] == 'DD/MM/YYYY'){
     		if(!rgx_dateddmmyyyy.test($(comp).val())){
-                //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>"+VALIDATION_MSG_DATE_INVALID+"</div>");
     			setValidationMsg(comp,compId,VALIDATION_MSG_DATE_INVALID);
                 tbool = false;
             }else if(!isValidDate($(comp).val(),1)){
-            	//$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>"+VALIDATION_MSG_DATE_INVALID+"</div>");
             	setValidationMsg(comp,compId,VALIDATION_MSG_DATE_INVALID);
                 tbool = false;
             }	
     	}else if(dateFormateArry[0] == 'MM/DD/YYYY'){
     		if(!rgx_datemmddyyyy.test($(comp).val())){
-    			//$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>"+VALIDATION_MSG_DATE_INVALID+"</div>");
     			setValidationMsg(comp,compId,VALIDATION_MSG_DATE_INVALID);
                 tbool = false;
             }else if(!isValidDate($(comp).val(),2)){
-            	//$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>"+VALIDATION_MSG_DATE_INVALID+"</div>");
             	setValidationMsg(comp,compId,VALIDATION_MSG_DATE_INVALID);
                 tbool = false;
             }
     	}
     	else if(dateFormateArry[1] == 'MMM'){
     		if(!rgx_dateddmmyyyy.test($(comp).val())){
-    			//$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>"+VALIDATION_MSG_DATE_INVALID+"</div>");
     			setValidationMsg(comp,compId,VALIDATION_MSG_DATE_INVALID);
     			tbool = false;
             }else if(!isValidDate($(comp).val(),3)){
-            	//$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>"+VALIDATION_MSG_DATE_INVALID+"</div>");
             	setValidationMsg(comp,compId,VALIDATION_MSG_DATE_INVALID);
                 tbool = false;
             }
@@ -651,21 +684,18 @@ function validateEmptyDt(comp){
                     if(datesp[0]=='ge'){
                         var cdate=toJSDate(CLIENT_DATETIME.substring(0, CLIENT_DATETIME.lastIndexOf(":")));  
                         if(cdate>compVal){
-                            //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GE_CURRDATE+"</div>");
                         	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GE_CURRDATE)
                             tbool = false;
                         }
                     }else if(datesp[0]=='gt'){
                         var cdate=toJSDate(CLIENT_DATETIME.substring(0, CLIENT_DATETIME.lastIndexOf(":")));  
                         if(cdate>=compVal){
-                            //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GT_CURRDATE+"</div>");
                         	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GT_CURRDATE);
                             tbool = false;
                         }
                     }else if(datesp[0]=='le'){
                     	var cdate=toJSDate(CLIENT_DATETIME.substring(0, CLIENT_DATETIME.lastIndexOf(":")));  
                         if(cdate<compVal){
-                            //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LE_CURRDATE+"</div>");
                             setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LE_CURRDATE);
                             tbool = false;
                         }
@@ -675,23 +705,20 @@ function validateEmptyDt(comp){
                         if(datesp[0]=='ge'){
                             var compareDate = toJSDate($('#'+datesp[1]).val());
                             if(compareDate>compVal){
-                                //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GE_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date')+"</div>");
-                            	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GE_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date'));
+                                setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GE_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date'));
                                 tbool = false;
                             }
                         }
                         else if(datesp[0]=='gt'){
                             var compareDate = toJSDate($('#'+datesp[1]).val());
                             if(compareDate>=compVal){
-                                //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GT_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date')+"</div>");
-                            	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GT_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date'))
+                            	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GT_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date'));
                                 tbool = false;
                             }
                         }
                         else if(datesp[0]=='le'){
                             var compareDate = toJSDate($('#'+datesp[1]).val());
                             if(compareDate<compVal){
-                                //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LE_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date')+"</div>");
                                 setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LE_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date'));
                                 tbool = false;
                             }
@@ -699,7 +726,6 @@ function validateEmptyDt(comp){
                         else if(datesp[0]=='lt'){
                             var compareDate = toJSDate($('#'+datesp[1]).val());
                             if(compareDate<=compVal){
-                                //$(comp).parent().append("<div class='err"+compId+" clearfix' style='color:red;'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LT_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date')+"</div>");
                                 setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LT_COMPDATE+" "+($('#'+datesp[1]).attr('title')!='' ? $('#'+datesp[1]).attr('title') : 'date'));
                                 tbool = false;
                             }
@@ -713,7 +739,8 @@ function validateEmptyDt(comp){
         }
     }
     if($(comp).attr('dtrequired')!=undefined &&  $(comp).attr('dtrequired') == 'true' && compVal==''){
-        $(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" + VALIDATE_MSG_SELECT + " " +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"</div>");
+        setValidationMsg(comp,compId,(VALIDATE_MSG_SELECT + " " +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')));
+
         tbool = false;
     }
     if(compVal!='' && tbool){
@@ -724,7 +751,8 @@ function validateEmptyDt(comp){
                 var startDt = toJSDate($('#'+compIds[0]).val());
                 var endDt = toJSDate($('#'+compIds[1]).val());
                 if(!(startDt<=compVal && endDt>=compVal)){
-                    $(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>" +($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_BETWEEN +($('#'+compIds[0]).attr('title')!='' ? $('#'+compIds[0]).attr('title') : 'date')+" and " +($('#'+compIds[1]).attr('title')!='' ? $('#'+compIds[1]).attr('title') : 'date')+"</div>");
+                    setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_BETWEEN +($('#'+compIds[0]).attr('title')!='' ? $('#'+compIds[0]).attr('title') : 'date')+" and " +($('#'+compIds[1]).attr('title')!='' ? $('#'+compIds[1]).attr('title') : 'date'));
+
                     tbool = false;
                 }
             }else{
@@ -732,11 +760,12 @@ function validateEmptyDt(comp){
                 var datecomp = $('#'+$(comp).attr('comparewith'));
                 var compDt = toJSDate(datecomp.val());
                 if(isgreater=='true' && compDt>=compVal){
-                    $(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GREATER +(datecomp.attr('title')!='' ? datecomp.attr('title') : 'date')+"</div>");
+                	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_GREATER +(datecomp.attr('title')!='' ? datecomp.attr('title') : 'date'));
                     tbool = false;
                 }
                 if(isgreater=='false' && compDt<compVal){
-                    $(comp).parent().append("<div class='err"+compId+" validationMsg clearfix'>"+($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LESSAR +(datecomp.attr('title')!='' ? datecomp.attr('title') : 'date')+"</div>");
+                	setValidationMsg(comp,compId,($(comp).attr('title')!='' ? $(comp).attr('title') : 'date')+"  "+VALIDATE_LESSAR +(datecomp.attr('title')!='' ? datecomp.attr('title') : 'date'));
+
                     tbool = false;
                 }
             }
@@ -746,7 +775,7 @@ function validateEmptyDt(comp){
 }
 function disableBtn(status){
     if(status){
-        $("input[type='submit']").each(function(){
+        $("button[type='submit']").each(function(){
             $(this).attr('disabled',true);
         });
     }
@@ -754,7 +783,9 @@ function disableBtn(status){
 }
 function toJSDate(date){
     if(date!='' && date!=undefined){
-        var cal_months_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    	
+    	return new Date(date);
+        /*var cal_months_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         for(var cal=0;cal<cal_months_names.length;cal++){            
             date = date.replace(cal_months_names[cal],((eval(cal+1)<=9) ? '0': '')+eval(cal+1));
         }
@@ -772,7 +803,7 @@ function toJSDate(date){
         if(time.indexOf(":") == -1 ){
         	finalStartDt=year+"/"+month+"/"+day;
         }
-        return new Date(finalStartDt).getTime();
+        return new Date(finalStartDt).getTime();*/
     }else{
         return '';
     }
@@ -876,7 +907,8 @@ var _day = _hour * 24;
 var timer;
 
 var showRemaining = function(endDate,msgAppended,timeOverMsg) {
-    var now = new Date();
+    try{
+	var now = new Date();
     var distance = endDate - now;
     if (distance < 0) {
 
@@ -899,6 +931,10 @@ var showRemaining = function(endDate,msgAppended,timeOverMsg) {
     document.getElementById('countdown').innerHTML += hours + 'hrs ';
     document.getElementById('countdown').innerHTML += minutes + 'mins ';
     document.getElementById('countdown').innerHTML += seconds + 'secs';
+    return true;
+    }catch(e){
+    	return false;
+    }
 }
 var blockUI = function(msg){
 	if(msg == undefined){

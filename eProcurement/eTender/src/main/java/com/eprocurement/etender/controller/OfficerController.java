@@ -1,3 +1,4 @@
+
 package com.eprocurement.etender.controller;
 
 import java.util.ArrayList;
@@ -94,6 +95,9 @@ public class OfficerController {
 	@Value("#{projectProperties['mail.from']}")
     private String mailFrom;
 	
+	private static String BIDDERSTATUSCHANGE="Bidder status change";
+	private static String BIDDERID="bidderId";
+	
 
     @ResponseBody
     @RequestMapping(value = "/common/user/getNotificationCount/{userId}/{tenderId}", method = RequestMethod.GET)
@@ -104,8 +108,7 @@ public class OfficerController {
 			    jsonStr = commonService.convertToGsonStr(obj);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
 	return jsonStr;
     }
     
@@ -125,8 +128,7 @@ public class OfficerController {
 			    jsonStr = commonService.convertToGsonStr(obj);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
 	return jsonStr;
     }
 
@@ -142,8 +144,7 @@ public class OfficerController {
 			    
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
 	return returnStr;
     }
     
@@ -179,8 +180,7 @@ public class OfficerController {
 				}
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
 	return modelAndView ;
     }
     
@@ -203,8 +203,8 @@ public class OfficerController {
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_currencymapping_save");
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return modelAndView ;
     }
     
@@ -228,12 +228,11 @@ public class OfficerController {
 	    boolean isExist = false;
 	    String jsonStr = "[{";
 		try {
-//				isExist=userService.isDepartmentNameExists(searchValue);
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return jsonStr;
     }
     
@@ -249,8 +248,8 @@ public class OfficerController {
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return jsonStr;
     }
     
@@ -265,8 +264,8 @@ public class OfficerController {
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return jsonStr;
     }
     
@@ -281,8 +280,8 @@ public class OfficerController {
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return jsonStr;
     }
     
@@ -308,8 +307,8 @@ public class OfficerController {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return jsonStr;
     }
     
@@ -330,12 +329,32 @@ public class OfficerController {
 				jsonStr = getDesignationsByDeptId(deptid);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
+		
 	return jsonStr;
     }
     
-    
+
+    /**
+     * Method to view edit committee details page
+     *
+     * @param tenderId
+     * @param comitteeId
+     * @param modelMap
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/common/user/getClientDateTime", method = RequestMethod.GET)
+    public Long getClientDateTime(HttpServletRequest request) {
+    Date date = null;
+	try {
+    	date = commonService.getServerDateTime();
+    	date = commonService.convertDateToClientDate(date);
+	}catch (Exception  ex) {
+    exceptionHandlerService.writeLog(ex);
+    }
+	return date.getTime();
+    }
     /**
      * Method to view edit committee details page
      *
@@ -364,9 +383,7 @@ public class OfficerController {
 	    
 	}catch (Exception  ex) {
     exceptionHandlerService.writeLog(ex);
-    }finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+    }
 	return "/common/CreateOrganization";
     }	
     
@@ -420,7 +437,7 @@ public class OfficerController {
 		}
 		String categoryText="";
 		    categoryText = StringUtils.hasLength(request.getParameter("categoryText")) ? request.getParameter("categoryText") :"";
-		if(verify && !categoryText.isEmpty()) {
+		if(verify) {
 			personName = StringUtils.hasLength(request.getParameter("txtFullName")) ? request.getParameter("txtFullName") :"";
 			lastName = StringUtils.hasLength(request.getParameter("txtLastName")) ? request.getParameter("txtLastName") :"";
 			middleName = StringUtils.hasLength(request.getParameter("txtMiddleName")) ? request.getParameter("txtMiddleName") :"";
@@ -483,6 +500,7 @@ public class OfficerController {
 			tblDepartment.setGrandParentDeptId(0);
 			tblDepartment.setCstatus(0);
 			tblDepartment.setTenderAuthorityFirstTimePassword(password);
+			tblDepartment.setCreatedOn(commonService.getServerDateTime());
 			
 			
 			List<TblBidderSectorMapping> bidderSectorMappings = new ArrayList<TblBidderSectorMapping>();
@@ -505,11 +523,9 @@ public class OfficerController {
 				String url = "http://"+stagingurl+"/eProcurement/verifyregistration/org/"+hash;
 				String href = "<a href=\""+url+"\" />";
                String content = "Thank you for registration click here to verify your registration : " + href;
-//               mailSender.sendMail("User", content, "eprocurement.help@gmail.com",emailId, "Registration details ");
                userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details ",content,"Registration details "));
                
                String contentforadmin = "TenderAuthority registered in our system," + emailId;
-//               mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Registration details ");
                userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details"));
             } 
             catch (Exception e) 
@@ -517,17 +533,17 @@ public class OfficerController {
             	exceptionHandlerService.writeLog(e);
             }
 			redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_create_successfully");
-			userService.saveCategoryData(tblDepartment.getDeptId(), tblDepartment.getDeptId().longValue(),0,0,categoryText);
+			if(!categoryText.isEmpty()){
+				userService.saveCategoryData(tblDepartment.getDeptId(), tblDepartment.getDeptId().longValue(),0,0,categoryText);
+			}
 		}else {
-			redirect="redirect:/common/user/getbidderregistration";	
+			redirect="redirect:/common/user/register";	
 			redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_org_create_fail");
 		}
 	} catch (Exception ex) {
 		redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_org_create_fail");
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return retVal;
     }
     
@@ -538,9 +554,7 @@ public class OfficerController {
 		try {
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return retVal;
     }
     
@@ -564,8 +578,6 @@ public class OfficerController {
 	            String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your profile is rejected.re-register by clicking this link ," + href;
-//	            mailSender.sendMail("User", contentforbidder, "eprocurement.help@gmail.com",department2.getEmailId(), "Your profile has been rejected");
-//	            mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Tender Authority status change");
 	            userService.addMail(userService.setTblMailMessage(department2.getEmailId(),mailFrom, "Your profile has been rejected",contentforbidder,"Your profile has been rejected"));
 	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Tender Authority status change",contentforadmin,"Tender Authority status change "));
 	            redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_rejected_successfully");
@@ -573,26 +585,19 @@ public class OfficerController {
 				String contentforadmin = " Tender Authority is approved successfully," + department2.getDeptName()+"("+department2.getEmailId()+")";
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_approved_successfully");
 				String contentforbidder = "Your profile has been approved and password for the system is : "+department2.getTenderAuthorityFirstTimePassword();
-//	            mailSender.sendMail("User", contentforbidder, "eprocurement.help@gmail.com",department2.getEmailId(), "Your profile has been approved ");
-//	            mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Tender Authority status change");
 	            userService.addMail(userService.setTblMailMessage(department2.getEmailId(),mailFrom,"Your profile has been approved",contentforbidder,"Your profile has been approved"));
 	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom,"Tender Authority status change",contentforadmin,"Tender Authority status change "));
 			}else if(orgstatus==3) {
 				String contentforadmin = " Tender Authority is de-activated successfully," + department2.getDeptName()+"("+department2.getEmailId()+")";
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_de_activated_successfully");
 				String contentforbidder = "Your profile has been de-activated .";
-//	            mailSender.sendMail("User", contentforbidder, "eprocurement.help@gmail.com",department2.getEmailId(), "Your profile has been de-activated");
-//	            mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Tender Authority status change");
 	            userService.addMail(userService.setTblMailMessage(department2.getEmailId(),mailFrom, "Your profile has been de-activated",contentforbidder,"Your profile has been de-activated "));
 	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Tender Authority status change",contentforadmin,"Tender Authority status change "));
-	            
 			}
 			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -605,8 +610,8 @@ public class OfficerController {
      * @param modelMap
      * @return
      */
-    @RequestMapping(value = "/common/user/geteditorganization/{deptid}/{deptstatus}/{tabId}", method = RequestMethod.GET)
-    public String getEditOrganization(ModelMap modelMap, HttpServletRequest request,@PathVariable("deptstatus")int deptstatus,@PathVariable("deptid")int deptId,@PathVariable("tabId")int tabId) {
+    @RequestMapping(value = "/common/user/geteditorganization/{deptid}/{deptstatus}/{tabId}/{isview}", method = RequestMethod.GET)
+    public String getEditOrganization(ModelMap modelMap, HttpServletRequest request,@PathVariable("deptstatus")int deptstatus,@PathVariable("deptid")int deptId,@PathVariable("tabId")int tabId,@PathVariable("isview")int isView) {
     String  countryJson = "";
     String userStatusLabel = "";
     
@@ -631,17 +636,24 @@ public class OfficerController {
 	    modelMap.addAttribute("timeZone", commonService.getTimeZonebyId((Integer)tblDepartment.getTimezoneId()));
 	    modelMap.addAttribute("objectId", tenderAuthorityRegistrationObjectId);
 	    modelMap.addAttribute("childId", tblDepartment.getDeptDocId());
+	    modelMap.addAttribute("isview", isView);
+	    String remarks = "";
+	    if(isView==1){
+	    	remarks = userService.getStatusRemarks(deptId, deptstatus, 2);
+	    }
+	    modelMap.addAttribute("remarks", remarks);
+	    
+	    
 	    StringBuilder sectors = new StringBuilder();
 	    List<TblBidderSectorMapping> bidderSectorMappings = userService.getSectorMappingById(deptId);
 	    for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
 			sectors.append(userService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
 		}
+	    
 	    modelMap.addAttribute("sectors", sectors);
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return "/common/ViewOrganization";
     }
     
@@ -661,7 +673,7 @@ public class OfficerController {
     SessionBean sessionBean = session != null && session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null ? (SessionBean) session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) : null;
     try {
     	if(sessionBean!=null){
-    		TblDepartment tblParentDepartment = new TblDepartment();
+    		TblDepartment tblParentDepartment ;
     		grandParentDeptJson=getGrandParentDeptList();
     		tblParentDepartment = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
     		TblDepartment tblDepartment = new TblDepartment();
@@ -673,9 +685,7 @@ public class OfficerController {
     	}
 	}catch (Exception  ex) {
     exceptionHandlerService.writeLog(ex);
-    }finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+    }
 	return "/common/CreateDepartment";
     }	
     
@@ -694,8 +704,7 @@ public class OfficerController {
 			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -721,8 +730,7 @@ public class OfficerController {
 			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -759,9 +767,7 @@ public class OfficerController {
         	}
     	}catch (Exception  ex) {
         exceptionHandlerService.writeLog(ex);
-        }finally {
-//    	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-    	}
+        }
 	return "/common/CreateDepartment";
     }
     
@@ -786,7 +792,7 @@ public class OfficerController {
 			TblDepartment tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 		    List<TblDepartment> tblDepartments = userService.getSubDepartments(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId(), "0");
 		    Map<String,String> parentDeptLst = new LinkedHashMap<String,String>();
-		    parentDeptLst.put(String.valueOf(0), "Please select department");
+		    parentDeptLst.put(String.valueOf(-1), "Please select");
 		    for (TblDepartment tblDepartment2 : tblDepartments) {
 		    	parentDeptLst.put(tblDepartment2.getDeptId().toString(), tblDepartment2.getDeptName().toString());
 			}
@@ -797,9 +803,7 @@ public class OfficerController {
         	}
         }catch (Exception  ex) {
         		exceptionHandlerService.writeLog(ex);
-		    }finally {
-		//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-			}
+		    }
 	return "/common/CreateSubDepartment";
     }	
     
@@ -824,9 +828,7 @@ public class OfficerController {
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -879,9 +881,7 @@ public class OfficerController {
         	}
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return "/common/CreateSubDepartment";
     }
     
@@ -912,9 +912,7 @@ public class OfficerController {
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -958,9 +956,7 @@ public class OfficerController {
      }
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return "/common/CreateDesignation";
     }
     
@@ -997,9 +993,7 @@ public class OfficerController {
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -1068,9 +1062,7 @@ public class OfficerController {
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
 	    
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return "/common/CreateDesignation";
     }
     
@@ -1120,9 +1112,7 @@ public class OfficerController {
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -1147,8 +1137,7 @@ public class OfficerController {
 			isExist=userService.isDesignationExists(designationName, deptIds);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
 	return isExist;
     }
     
@@ -1188,9 +1177,7 @@ public class OfficerController {
 	    }
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return redirect;
     }
     
@@ -1274,11 +1261,27 @@ public class OfficerController {
 	    }
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-	}
+	} 
 	return "etender/buyer/CreateOfficer";
     }
+    
+    @RequestMapping(value = "/common/user/deleteuser/{officerId}", method = RequestMethod.GET)
+    public String deleteUser(ModelMap modelMap, HttpServletRequest request,@PathVariable("officerId") String officerId,HttpSession session) {
+    	SessionBean sessionBean = null;
+    	String pageName =  "redirect:/sessionexpired";
+		try {
+			sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
+			if(sessionBean!=null) {
+				
+				userService.deleteUser(officerId);
+				pageName = "redirect:/common/user/getmanageuser"; 
+			}
+		} catch (Exception ex) {
+		    exceptionHandlerService.writeLog(ex);
+		}
+		return pageName;
+    }
+    
     
     @RequestMapping(value = "/common/user/adduser", method = RequestMethod.POST)
     public String addUser(ModelMap modelMap, HttpServletRequest request,final RedirectAttributes redirectAttributes) {
@@ -1364,15 +1367,13 @@ public class OfficerController {
 				tblUserLogin.setDatemodified(commonService.getServerDateTime());
 				tblUserLogin.setUserId(userId);
 				if(tblUserLoginDb!=null) {
-					tblUserLogin.setPassword(encrptDecryptUtils.encrypt((String)tblUserLoginDb.get(0)[3],passwordkey.substring(0, 16).toString().getBytes()));
+					tblUserLogin.setPassword((String)tblUserLoginDb.get(0)[3]);
 				}
 			}else {
 				tblUserLogin.setDatecreated(commonService.getServerDateTime());
 				tblUserLogin.setIsFirstLogin(1);
 				tblUserLogin.setPassword(encrptDecryptUtils.encrypt(password,passwordkey.substring(0, 16).toString().getBytes()));
 			}
-			
-			
 			tblOfficer.setEmailid(emailId);
 			tblOfficer.setMobileno(mobileNo);
 			tblOfficer.setOfficername(officerName);
@@ -1427,30 +1428,23 @@ public class OfficerController {
 				bSuccess = userService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "new");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_officer_create_successfully");
 			}
-			
 
+			if(!optType.equalsIgnoreCase("Edit")) {
 			try {
-				String hash = encrptDecryptUtils.encrypt(String.valueOf(tblUserLogin.getUserId()), registrationkey.substring(0, 16).getBytes()).replace("/", "~d~");
-				String url = "http://"+stagingurl+"/eProcurement/verifyregistration/bidder/"+hash;
-				String href = "<a href=\""+url+"\" />";
-               String content = "Thank you for registration. Your password is : "+password;
-               //mailSender.sendMail("User", content, "eprocurement.help@gmail.com",emailId, "Registration details ");
-               userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
-               String contentforadmin = "user registered in our system," + emailId;
-               //mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Registration details ");
-               userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
-          
-            } 
-            catch (Exception e) 
-            {
-            	exceptionHandlerService.writeLog(e);
-            }
-			
+					String hash = encrptDecryptUtils.encrypt(String.valueOf(tblUserLogin.getUserId()), registrationkey.substring(0, 16).getBytes()).replace("/", "~d~");
+					String url = "http://"+stagingurl+"/eProcurement/verifyregistration/bidder/"+hash;
+					String href = "<a href=\""+url+"\" />";
+	               String content = "Thank you for registration. Your password is : "+password;
+	               userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
+	               String contentforadmin = "user registered in our system," + emailId;
+	               userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
+				}catch (Exception e){
+					exceptionHandlerService.writeLog(e);
+                }
+			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return "redirect:/" + retVal;
     }
     
@@ -1513,7 +1507,7 @@ public class OfficerController {
 			}
 			String categoryText="";
 			    categoryText = StringUtils.hasLength(request.getParameter("categoryText")) ? request.getParameter("categoryText") :"";
-			if(verify && !categoryText.isEmpty()) {
+			if(verify) {
 				personName = StringUtils.hasLength(request.getParameter("txtFullName")) ? request.getParameter("txtFullName") :"";
 				lastName = StringUtils.hasLength(request.getParameter("txtLastName")) ? request.getParameter("txtLastName") :"";
 				middleName = StringUtils.hasLength(request.getParameter("txtMiddleName")) ? request.getParameter("txtMiddleName") :"";
@@ -1567,7 +1561,6 @@ public class OfficerController {
 				tblUserLogin.setCreatedby(1);
 				tblUserLogin.setUserType(2);
 				String pwd = "Bidder@"+Math.abs(new Random().nextInt());
-//				tblUserLogin.setPassword(pwd);
 				tblUserLogin.setPassword(encrptDecryptUtils.encrypt(pwd,passwordkey.substring(0, 16).toString().getBytes()));
 				if(optType.equalsIgnoreCase("edit")) {
 					tblUserLogin.setModifiedby(1);
@@ -1590,7 +1583,7 @@ public class OfficerController {
 				tblBidder.setLastName(lastName);
 				tblBidder.setMiddleName(middleName);
 				tblBidder.setPhoneno(phoneNo);
-				tblBidder.setTblCountry(new TblCountry(countryId));
+				tblBidder.setTblCountry(new TblCountry(0));
 				tblBidder.setTblState(new TblState(stateId));
 				tblBidder.setWebsite(website);
 				tblBidder.setCreatedby(1);
@@ -1644,34 +1637,33 @@ public class OfficerController {
 					redirectAttributes.addFlashAttribute("message", msg_bidder_create_successfully);
 				}
 				
-				try {
+				
+				if(!optType.equalsIgnoreCase("edit")) {
+					try {
 						String hash = encrptDecryptUtils.encrypt(String.valueOf(tblUserLogin.getUserId()), registrationkey.substring(0, 16).getBytes()).replace("/", "~d~");
 						String url = "http://"+stagingurl+"/eProcurement/verifyregistration/bidder/"+hash;
 						String href = "<a href=\""+url+"\" />";
 	                   String content = "Thank you for registration. Your password is : "+pwd+" </br> Click here to verify your email address : " + href;
-	                   	//	mailSender.sendMail("User", content, "eprocurement.help@gmail.com",emailId, "Registration details ");
 	                   userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
 	                   String contentforadmin = "Bidder registered in our system," + emailId;
-	                   	//	mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Registration details ");
 	                   userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
-	                } 
-	                catch (Exception e) 
-	                {
+	                }catch (Exception e) {
 	                	exceptionHandlerService.writeLog(e);
 	                }
+				}
 				
-				userService.saveCategoryData(tblBidder.getBidderId(), tblBidder.getTblUserlogin().getUserId(),0,0,categoryText);
+				if(!categoryText.isEmpty()){
+					userService.saveCategoryData(tblBidder.getBidderId(), tblBidder.getTblUserlogin().getUserId(),0,0,categoryText);
+				}
 				//code to send password in mail
 				
 			}else {
-				redirect="redirect:/common/user/getbidderregistration";	
+				redirect="redirect:/common/user/register";	
 				redirectAttributes.addFlashAttribute("message", "please enter valid captcha");
 			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return redirect;
     }
     
@@ -1693,8 +1685,7 @@ public class OfficerController {
 			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return "etender/buyer/ManageOfficers";
     }
     
@@ -1712,8 +1703,7 @@ public class OfficerController {
 		try {
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return "etender/bidder/ManageBidders";
     }
     
@@ -1725,7 +1715,7 @@ public class OfficerController {
      * @param request
      * @return
      */
-    @RequestMapping(value = "/common/user/getbidderregistration", method = RequestMethod.GET)
+    @RequestMapping(value = {"/common/user/register"}, method = RequestMethod.GET)
     public String getBidderRegistration(ModelMap modelMap, HttpServletRequest request) {
     String redirect ="etender/bidder/CreateBidder";
     String countryJson = "";
@@ -1744,8 +1734,7 @@ public class OfficerController {
 		
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-	}
+	} 
 	return redirect;
     }
 
@@ -1760,7 +1749,6 @@ public class OfficerController {
 		}
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
 	}
 	return countryJson;
     }
@@ -1784,7 +1772,7 @@ public class OfficerController {
 			Object[] bidderDtls = userService.getBiddderDetails(bidderId);
 			modelMap.addAttribute("optType", "Edit");    
 			modelMap.addAttribute("bidderDtls", bidderDtls);
-			modelMap.addAttribute("bidderId", bidderId);
+			modelMap.addAttribute(BIDDERID, bidderId);
 			modelMap.addAttribute("editfrom", editfrom);
 			modelMap.addAttribute("bidderSector", getSectorJson());
 			modelMap.addAttribute("timezonelist", commonService.getTimezoneList(0));
@@ -1798,7 +1786,7 @@ public class OfficerController {
 		    modelMap.addAttribute("txtMobileNo", bidderDtls[5].toString().split("-")[1]);
 		    }
 		    modelMap.addAttribute("establishDate", commonService.convertSqlToClientDate(client_dateformate, (Date)bidderDtls[22]));
-			modelMap.addAttribute("bidderId", bidderId);
+			modelMap.addAttribute(BIDDERID, bidderId);
 			modelMap.addAttribute("timezonelist", commonService.getTimezoneList(0));
 			modelMap.addAttribute("country", commonService.getCountryById((Integer)bidderDtls[9]));
 			modelMap.addAttribute("origincountry", commonService.getCountryById((Integer)bidderDtls[20]));
@@ -1825,8 +1813,7 @@ public class OfficerController {
 			modelMap.addAttribute("bidderSectorLst", bidderSectorLst);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return redirect;
     }
     
@@ -1838,8 +1825,8 @@ public class OfficerController {
      * @param officerId
      * @return
      */
-    @RequestMapping(value = "/common/user/getuserstatus/{bidderId}/{userstatus}/{tabId}", method = RequestMethod.GET)
-    public String getChangeUserStatus(ModelMap modelMap, HttpServletRequest request,@PathVariable("bidderId") int bidderId,@PathVariable("userstatus") int userstatus,@PathVariable("tabId") int tabId) {
+    @RequestMapping(value = "/common/user/getuserstatus/{bidderId}/{userstatus}/{tabId}/{isview}", method = RequestMethod.GET)
+    public String getChangeUserStatus(ModelMap modelMap, HttpServletRequest request,@PathVariable("bidderId") int bidderId,@PathVariable("userstatus") int userstatus,@PathVariable("tabId") int tabId,@PathVariable("isview") int isView) {
    	String redirect="etender/bidder/Changebidderstatus";
    	String userStatusLabel = "";
    	String countryJson = "";
@@ -1847,17 +1834,18 @@ public class OfficerController {
 			if(userstatus==1) {
 				if(tabId==0){
 					userStatusLabel="Profile";
+				}else if(tabId==28 && isView == 1){
+					userStatusLabel="Reject bidder";
+				}else if(tabId==25 && isView == 0){
+					userStatusLabel="Activate bidder";
 				}else{
 					userStatusLabel="View Request (New bidder)";
 				}
-				
-			}else if(userstatus==2) {
-				userStatusLabel="Reject bidder";
 			}else if(userstatus==3) {
 				userStatusLabel="Deactivate bidder";
 			}
 			modelMap.addAttribute("userStatusLabel", userStatusLabel);
-			modelMap.addAttribute("bidderId", bidderId);
+			modelMap.addAttribute(BIDDERID, bidderId);
 			modelMap.addAttribute("userstatus", userstatus);
 			countryJson = getContryJson();
 			modelMap.addAttribute("countryJson", countryJson);
@@ -1865,7 +1853,7 @@ public class OfficerController {
 			modelMap.addAttribute("optType", "Edit");    
 			modelMap.addAttribute("bidderDtls", bidderDtls);
 			modelMap.addAttribute("establishDate", bidderDtls[22].toString());
-			modelMap.addAttribute("bidderId", bidderId);
+			modelMap.addAttribute(BIDDERID, bidderId);
 			modelMap.addAttribute("timezonelist", commonService.getTimezoneList(0));
 			modelMap.addAttribute("country", commonService.getCountryById((Integer)bidderDtls[9]));
 			modelMap.addAttribute("origincountry", commonService.getCountryById((Integer)bidderDtls[20]));
@@ -1874,6 +1862,12 @@ public class OfficerController {
 		    modelMap.addAttribute("timeZone", commonService.getTimeZonebyId((Integer)bidderDtls[15]));
 		    modelMap.addAttribute("objectId", bidderRegistrationObjectId);
 		    modelMap.addAttribute("tabId", tabId);
+		    modelMap.addAttribute("isview", isView);
+		    String remarks = "";
+		    if(isView==1){
+		    	remarks = userService.getStatusRemarks(bidderId, userstatus, 1);
+		    }
+		    modelMap.addAttribute("remarks", remarks);
 		    StringBuilder sectors = new StringBuilder();
 		    List<TblBidderSectorMapping> bidderSectorMappings = userService.getSectorMappingById(bidderId);
 		    for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
@@ -1882,8 +1876,7 @@ public class OfficerController {
 		    modelMap.addAttribute("sectors", sectors);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return redirect;
     }
     
@@ -1910,55 +1903,38 @@ public class OfficerController {
 			remarks = StringUtils.hasLength(request.getParameter("remarks")) ? request.getParameter("remarks") : "";
 			userstatus = StringUtils.hasLength(request.getParameter("userstatus")) ? Integer.parseInt(request.getParameter("userstatus")) : 0;
 			tabId = StringUtils.hasLength(request.getParameter("tabId")) ? Integer.parseInt(request.getParameter("tabId")) : 0;
-			bidderId = StringUtils.hasLength(request.getParameter("bidderId")) ? Integer.parseInt(request.getParameter("bidderId")) : 0;
+			bidderId = StringUtils.hasLength(request.getParameter(BIDDERID)) ? Integer.parseInt(request.getParameter(BIDDERID)) : 0;
 			Object[] bidderDtl  = userService.getBiddderDetails(bidderId);
 			userService.updateBidderstatus(bidderId, userstatus,remarks);
 			if(userstatus==1) {
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_approved_successfully");
-				
 				String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your request for new bidder registration is approved. ";
-//	            mailSender.sendMail("User", contentforbidder, "eprocurement.help@gmail.com",bidderDtl[0].toString(), "Your profile has been approved");
-	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been approved",contentforbidder,"Bidder status change"));
-	            
-				
-				
+	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been approved",contentforbidder,BIDDERSTATUSCHANGE));
 				String contentforadmin = "New bidder request is approved successfully," + bidderDtl[1].toString()+"("+bidderDtl[0].toString()+")";
-//	            mailSender.sendMail("User", contentforadmin, mailFrom,"sapan@cahoot-technologies.com", "Bidder status change");
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Bidder status change",contentforadmin,"Bidder status change"));
-	            
+	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE));
 			}else if(userstatus==2) {
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_rejected_successfully");
-				
 				String contentforadmin = "New bidder request is rejected," + bidderDtl[1].toString()+"("+bidderDtl[0].toString()+")";
-//	            mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Bidder status change");
-				userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Bidder status change",contentforadmin,"Bidder status change"));
-	            
+				userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE));
 				String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your request for new bidder registration is rejected. You can re-register by clicking this link .." + href;
-//	            mailSender.sendMail("User", contentforbidder, "eprocurement.help@gmail.com",bidderDtl[0].toString(), "Your profile has been rejected");
 	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been rejected",contentforbidder,"Bidder Profile Rejection"));
-	            
-	            
 			}else if(userstatus==3) {
 				String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your profile has been deactivated ";
-//	            mailSender.sendMail("User", contentforbidder, "eprocurement.help@gmail.com",bidderDtl[0].toString(), "Your profile has been de-activated");
 	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been de-activated",contentforbidder,"Your profile has been de-activated"));
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_blacklisted_successfully");
 				String contentforadmin = "Bidder is deactivated," + bidderDtl[1].toString()+"("+bidderDtl[0].toString()+")";
-//	            mailSender.sendMail("User", contentforadmin, "eprocurement.help@gmail.com","sapan@cahoot-technologies.com", "Bidder status change");
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Bidder status change",contentforadmin,"Bidder status change")); 
+	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE)); 
 			}
 			}
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-	//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
-		}
+		} 
 		return redirect;
     }
     
@@ -1979,8 +1955,7 @@ public class OfficerController {
 			modelMap.addAttribute("optType", "new");
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return redirect;
     }
     
@@ -1994,8 +1969,7 @@ public class OfficerController {
 			modelMap.addAttribute("optType", "edit");
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return redirect;
     }
     
@@ -2015,8 +1989,7 @@ public class OfficerController {
 			userService.addLink(tblLink,optType);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return redirect;
     }
     
@@ -2037,8 +2010,7 @@ public class OfficerController {
 			isExist=userService.isLinkExists(link);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
 	return String.valueOf(isExist);
     }
     
@@ -2058,8 +2030,7 @@ public class OfficerController {
 			modelMap.addAttribute("optType", "new");
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return redirect;
     }
     
@@ -2109,8 +2080,7 @@ public class OfficerController {
            }
        } catch (Exception e) {
            exceptionHandlerService.writeLog(e);
-       } finally {
-       }
+       } 
        return "/common/SearchRolesLink";
    }
    
@@ -2145,8 +2115,7 @@ public class OfficerController {
           }
       } catch (Exception e) {
           exceptionHandlerService.writeLog(e);
-      } finally {
-      }
+      } 
       return "redirect:/common/user/getroleslink";
   }
 
@@ -2162,8 +2131,7 @@ public class OfficerController {
 		try {
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
-		} finally {
-		}
+		} 
 	return "common/ManageLinks";
   }
     
@@ -2216,8 +2184,7 @@ public class OfficerController {
 	    }
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-	}
+	} 
 	return redirect;
   }
   
@@ -2294,8 +2261,7 @@ public class OfficerController {
 				
 			} catch (Exception ex) {
 			    exceptionHandlerService.writeLog(ex);
-			} finally {
-			}
+			} 
 	    }
   
   
@@ -2321,8 +2287,7 @@ public class OfficerController {
 				jsonStr=jsonStr+"]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
     	return jsonStr;
     }
     
@@ -2346,8 +2311,7 @@ public class OfficerController {
 				jsonStr=jsonStr+"]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
     	return jsonStr;
     }
     
@@ -2372,8 +2336,7 @@ public class OfficerController {
 				jsonStr=jsonStr+"]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
     	return jsonStr;
     }
     
@@ -2394,8 +2357,7 @@ public class OfficerController {
 				jsonStr=jsonStr+"]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
     	return jsonStr;
     }
     
@@ -2414,8 +2376,7 @@ public class OfficerController {
 				jsonStr=jsonStr+"]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
     	return jsonStr;
     }
     
@@ -2438,8 +2399,7 @@ public class OfficerController {
 				jsonStr=jsonStr+"]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
-			} finally {
-		}
+			} 
     	return jsonStr;
     }
 }

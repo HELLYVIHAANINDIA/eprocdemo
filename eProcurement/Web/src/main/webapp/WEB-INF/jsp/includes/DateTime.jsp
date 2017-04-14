@@ -66,9 +66,9 @@
     }
 
     function getTime(){
-   		<abc:ajax method="post" aysnc="false" ajaxurl="ajaxcall/getserverdatetime" isdirectoutput="true" jsvartosetval="gblServDateTime"></abc:ajax>;
-        $("#currentTime").val(gblServDateTime);
-        intDate = Date.parse(gblServDateTime);
+//    		<abc:ajax method="post" aysnc="false" ajaxurl="ajaxcall/getserverdatetime" isdirectoutput="true" jsvartosetval="gblServDateTime"></abc:ajax>;
+//         $("#currentTime").val(gblServDateTime);
+//         intDate = Date.parse(gblServDateTime);
     }
 
     function Start(updateCurrentTime){

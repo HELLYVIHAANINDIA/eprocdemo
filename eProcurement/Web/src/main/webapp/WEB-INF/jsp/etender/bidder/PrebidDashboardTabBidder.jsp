@@ -1,48 +1,10 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 <spring:message code="lbl_live" var="meetingLive" />
 <spring:message code="lbl_not_started" var="meetingNotStart"/>
 <spring:message code="lbl_close" var="meetingOver"/>
 <spring:message code="lbl_online" var="onlineMode"/>
 <spring:message code="lbl_offline" var="offlineMode"/>
-<spring:message code="title_tender_createcomitee" var="prebidcommittee"/>
-<script type="text/javascript">
-
-function getDocuments() {
-    var tenderId = '${tenderId}';
-    var objectId = '${objectId}';
-    var childId = '${childId}';
-    var subChildId = '${subChildId}';
-    var otherSubChildId = '${otherSubChildId}';
-    var searchResult;
-	$.ajax({
-		type : "GET",
-		url : "${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/"+objectId+"/"+tenderId+"/"+childId+"/"+subChildId+"/"+otherSubChildId,
-		timeout : 100000,
-		success : function(data) {
-			console.log("SUCCESS: ", data);
-			searchResult=data;
-            if (searchResult == 'sessionexpired') {
-                window.location = "${pageContext.servletContext.contextPath}/" + searchResult;
-            } else {
-                $("#docList").html(searchResult);
-            }
-		},
-		error : function(e) {
-			console.log("ERROR: ", e);
-		},
-	});
-}
-</script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
 <c:choose>
     <c:when test="${preBidObj[0][6] eq 0}">
         <c:set var="meetingStatus">
@@ -62,7 +24,6 @@ function getDocuments() {
     </c:otherwise>
 </c:choose>
 <c:set var="meetingMode" value="${prebidDtls[1] eq 1 ? onlineMode : offlineMode}" />
-
 <div class="content-wrapper">
 <section class="content">
 <div class="row">
@@ -72,6 +33,7 @@ function getDocuments() {
 
 						<div class="box-header with-border">
 							<h3 class="box-title"><spring:message code="lbl_view_upload_mom" /></h3>
+							<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"  class="goBack pull-right"><< <spring:message code="lbl_back_dashboard"/></a>
 						</div>
 					
 						<div class="box-body">
@@ -94,8 +56,8 @@ function getDocuments() {
 						                    <tbody>
 						                    <tr>
 						                        <td class="a-center"><spring:message  text="${meetingMode}" /></td>
-						                        <td class="a-center">${prebidDtls[2]}</td>
-						                        <td class="a-center">${prebidDtls[3]}</td>
+						                        <td class="a-center">${prebidstartdate}</td>
+						                        <td class="a-center">${prebidenddate}</td>
 						                        <td class="a-center"><spring:message text="${meetingStatus}" /></td>
 						                    </tr>
 						                    </tbody>
@@ -120,11 +82,35 @@ function getDocuments() {
 </section>
 </div>
 
-</div>
+<script type="text/javascript">
+
+function getDocuments() {
+    var tenderId = '${tenderId}';
+    var objectId = '${objectId}';
+    var childId = '${childId}';
+    var subChildId = '${subChildId}';
+    var otherSubChildId = '${otherSubChildId}';
+    var searchResult;
+	$.ajax({
+		type : "GET",
+		url : "${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/"+tenderId+"/"+objectId+"/"+childId+"/"+subChildId+"/"+otherSubChildId,
+		timeout : 100000,
+		success : function(data) {
+			console.log("SUCCESS: ", data);
+			searchResult=data;
+            if (searchResult == 'sessionexpired') {
+                window.location = "${pageContext.servletContext.contextPath}/" + searchResult;
+            } else {
+                $("#docList").html(searchResult);
+            }
+		},
+		error : function(e) {
+			console.log("ERROR: ", e);
+		},
+	});
+}
+</script>
 <script type="text/javascript">
 getDocuments();
 </script>
-
-</body>
-
-</html>
+<%@include file="../../includes/footer.jsp"%>

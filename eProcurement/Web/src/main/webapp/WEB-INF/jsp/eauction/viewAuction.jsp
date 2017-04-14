@@ -1,470 +1,417 @@
-<!DOCTYPE html>
-<html>
-<%@page import="com.eprocurement.etender.model.TblTender"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../includes/header.jsp"%>
-<script src="${pageContext.request.contextPath}/resources/js/tender/tendercreate.js"></script>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-<%
-                                                              TblTender tblTender=new TblTender();
-                                                              tblTender=(TblTender)request.getAttribute("tblTender");
-                                                              %>	
-<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
-</head>
+<%@include file="./../includes/head.jsp"%>
+	<c:if test="${1 ne fromPublishTender && 2 ne fromPublishTender}">
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../includes/leftaccordion.jsp"%>
-	 
-	<div class="content-wrapper">
+<%@include file="./../includes/masterheader.jsp"%>
+</c:if>
+<c:if test="${fromPublishTender eq 2}">
+	<%@include file="../includes/headerWithoutLogin.jsp"%>
+</c:if>
 	
+	<spring:message code="client_dateformate_hhmm" var="client_dateformate_hhmm"/>
+<%@page import="com.eprocurement.etender.model.TblTender"%>
+<%
+    TblTender tblTender=new TblTender();
+    tblTender=(TblTender)request.getAttribute("tblTender");
+   
+%>	
+	<%-- <script src="${pageContext.request.contextPath}/resources/js/ckeditor.js"></script>
+	<script src="${pageContext.request.contextPath}/resources/js/config.js"></script>
+	 --%>
+	
+	<div class="content-wrapper">
             <section class="content-header">
-               <h1>View Auction <small></small></h1>
-            </section>
-            
-            <section class="content">
+               <h1><spring:message code="lbl_view_auction"/> <small></small></h1>
+               <c:if test="${fromPublishTender ne 2}">
+                   <c:if test="${sessionUserTypeId eq 2}">
+                  <a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/1" class="goBack pull-right"><< <spring:message code="lbl_go_to_auction_listing" /></a>
+               </c:if>
+               </c:if>
                
-                    <div class="row">
+               <c:if test="${sessionUserTypeId ne 2}">
+                  <a onclick="window.history.back();" style="cursor: pointer" class="goBack pull-right"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a>
+               </c:if>
+                  <c:if test="${fromPublishTender eq 2}">
+         		
+				<a href="${pageContext.servletContext.contextPath}/login" class="goBack pull-right noExport"><< <spring:message code="lbl_go_to_login" /></a>
+			</c:if>
+            </section>
+            <section class="content">
+            
+            	<div class="row">
                         <div class="col-lg-12 col-md-12">
                             <div class="box">
                                 <div class="box-header with-border">
-                                    <div class="col-md-6" >
-                                        
-                                    </div>
-                                    <div class="col-md-6 text-right" >
-                                        <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" ><< Go Back To DashBord
-                                        </a>
-                                     </div>
+                                	<h3 class="box-title"><spring:message code="lbl_view_auction_detail" /></h3>
                                 </div>
                                 <div class="box-body">
                                     <div class="row">
-                                        <div class="col-lg-12 col-md-12 col-xs-12">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="well"><h3>View Auction Detail</h3></div>
-                                                </div>
-                                            </div>
-                                            <div class="row">
-                                               <div class="col-lg-2">
-                                                   <div class="form_filed">Department:</div>
-                                               </div>
-                                               <div class="col-lg-2">
-                                                <div class="form_filed">${DepartmentName}</div>
-                                               </div>
-                                               <div class="col-lg-2"></div>
-                                               
-                                               <div class="col-lg-2">
-                                                    <div class="form_filed">Department Officer:</div>
-                                               </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${OfficerName}</div></div>
-                                                            
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction No:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">${tblTender.tenderNo}</div>
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Types of contract :</div>
-                                                            </div>
-                                                            <c:set var="Type_of_contract" value="${['Goods','Service','Works','Turnkey Project','Others']}"/>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${Type_of_contract[tblTender.contractTypeId-1]}</div>                                                           
-                                                            </div>
-                                                             <div class="col-lg-2"></div>
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Brief Scope Of Work:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${tblTender.tenderBrief}</div>
-                                                            </div>
-                                                            <div class="col-lg-8"></div>
-                                                        </div>
-                                                         <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction Details:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                
-                                                                    <div class="form_filed">${tblTender.tenderDetail}</div>
-                                                                        
-                                                            </div>
-                                                             <div class="col-lg-8"></div>
-                                                            
-                                                        </div>
-                                                                    <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="well"><h3>Document/EMD/Participation Fees Detail </h3></div>
-                                                </div>
-                                            </div>
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Document Fees:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <c:set var="optDocFees" value="Dont' Allow"/>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_department" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${DepartmentName}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_department_officer" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${OfficerName}</label></div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_id" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.tenderId}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_no" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.tenderNo}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_types_of_contract" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${procurementNature}</label></div>
+                                    </div>
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_brief_scope_of_work" /></label></div>
+                                    	<div class="col-xs-10"><label class="lbl-2">${tblTender.tenderBrief}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_details" /></label></div>
+                                    	<div class="col-xs-10"><label class="lbl-2">${tblTender.tenderDetail}</label></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                
+                <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="box">
+                                <div class="box-header with-border">
+                                	<h3 class="box-title"><spring:message code="lbl_documnet_fees_detail" /></h3>
+                                </div>
+                                <div class="box-body">
+                                	<div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_document_details" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:set var="optDocFees" value="Dont' Allow"/>
                                                                 <c:if test="${tblTender.isDocfeesApplicable eq 1}">
                                                                     <c:set var="optDocFees" value="Allow"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.isDocfeesApplicable eq 0}">
                                                                     <c:set var="optDocFees" value="Dont' Allow"/>
                                                                 </c:if>
-                                                                <div class="form_filed">${optDocFees}</div>
-                                                                                                                           
-                                                            </div>
-                                                                <div class="col-lg-2"></div>
-                                                            <div id="DocumentFees">
-                                                                <div class="col-lg-2">
-                                                                <div class="form_filed">Document Fees:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">${tblTender.documentFee}</div>                                                          
-                                                            </div>
-                                                                <div class="col-lg-2"></div>
-                                                                
-                                                            </div>
-                                                            
-                                                        </div>
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Participation Fees:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                            <c:set var="optPartFees" value="Dont' Allow"/>
+                                                                ${optDocFees}
+                                    	</label></div>
+                                    	<div id="DocumentFees">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_document_details" /></label></div>
+                                    	</div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:set var="DocFees" value="N.A."/>
+                                                                   <c:if test="${tblTender.isDocfeesApplicable eq 1}">
+                                                                        <c:set var="DocFees" value="${tblTender.documentFee}"/>
+                                                                    </c:if>
+                                                                    <c:if test="${tblTender.isDocfeesApplicable eq 0}">
+                                                                        <c:set var="DocFees" value="N.A."/>
+                                                                    </c:if>
+                                                                   ${DocFees}
+                                    	</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_document_fees_payable" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    		<c:if test="${tblTender.docFeePaymentAddress eq ' '}">
+                                                                            -
+                                                                        </c:if>
+                                                                        <c:if test="${tblTender.docFeePaymentAddress ne ' '}">
+                                                                           ${tblTender.docFeePaymentAddress} 
+                                                                        </c:if>
+                                    	</label></div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_pariticipation_fees" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:set var="optPartFees" value="Dont' Allow"/>
                                                                 <c:if test="${tblTender.isParticipationFeesBy eq 1}">
                                                                     <c:set var="optPartFees" value="Allow"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.isParticipationFeesBy eq 0}">
                                                                     <c:set var="optPartFees" value="Dont' Allow"/>
                                                                 </c:if>
-                                                                <div class="form_filed">${optPartFees}</div>
-
-                                                            
-                                                                                                                         
-                                                            </div>
-                                                                <div class="col-lg-2"></div>
-                                                            <div id="ParticipatonFees">
-                                                                <div class="col-lg-2">
-                                                                <div class="form_filed">Participaton Fees:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${tblTender.participationFees}</div>                                                       
-                                                            </div>
-                                                                <div class="col-lg-2"></div>
-                                                            </div>
-                                                             <c:set var="optEMDFees" value="Dont' Allow"/>
+                                                                ${optPartFees}
+                                    	</label></div>
+                                    	<div id="ParticipatonFees">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_pariticipation_fees" /></label></div>
+                                    	</div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:set var="partFees" value="N.A."/>
+                                                                   <c:if test="${tblTender.isParticipationFeesBy eq 1}">
+                                                                        <c:set var="partFees" value="${tblTender.participationFees}"/>
+                                                                    </c:if>
+                                                                    <c:if test="${tblTender.isParticipationFeesBy eq 0}">
+                                                                        <c:set var="partFees" value="N.A."/>
+                                                                    </c:if>
+                                                                   ${partFees}
+                                    	</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_participation_fees_payable" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:if test="${tblTender.participationFeesPaymentAddress eq ' '}">
+                                                                            -
+                                                                        </c:if>
+                                                                        <c:if test="${tblTender.participationFeesPaymentAddress ne ' '}">
+                                                                           ${tblTender.participationFeesPaymentAddress} 
+                                                                        </c:if>
+                                    	</label></div>
+                                    </div>
+                                    <div class="row">
+                                    	<c:set var="optEMDFees" value="Dont' Allow"/>
                                                                 <c:if test="${tblTender.EMDRequired eq 1}">
                                                                     <c:set var="optEMDFees" value="Allow"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.EMDRequired eq 0}">
                                                                     <c:set var="optEMDFees" value="Dont' Allow"/>
                                                                 </c:if>
-                                                       
-                                                        </div>
-                                                             <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">EMD Required:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${optEMDFees}</div>
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                            <div id='EMDfees'>
-                                                                <div class="col-lg-2">
-                                                                <div class="form_filed">EMD Fees:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed"><%=tblTender.getEMDFees() %></div>                                                    
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                            </div>
-                                                        
-                                                        </div>
-                                                            
-                                                                    <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="well"><h3>Bid Submission Configuration </h3></div>
-                                                </div>
-                                            </div>
-                                                       <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Bid Submission for :</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">Grand Total</div>                                                                                    
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                            <c:set var="rdobiddingType" value="Global"/>
-                                                                <c:if test="${tblTender.auctionMethod eq 1}">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_emd_required" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${optEMDFees}</label></div>
+                                    	<div id='EMDfees'>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_emd_fees" /></label></div>
+                                    	</div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:set var="EMDFees" value="N.A."/>
+                                                                   <c:if test="${tblTender.EMDRequired eq 1}">
+                                                                        <%=tblTender.getEMDFees() %>
+                                                                    </c:if>
+                                                                    <c:if test="${tblTender.EMDRequired eq 0}">
+                                                                        <c:set var="EMDFees" value="N.A."/>
+                                                                         ${EMDFees}
+                                                                    </c:if>
+                                    	</label></div>
+										<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_emd_fees_payable" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:if test="${tblTender.emdPaymentAddress eq ' '}">
+                                                                            -
+                                                                        </c:if>
+                                                                        <c:if test="${tblTender.emdPaymentAddress ne ' '}">
+                                                                           ${tblTender.emdPaymentAddress} 
+                                                                        </c:if>
+                                    	</label></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                
+                <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="box">
+                                <div class="box-header with-border">
+                                	<h3 class="box-title"><spring:message code="lbl_bid_submission_config" /></h3>
+                                </div>
+                                <div class="box-body">
+                                	<div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_bid_submission" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2"><spring:message code="lbl_grand_total" /></label></div>
+                                    	<c:set var="rdobiddingType" value="Global"/>
+                                                                <c:if test="${tblTender.biddingType eq 2}">
                                                                     <c:set var="rdobiddingType" value="Global"/>
                                                                 </c:if>
-                                                                <c:if test="${tblTender.auctionMethod eq 0}">
+                                                                <c:if test="${tblTender.biddingType eq 1}">
                                                                     <c:set var="rdobiddingType" value="Domestic"/>
                                                                 </c:if>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Bidding Type :</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${rdobiddingType}</div>
-                                                                                                                                                  
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                        </div>
-                                                        
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Bidding Access :</div>
-                                                            </div>
-                                                            <c:set var="rdoBiddingAccess" value="Open"/>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_bidding_type" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${rdobiddingType}</label></div>
+                                    </div>
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_bidding_access" /></label></div>
+                                    	<c:set var="rdoBiddingAccess" value="Open"/>
                                                                 <c:if test="${tblTender.biddingAccess eq 1}">
                                                                     <c:set var="rdoBiddingAccess" value="Open"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.biddingAccess eq 0}">
                                                                     <c:set var="rdoBiddingAccess" value="Limited"/>
                                                                 </c:if>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${rdoBiddingAccess}</div>
-                                                                                                                           
-                                                            </div>
-                                                                 <div class="col-lg-8"></div>
-                                                        </div>
-                                                          <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="well"><h3>Key Configuration</h3></div>
-                                                </div>
-                                            </div>       
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction Method :</div>
-                                                            </div>
-                                                             <c:set var="rdoAuctionMethod" value="Forward"/>
-                                                                <c:if test="${tblTender.biddingAccess eq 1}">
+                                    	<div class="col-xs-2"><label class="lbl-2">${rdoBiddingAccess}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_base_currency" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${BaseCurrency}</label></div>
+                                    	<c:if test="${tblTender.biddingType eq 2}">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_bid_currency" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${BaseCurrency}${BidCurrency}</label></div>
+                                    	</c:if>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                
+                <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="box">
+                                <div class="box-header with-border">
+                                	<h3 class="box-title"><spring:message code="title_key_conf" /></h3>
+                                </div>
+                                <div class="box-body">
+                                	<div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_method" /></label></div>
+                                    	<c:set var="rdoAuctionMethod" value="Forward"/>
+                                                                <c:if test="${tblTender.auctionMethod eq 1}">
                                                                     <c:set var="rdoAuctionMethod" value="Forward"/>
                                                                 </c:if>
-                                                                <c:if test="${tblTender.biddingAccess eq 0}">
+                                                                <c:if test="${tblTender.auctionMethod eq 0}">
                                                                     <c:set var="rdoAuctionMethod" value="Reverse"/>
                                                                 </c:if>
-                                                            <div class="col-lg-2">
-                                                              <div class="form_filed">${rdoAuctionMethod}</div>  
-                                                                                                                                                     
-                                                            </div>
-                                                              <div class="col-lg-2"></div>
-                                                              <c:set var="rdoAuctionVariant" value="Standard"/>
-                                                                <c:if test="${tblTender.auctionMethod eq 1}">
+                                    	<div class="col-xs-2"><label class="lbl-2">${rdoAuctionMethod}</label></div>
+                                    	<c:set var="rdoAuctionVariant" value="Standard"/>
+                                                                <c:if test="${tblTender.biddingVariant eq 1}">
                                                                     <c:set var="rdoAuctionVariant" value="Standard"/>
                                                                 </c:if>
-                                                                <c:if test="${tblTender.auctionMethod eq 0}">
+                                                                <c:if test="${tblTender.biddingVariant eq 0}">
                                                                     <c:set var="rdoAuctionVariant" value="Rank"/>
                                                                 </c:if>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction Variant :</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">${rdoAuctionVariant}</div>
-                                                                                                                                                     
-                                                            </div>
-                                                               <div class="col-lg-2"></div>
-                                                        </div>
-                                                        
-                                                        
-                                                        <div class="row">
-                                                            <div class="col-lg-2">  
-                                                                <div class="form_filed">Start Price:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                 <div class="form_filed">${tblTender.startPrice}</div>
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                             <div class="col-lg-2">
-                                                                <div class="form_filed">Product Location:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">${tblTender.productLocation}</div>
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                        </div>
-                                                        
-                                                            <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction Reverse Price:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                 <div class="form_filed">${tblTender.auctionReservePrice}</div>
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                           <div class="col-lg-2">
-                                                                <div class="form_filed">Increment / Decrement Values:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${tblTender.incrementDecrementValues}</div>
-                                                            </div>
-                                                             <div class="col-lg-2"></div>
-                                                        </div>
-                                                            
-                                                       
-                                                        
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auto Extension :</div>
-                                                            </div>
-                                                            <c:set var="rdoAutoExtension" value="No"/>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_variant" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${rdoAuctionVariant}</label></div>
+                                    </div>
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_start_price" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.startPrice}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_product_location" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.productLocation}</label></div>
+                                    </div>
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_reverse_price" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<c:if test="${tblTender.isReservePriceConfigure eq 0}">
+                                                                         <spring:message code="lbl_na" />
+                                                                     </c:if>
+                                                                     <c:if test="${tblTender.isReservePriceConfigure eq 1}">
+                                                                         ${tblTender.auctionReservePrice}
+                                                                     </c:if>
+                                    	</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1">
+                                    	<c:if test="${tblTender.auctionMethod eq 1}">
+                                                                  <spring:message code="lbl_increment_value" />
+                                                                </c:if>
+                                                                <c:if test="${tblTender.auctionMethod eq 0}">
+                                                                     <spring:message code="lbl_decrement_vallue" />
+                                                                </c:if>
+                                    	</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.incrementDecrementValues}</label></div>
+                                    </div>
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auto_extension" /></label></div>
+                                    	<c:set var="rdoAutoExtension" value="No"/>
                                                                 <c:if test="${tblTender.allowsAutoExtension eq 1}">
                                                                     <c:set var="rdoAutoExtension" value="Yes"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.allowsAutoExtension eq 0}">
                                                                     <c:set var="rdoAutoExtension" value="No"/>
                                                                 </c:if>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">${rdoAutoExtension}</div>                                                                                   
-                                                            </div>
-                                                                <div class="col-lg-8"></div>
-                                                        </div>
-                                                            
-                                                               <c:if test="${tblTender.allowsAutoExtension eq 1}">
-                                                                   <div id="AutoExtension">
-                                                            
-                                                            <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Extend Time When Bid Received in Last(In Minutes):</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${tblTender.extendTimeWhen}</div>
-                                                            </div>
-                                                                 <div class="col-lg-2"></div>
-                                                                 <div class="col-lg-2">
-                                                                <div class="form_filed">Extend Time By:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${tblTender.extendTimeBy}</div>
-                                                            </div>
-                                                            <div class="col-lg-2"></div>
-                                                                 </div>
-                                                                
-                                                            <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auto Extension Mode :</div>
-                                                            </div>
-                                                                 <c:set var="rdoAutoExtensionMode" value="Unlimited"/>
+                                    	<div class="col-xs-2"><label class="lbl-2">${rdoAutoExtension}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2"></label></div>
+                                    </div>
+                                    
+                                    <c:if test="${tblTender.allowsAutoExtension eq 1}">
+                                    
+                                    <div id="AutoExtension">
+                                    
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_extend_time_when_bid_received" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.extendTimeWhen}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_extend_time" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.extendTimeBy}</label></div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auto_extension_mode" /></label></div>
+                                    	<c:set var="rdoAutoExtensionMode" value="Unlimited"/>
                                                                 <c:if test="${tblTender.autoExtensionMode eq 1}">
                                                                     <c:set var="rdoAutoExtensionMode" value="Limited"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.autoExtensionMode eq 0}">
                                                                     <c:set var="rdoAutoExtensionMode" value="Unlimited"/>
                                                                 </c:if>
-                                                            <div class="col-lg-2">
-                                                                   <div class="form_filed">${rdoAutoExtensionMode}</div>                                                                    
-                                                            </div>
-                                                                
-                                                        <div class="col-lg-8"></div>
-                                                        </div> 
-                                                       
-                                                        </div>
-                                                               </c:if>
-                                                               <c:if test="${tblTender.autoExtensionMode eq 1}">
-                                                                   <div id="AutoExtensionMode">
-                                                           <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">No. Of Extension:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed"><%=tblTender.getNoOfExtension()%></div>
-                                                            </div>
-                                                             </c:if>
-                                                             <div class="col-lg-2"></div>
-                                                        
-                                                         <c:set var="DecimalValue" value="${[1,2,3,4,5]}"/>
-                                                        <div class="col-lg-2">
-                                                                <div class="form_filed">Accept Decimal Value Upto:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">${DecimalValue[tblTender.decimalValueUpto]-1}</div>
-                                                            </div>
-                                                             <div class="col-lg-2"></div>
-                                                        </div> 
-                                                           
-                                                        </div>
-                                                              
-                                                              
-                                                       
-                                                            <c:set var="optIPAddress" value="No"/>
+                                    	<div class="col-xs-2"><label class="lbl-2">${rdoAutoExtensionMode}</label></div>
+                                    </div>
+                                    
+                                    </div>
+                                    
+                                    </c:if>
+                                    
+                                    <c:if test="${tblTender.autoExtensionMode eq 1}">
+                                    <div id="AutoExtensionMode">
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_no_of_extension" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2"><%=tblTender.getNoOfExtension()%></label></div>
+                                    </div>
+                                    </div> 
+                                    </c:if>
+                                    
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_accept_decimal_value_upto" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${tblTender.decimalValueUpto}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2"></label></div>
+                                    </div>
+                                    
+                                    <c:set var="optIPAddress" value="No"/>
                                                                 <c:if test="${tblTender.displayIPAddress eq 1}">
                                                                     <c:set var="optIPAddress" value="Yes"/>
                                                                 </c:if>
                                                                 <c:if test="${tblTender.displayIPAddress eq 0}">
                                                                     <c:set var="optIPAddress" value="No"/>
-                                                                </c:if>
-                                                        <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Display IP Address:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed">${optIPAddress}</div>
-                                                            </div>
-                                                               <div class="col-lg-2"></div>
-                                                               <div class="col-lg-2">
-                                                                <div class="form_filed">Estimated Value:</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                                 <div class="form_filed"><%=tblTender.getestimatedValue()%></div>
-                                                            </div>
-                                                        <div class="col-lg-2"></div>
-                                                        </div>
-                                                       <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="well"><h3>Dates Configuration</h3></div>
-                                                </div>
-                                            </div>       
-                                                           <div class="row">
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction Start Date :</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                              <%
-                                                              String dt=tblTender.getAuctionStartDate().toString();
-                                                              String arr[]=dt.split(" ");
-                                                              
-                                                              %>
-                                                             <div class="form_filed"><%=arr[0]%></div>
-                                                                                                                         
-                                                            </div><div class="col-lg-2"></div>
-                                                            <%
-                                                            dt=tblTender.getAuctionEndDate().toString();
-                                                            arr=dt.split(" ");
-                                                            %>
-                                                            <div class="col-lg-2">
-                                                                <div class="form_filed">Auction End Date :</div>
-                                                            </div>
-                                                            <div class="col-lg-2">
-                                                               <div class="form_filed"><%=arr[0]%></div>
-                                                                                                                         
-                                                            </div>
-                                                        </div>
+                                    </c:if>
+                                    
+                                    <div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_display_ip_address" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${optIPAddress}</label></div>
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_estimated_value" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	 <%
                                                         
-                                                </div>
-                                                
-                                            </div>
-                                            
-                                
+                                                        int num=(int)tblTender.getestimatedValue();
+                                                        float remain=tblTender.getestimatedValue()-num;
+                                                       //out.println("remain::"+remain);
+                                                        if(remain==0)
+                                                        {
+                                                        %>
+                                                            <%=num%>
+                                                        <%
+                                                        }
+                                                        else
+                                                        {
+                                                        %>
+                                                            ${tblTender.estimatedValue}
+                                                        <%
+                                                        }
+                                                        %>
+                                    	</label></div>
+                                    </div>
+                                    
+                                </div>
                             </div>
                         </div>
-                    
+                </div>
                 
-            </section>
-            
+                <c:if test="${fromPublishTender ne 1}">
+                 <div class="row">
+                        <div class="col-lg-12 col-md-12">
+                            <div class="box">
+                                <div class="box-header with-border">
+                                	<h3 class="box-title"><spring:message code="lbl_dates_config" /></h3>
+                                </div>
+                                <div class="box-body">
+                                	<div class="row">
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_start_date" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">
+                                    	<fmt:parseDate value="${auctionStartDate}" pattern="${client_dateformate_hhmm}" var="myDate"/>                                                        
+                                        <fmt:formatDate value="${myDate}" var="formattedDate"  type="date" pattern="${client_dateformate_hhmm}" />
+                                    	${formattedDate}
+                                    	</label></div>
+                                    	<fmt:parseDate value="${auctionEndDate}" pattern="${client_dateformate_hhmm}" var="myDate"/>
+                                        <fmt:formatDate value="${myDate}" var="formattedDate" type="date" pattern="${client_dateformate_hhmm}" />
+                                    	<div class="col-xs-2"><label class="lbl-1"><spring:message code="lbl_auction_end_date" /></label></div>
+                                    	<div class="col-xs-2"><label class="lbl-2">${formattedDate}</label></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                 </div>
+                </c:if>                                                                                                             	
+</section>
 
-                       	</div>
-	<%@include file="../includes/footer.jsp"%>
-	</div>
+</div>
+<c:if test="${2 eq fromPublishTender}"><%-- for before login --%>
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/_all-skins.min.css">
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/css/bootstrap.min.css">
+	<link rel="stylesheet" href="${pageContext.request.contextPath}/resources/template1/css/style.css">
+</c:if>
 
-</body>
-</html>
+<jsp:useBean id="now" class="java.util.Date" />
+<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
+<c:if test="${1 ne fromPublishTender && 2 ne fromPublishTender}">
+<%@include file="../includes/footer.jsp"%>
+</c:if>

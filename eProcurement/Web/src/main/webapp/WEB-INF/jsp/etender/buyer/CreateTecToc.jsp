@@ -1,14 +1,331 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>   
-        <script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>     
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
         <spring:message code="title_tender_createcomitee" var="titlecommittee"/>
-        <title>${titlecommittee}</title>    
-        <script type="text/javascript">
+       
+   <div class="content-wrapper">     
+  
+<c:set var="var_total_member" value="0" />
+
+<section class="content-header">
+</section>
+
+<section class="content">
+<div class="row">
+				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+					<div class="box">
+						<div class="box-header with-border">
+						<div><a class="pull-right" href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a></div>
+						<div>
+							<c:choose>
+								<c:when test="${committeeType eq 1}">
+									<c:choose>
+										<c:when test="${operType eq 'Edit'}">
+											<h3 class="box-title">Edit bid opening committee</h3>	
+										</c:when>
+										<c:otherwise>
+											<h3 class="box-title">Create bid opening committee</h3>	
+										</c:otherwise>
+									</c:choose>
+								</c:when>
+								<c:otherwise>
+								<c:choose>
+										<c:when test="${operType eq 'Edit'}">
+											<h3 class="box-title">Edit bid evaluation committee</h3>	
+										</c:when>
+										<c:otherwise>
+											<h3 class="box-title">Create bid evaluation committee</h3>
+										</c:otherwise>
+									</c:choose>
+								</c:otherwise>
+							</c:choose>
+							</div>
+						</div>
+						<div>
+											<c:if test="${not empty successMsg}">
+                                        			<span class="label label-success"><spring:message code="${successMsg}"/></span>
+                                    		</c:if>
+                                    		<c:if test="${not empty errorMsg}">
+                                        			<span class="label label-danger"><spring:message code="${errorMsg}"/></span>
+                                    		</c:if>
+                                 </div>
+						<div class="box-body">
+							<div class="row">
+								<div class="col-lg-12 col-md-12 col-xs-12">
+									<div class="row">
+										<div class="col-lg-2">
+											<div class="form_filed">Search By</div>
+										</div>
+										<div class="col-lg-5">
+											<select class="form-control" id="selSearch" onchange="javascript:showHideDiv();">
+												<option value="email">Email</option>
+  												<option value="name">Name</option>
+  												<option value="Hirarchy">Hirarchy</option>
+											</select>
+										</div>
+									</div>	
+									<div class="row" id="nonHirarchy">
+										<div class="col-lg-2">
+											<div class="form_filed">Search</div>
+										</div>
+										<div class="col-lg-5">
+											<input type="text" class="form-control" id="searchValue"  title="Search value"  validarr="required@@length:0,100" tovalid="true" onblur="javascript:{validateTextComponent(this)}" >
+										</div>
+										<div>
+											<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
+										</div>
+									</div>
+									
+									<div id="Hirarchy" style="display: none">
+									<div class="row">
+										<div class="col-lg-2">
+											<div class="form_filed">Organization</div>
+										</div>
+										<div class="col-lg-5">
+										<div id="grandParentDeptIdDiv">
+														<input type="hidden" id="grandParentDeptId" value="${grandParentDeptId}" />	
+													</div>
+<!-- 											<select class="form-control" id="grandParentDeptId" name="grandParentDeptId" onblur="javascript:{if(validateCombo(this)){getParentDepartmentsByGrandparentDept();getSubDepartments();getDesignations()}}" title="organization"> -->
+<!-- 														<option value="-1">Please Select</option> -->
+<!-- 													</select> -->
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-2">
+											<div class="form_filed">Location/Department</div>
+										</div>
+										<div class="col-lg-5">
+											<select class="form-control" id="selDepartment" name="selDepartment" onblur="javascript:{if(true){getSubDepartments();getDesignations()}}" title="department">
+														<option value="-1">Please Select</option>
+													</select>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-2">
+											<div class="form_filed">Sub Department</div>
+										</div>
+										<div class="col-lg-5">
+											<select class="form-control" name="subDeptId"  id="subDept"  onblur="javascript:{getDesignations()}" title="Sub department name" >
+															<option value="-1">Please select</option>
+											</select>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-2">
+											<div class="form_filed">Designation</div>
+										</div>
+										<div class="col-lg-5">
+											<select class="form-control" id="selDesignation" name="selDesignation" onblur="validateCombo(this)" title="designation">
+															<option value="-1">Please Select</option>
+													</select>
+										</div>
+										<div>
+											<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
+										</div>
+									</div>
+									</div>
+									<div class="row">
+										<div class="col-lg-2">
+											<div class="form_filed">Officer name</div>
+										</div>
+										<div class="col-lg-5">
+											<select class="form-control" id="selName">
+												<option value="--please select--">--Please Select--</option>
+											</select>
+										</div>
+										<div>
+											<button type="button" id="addOfficer" class="btn btn-submit">Add</button>
+										</div>
+									</div>
+					<div class="box-body">
+							<div class="row">
+								<div class="col-lg-12 col-md-12 col-xs-12">
+								<c:choose>
+	               					<c:when test="${operType eq 'Edit'}">
+	               						<spring:url value="/etender/buyer/posteditcommittee" var="submitcommittee"/>											
+	               					</c:when>
+	               					<c:otherwise>
+	               						<spring:url value="/etender/buyer/addcommittee" var="submitcommittee"/>
+								</c:otherwise>
+								</c:choose>
+                                    <form:form action="${submitcommittee}" onsubmit="return validate();" name="frmprebidcomittee" method="post" >
+									<table class="table table-striped table-responsive">
+										<thead>
+											<tr>
+												<th>Officer</th>
+												<c:forEach items="${envList}" var="envList">	
+													<th>${envList[1]} <input type="hidden" name="hdEnvelopeId" value="${envList[2]}"/></th>	
+												</c:forEach>
+												<th>Action</th>
+											</tr>
+										</thead>
+										<tbody id="officerLstTbl">
+											<c:if test="${operType eq 'Edit'}">
+											<input type="hidden" name="operType" value="Edit"/>	
+											
+											<c:forEach items="${committeeUserDetails}" var="committeeUserData" varStatus="index">
+	               							<c:set var="var_total_member" value="${var_total_member + 1}" />
+	               							<c:set var="var_officer_name" value="${committeeUserData.officername}"  />
+	               							<c:set var="var_desg_name" value="SE" />
+	               							<c:set var="var_dept_name" value="ITA" />
+	               							<c:set var="var_officer_id" value="${committeeUserData.id}" />
+	               							<c:set var="var_tempofficer_id" value="${var_officer_id}" />
+	               							<c:set var="var_enc_officer_id" value="${var_officer_id}" />
+	               							<tr id="${committeeUserData.id}">
+	               								<td class="v-a-middle">${var_officer_name}<br />${var_desg_name}, ${var_dept_name}<br/>${var_user_loginId}<input type="hidden" name="hdOfficerId" value="${var_officer_id}" />
+	               								<input type="hidden" name="tempOfficerId" value="${var_officer_id}" /></td>
+	               								<c:set var="tempEnvIds" value="" />
+	               								<c:forEach items="${envList}" var="envList" varStatus="envListStatus">
+	               									<c:set var="temp1" value="0|0|${envList[3]}|${envList[4]}" />
+               										<c:forEach items="${userEnvelopeDetails}" var="commUserEnv">
+               											<c:if test="${var_officer_id eq commUserEnv[0]}">
+               												<c:if test="${envList[2] eq commUserEnv[1]}">
+               													<c:set var="temp1" value="${commUserEnv[1]}|${commUserEnv[2]}|${envList[3]}|${envList[4]}" />
+               												</c:if>
+               											</c:if>
+               										</c:forEach>
+	               									<c:set var="tempEnvIds" value="${tempEnvIds},${temp1}" />
+	               								</c:forEach>
+	               								<c:set var="envIdsStrSplit" value="${fn:split(fn:substringAfter(tempEnvIds,','),',')}" />
+	               								<c:set var="var_approval_given" value="false" />
+	               								<c:if test="${not empty envList}">
+	               								<c:forEach var="i" items="${envIdsStrSplit}" varStatus="iStatus">
+	               									<td class="a-center v-a-middle" id="envtd_${iStatus.count}">
+	               										<c:set var="tempStrSplit" value="${fn:split(i,'|')}" />
+	               										<c:choose>
+	               											<c:when test="${tempStrSplit[0] gt 0}">
+	               														<c:choose>
+	               															<c:when test="${tempStrSplit[1] eq 1}">
+	               																<c:set var="var_approval_given" value="true" />
+	               																<input type="checkbox" disabled="disabled" checked="checked" />
+	               																<input style="display: none;" type="checkbox" class="isOpening" value="${var_enc_officer_id}" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" checked="checked" />
+	               																<input style="display: none;" type="checkbox" class="isOpenApproved" value="${var_enc_officer_id}" id="envOpenApproved_${var_tempofficer_id}_${iStatus.count}" name="envOpenApproved_${var_tempofficer_id}_${iStatus.count}" checked="checked" />
+	               															</c:when>
+	               															<c:otherwise>
+	               																<c:choose>
+	               																	<c:when test="${(committeeType eq 1 and tempStrSplit[2] eq 1)}">
+	               																		<input type="checkbox" disabled="disabled" checked="checked" />
+	               																		<input style="display: none;" type="checkbox" class="isOpening" onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" value="${var_enc_officer_id}" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" checked="checked" />
+	               																	</c:when>
+																					<c:when test="${(committeeType eq 2 and tempStrSplit[3] eq 1)}">
+	               																		<input type="checkbox" class="isOpening" value="${var_enc_officer_id}" onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" checked="checked" />
+	               																	</c:when>
+	               																	<c:otherwise>
+	               																		<input type="checkbox" class="isOpening" value="${var_enc_officer_id}" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" checked="checked" />
+	               																	</c:otherwise>
+	                															</c:choose>
+	                														</c:otherwise>
+	                													</c:choose>
+	                										</c:when>
+	                										<c:otherwise>
+	                											<c:choose>
+	                												<c:when test="${(committeeType eq 1 and tempStrSplit[2] eq 1)}">
+	                													<input type="checkbox" disabled="disabled" />
+	                													<input style="display: none;" type="checkbox" class="isOpening" value="${var_enc_officer_id}" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" />		
+	                												</c:when>
+                                                                                                                        <c:when test="${(committeeType eq 2 and tempStrSplit[3] eq 1)}">
+	                													<input type="checkbox" class="isOpening" value="${var_enc_officer_id}" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" />
+	                												</c:when>
+	                												<c:otherwise>
+	                													<input type="checkbox" class="isOpening" value="${var_enc_officer_id}" id="envOpenMember_${var_tempofficer_id}_${iStatus.count}" name="envOpenMember_${var_tempofficer_id}_${iStatus.count}" onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" />
+	                												</c:otherwise>
+	                											</c:choose>
+	                										</c:otherwise>
+	                									</c:choose>
+	               									</td>
+	               								</c:forEach>
+	               								</c:if>
+	               								<td class="a-center v-a-middle">
+	               										<a href="#" onclick="removeRow(${committeeUserData.id})">remove</a><input type="hidden" name="hdofficerId" value="${officerDtl.id}" />
+	               								</td>
+	               							</tr>
+	               						</c:forEach>
+											
+<%-- 											<c:forEach items="${committeeUserDetails}" var="officerDtl"> --%>
+<%--     										<tr id="${officerDtl.id}"> --%>
+<%--         											<td><c:out value="${officerDtl.officername}"/><br><c:out value="${officerDtl.emailid}"/><br>SE,IT</td> --%>
+<%--         											<c:forEach items="${envList}" var="envList">	 --%>
+<%-- 														<td><input type="checkbox" value="${envList[1]}_${officerDtl.id}"></td>	 --%>
+<%-- 													</c:forEach>		 --%>
+<%--         											<td><a href="#" onclick="removeRow(${officerDtl.id})">remove</a><input type="hidden" name="hdofficerId" value="${officerDtl.id}" /></td>   --%>
+<!--     										</tr> -->
+    										
+<%-- 											</c:forEach> --%>
+											</c:if>
+										</tbody>
+										<tbody>
+										<tr id="trMinApprovalReq">  <%--min approval edit evaluation committee --%>
+	               						<th class="a-left">Minimum approval require</th>
+	               						<c:set var="var_env_opened_evaluated" value="" />
+	               						<input type="hidden" id="minCommMembersReq" name="minCommMembersReq" value="${minMember}" />
+	               						<c:forEach items="${envList}" var="envList" varStatus="envListStatus">
+	               							<c:choose>
+	               								<c:when test="${committeeType eq 1}"><c:set var="var_env_opened_evaluated" value="${var_env_opened_evaluated}|${envList[2]},${envList[3]}" /></c:when>
+	               								<c:when test="${committeeType eq 2}"><c:set var="var_env_opened_evaluated" value="${var_env_opened_evaluated}|${envList[2]},${envList[4]}" /></c:when>
+	               							</c:choose>
+	               							<th>
+	               								<c:set var="temp_count" value="0" />
+	               								<c:forEach items="${userMinApproval}" var="envAppList" varStatus="envAppListStatus">
+	               									<c:if test="${envList[2] eq envAppList[0]}">
+	               									<c:set var="temp_count" value="${temp_count+1}" />
+	               									<c:set var="var_total_approval" value="${envAppList[1]}" />
+	               									<c:set var="var_min_approval" value="${envAppList[2]}" />
+	               									<c:set var="var_min_approval_given" value="" />
+	               										<c:if test="${(committeeType eq 1 and envAppList[3] eq 1)}">
+	               											<c:set var="var_min_approval_given" value="style=\"display: none;\"" />${var_min_approval} of 
+	               										</c:if>
+	               										
+	               										<select ${var_min_approval_given} name="minApprovalReq_${envListStatus.count}" id="minApprovalReq_${envListStatus.count}" style="width: 50px;">
+	               										<c:forEach begin="${committeeType eq 1 ? 1 : 0}" end="${var_total_approval}" var="totalAppStatus">
+	               										<c:set var="var_sel_min_approval" value="" />
+	               											<c:if test="${totalAppStatus eq var_min_approval}">
+	               												<c:set var="var_sel_min_approval" value="selected=\"selected\"" />
+	               											</c:if>
+	               											<option value="${totalAppStatus}" ${var_sel_min_approval}>${totalAppStatus}</option>
+	               										</c:forEach>
+	               										</select>
+<%-- 	               										<label name="lblMinApproval" id="lblMinApproval_${envListStatus.count}">${var_total_approval}</label> --%>
+	               										<input name="minApprovalReqHidd" id="minApprovalReqHidd_${envListStatus.count}" type="hidden" style="width: 30px;" type="text" value="${var_total_approval}" />
+	               									</c:if>
+	               								</c:forEach>
+	               								<c:if test="${temp_count eq 0}">
+	               									<select name="minApprovalReq_${envListStatus.count}" id="minApprovalReq_${envListStatus.count}" style="width: 50px;"><option value="0" selected="selected">0</option></select>
+<%-- 	               									<label name="lblMinApproval" id="lblMinApproval_${envListStatus.count}">0</label> --%>
+	               									<input name="minApprovalReqHidd" id="minApprovalReqHidd_${envListStatus.count}" type="hidden" style="width: 30px;" type="text" value="0" />
+	               								</c:if>
+	               							</th>
+	               						</c:forEach>
+	               						<th></th>
+	               					</tr>
+										</tbody>
+									</table>
+									<div>
+										<c:if test="${operType ne 'Edit'}">
+										<input type="checkbox" name="isTECTOCSame" id="isTECTOCSame" value="1" />TOC & TEC are same
+										</c:if>
+									</div>
+										<div>
+											<input type="hidden" name="hdTenderId" value="${tenderId}"/>
+											<input type="hidden" name="hdCommitteId" value="${committeeId}"/>
+											<input type="hidden" name="hdEnvCount" value="${envCount}"/>
+											<input type="hidden" name="hdIsApproved" value="${isApproved}"/>
+											<input type="hidden" name="hdCommitteeTypeId" value="${committeeType}"/>
+											<input type="hidden" id="memberCount" name="memberCount" value="${var_total_member}" />
+											<button type="submit"  class="btn btn-submit">Submit</button>
+										</div>
+									</form:form>
+								</div>
+							</div>
+						</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+		</div>
+</section>
+</div>
+<script type="text/javascript">
         var VALIDATE_MSG_REQUIRED = 'Please enter';
         var VALIDATE_MSG_SELECT = 'Please select';
         var committeeType = '${committeeType}';
@@ -140,7 +457,7 @@
             
             
             function getParentDepartmentsByGrandparentDept() {
-            	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
+            			blockUI();
             			var data = {};
                     	var searchValue = grandParentDeptId+"@@0";
                     	$.ajax({
@@ -160,15 +477,15 @@
                     		    		}));
                     		     });
                     			console.log("SUCCESS: ", data);
-                    			$.unblockUI({});
+                    			unBlockUI()
                     		},
                     		error : function(e) {
                     			console.log("ERROR: ", e);
-                    			$.unblockUI({});
+                    			unBlockUI()
                     		},
                     		done : function(e) {
                     			console.log("DONE");
-                    			$.unblockUI({});
+                    			unBlockUI()
                     		}
                     	});
                     	return true;
@@ -176,7 +493,7 @@
             
             
             function getSubDepartments() {
-            	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
+            	blockUI();
             			var data = {};
                     	var searchValue = $("#selDepartment").val()+"@@1";
                     	$.ajax({
@@ -196,15 +513,15 @@
                     		    		}));
                     		     });
                     			console.log("SUCCESS: ", data);
-                    			$.unblockUI({});
+                    			unBlockUI()
                     		},
                     		error : function(e) {
                     			console.log("ERROR: ", e);
-                    			$.unblockUI({});
+                    			unBlockUI()
                     		},
                     		done : function(e) {
                     			console.log("DONE");
-                    			$.unblockUI({});
+                    			unBlockUI()
                     		}
                     	});
                     	return true;
@@ -212,7 +529,7 @@
             
             
             function getDesignations() {
-            	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
+            	blockUI();
             	var data = {};
             	var subDeptId = $("#subDept").val();
             	var parentDeptId = $("#selDepartment").val();
@@ -245,15 +562,15 @@
             		    		}));
             		     });
             			console.log("SUCCESS: ", data);
-            			$.unblockUI({});
+            			unBlockUI()
             		},
             		error : function(e) {
             			console.log("ERROR: ", e);
-            			$.unblockUI({});
+            			unBlockUI()
             		},
             		done : function(e) {
             			console.log("DONE");
-            			$.unblockUI({});
+            			unBlockUI()
             		}
             	});
             }
@@ -437,447 +754,4 @@
                 }	
             	
            </script>
-    </head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-	<div class="content-wrapper">
-		<c:set var="var_total_member" value="0" />
-		<section class="content-header">
-			<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"
-			class="btn btn-submit"><< Go To Tender Dashboard</a>
-		</section>
-
-		<section class="content">
-		<div class="row">
-			<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-				<div class="box">
-					
-					<div class="box-header with-border">
-						<c:choose>
-							<c:when test="${committeeType eq 1}">
-								<c:choose>
-									<c:when test="${operType eq 'Edit'}">
-										<h3 class="box-title">Edit bid opening committee</h3>
-									</c:when>
-									<c:otherwise>
-										<h3 class="box-title">Create bid opening committee</h3>
-									</c:otherwise>
-								</c:choose>
-							</c:when>
-							<c:otherwise>
-								<c:choose>
-									<c:when test="${operType eq 'Edit'}">
-										<h3 class="box-title">Edit bid evaluation committee</h3>
-									</c:when>
-									<c:otherwise>
-										<h3 class="box-title">Create bid evaluation committee</h3>
-									</c:otherwise>
-								</c:choose>
-							</c:otherwise>
-						</c:choose>
-					</div>
-					
-					<div>
-						<c:if test="${not empty successMsg}">
-							<span class="label label-success"><spring:message
-									code="${successMsg}" />
-							</span>
-						</c:if>
-						<c:if test="${not empty errorMsg}">
-							<span class="label label-danger"><spring:message
-									code="${errorMsg}" />
-							</span>
-						</c:if>
-					</div>
-					
-					<div class="box-body">
-						<div class="row">
-							<div class="col-lg-12 col-md-12 col-xs-12">
-								<div class="row">
-									<div class="col-lg-2">
-										<div class="form_filed">Search By</div>
-									</div>
-									<div class="col-lg-5">
-										<select class="form-control" id="selSearch"
-											onchange="javascript:showHideDiv();">
-											<option value="email">Email</option>
-											<option value="name">Name</option>
-											<option value="Hirarchy">Hirarchy</option>
-										</select>
-									</div>
-								</div>
-								<div class="row" id="nonHirarchy">
-									<div class="col-lg-2">
-										<div class="form_filed">Search</div>
-									</div>
-									<div class="col-lg-5">
-										<input type="text" class="form-control" id="searchValue"
-											title="Search value" validarr="required@@length:0,100"
-											tovalid="true" onblur="javascript:{validateTxtComp(this)}">
-									</div>
-									<div>
-										<button type="button" class="btn btn-submit"
-											onclick="searchAjax();">Search</button>
-									</div>
-								</div>
-
-								<div id="Hirarchy" style="display: none">
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Organization</div>
-										</div>
-										<div class="col-lg-5">
-											<div id="grandParentDeptIdDiv">
-												<input type="hidden" id="grandParentDeptId"
-													value="${grandParentDeptId}" />
-											</div>
-											<!-- 											<select class="form-control" id="grandParentDeptId" name="grandParentDeptId" onblur="javascript:{if(validateCombo(this)){getParentDepartmentsByGrandparentDept();getSubDepartments();getDesignations()}}" title="organization"> -->
-											<!-- 														<option value="-1">Please Select</option> -->
-											<!-- 													</select> -->
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Location/Department</div>
-										</div>
-										<div class="col-lg-5">
-											<select class="form-control" id="selDepartment"
-												name="selDepartment"
-												onblur="javascript:{if(true){getSubDepartments();getDesignations()}}"
-												title="department">
-												<option value="-1">Please Select</option>
-											</select>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Sub Department</div>
-										</div>
-										<div class="col-lg-5">
-											<select class="form-control" name="subDeptId" id="subDept"
-												onblur="javascript:{getDesignations()}"
-												title="Sub department name">
-												<option value="-1">Please select</option>
-											</select>
-										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Designation</div>
-										</div>
-										<div class="col-lg-5">
-											<select class="form-control" id="selDesignation"
-												name="selDesignation" onblur="validateCombo(this)"
-												title="designation">
-												<option value="-1">Please Select</option>
-											</select>
-										</div>
-										<div>
-											<button type="button" class="btn btn-submit"
-												onclick="searchAjax();">Search</button>
-										</div>
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-lg-2">
-										<div class="form_filed">Officer name</div>
-									</div>
-									<div class="col-lg-5">
-										<select class="form-control" id="selName">
-											<option value="--please select--">--Please Select--</option>
-										</select>
-									</div>
-									<div>
-										<button type="button" id="addOfficer" class="btn btn-submit">Add</button>
-									</div>
-								</div>
-								<div class="box-body">
-									<div class="row">
-										<div class="col-lg-12 col-md-12 col-xs-12">
-											<c:choose>
-												<c:when test="${operType eq 'Edit'}">
-													<spring:url value="/etender/buyer/posteditcommittee"
-														var="submitcommittee" />
-												</c:when>
-												<c:otherwise>
-													<spring:url value="/etender/buyer/addcommittee"
-														var="submitcommittee" />
-												</c:otherwise>
-											</c:choose>
-											<form:form action="${submitcommittee}"
-												onsubmit="return validate();" name="frmprebidcomittee"
-												method="post">
-												<table class="table table-striped table-responsive">
-													<thead>
-														<tr>
-															<th>Officer</th>
-															<c:forEach items="${envList}" var="envList">
-																<th>${envList[1]} <input type="hidden"
-																	name="hdEnvelopeId" value="${envList[2]}" />
-																</th>
-															</c:forEach>
-															<th>Action</th>
-														</tr>
-													</thead>
-													<tbody id="officerLstTbl">
-														<c:if test="${operType eq 'Edit'}">
-															<input type="hidden" name="operType" value="Edit" />
-
-															<c:forEach items="${committeeUserDetails}"
-																var="committeeUserData" varStatus="index">
-																<c:set var="var_total_member"
-																	value="${var_total_member + 1}" />
-																<c:set var="var_officer_name"
-																	value="${committeeUserData.officername}" />
-																<c:set var="var_desg_name" value="SE" />
-																<c:set var="var_dept_name" value="ITA" />
-																<c:set var="var_officer_id"
-																	value="${committeeUserData.id}" />
-																<c:set var="var_tempofficer_id"
-																	value="${var_officer_id}" />
-																<c:set var="var_enc_officer_id"
-																	value="${var_officer_id}" />
-																<tr id="${committeeUserData.id}">
-																	<td class="v-a-middle">${var_officer_name}<br />${var_desg_name},
-																		${var_dept_name}<br />${var_user_loginId}<input
-																		type="hidden" name="hdOfficerId"
-																		value="${var_officer_id}" /> <input type="hidden"
-																		name="tempOfficerId" value="${var_officer_id}" />
-																	</td>
-																	<c:set var="tempEnvIds" value="" />
-																	<c:forEach items="${envList}" var="envList"
-																		varStatus="envListStatus">
-																		<c:set var="temp1"
-																			value="0|0|${envList[3]}|${envList[4]}" />
-																		<c:forEach items="${userEnvelopeDetails}"
-																			var="commUserEnv">
-																			<c:if test="${var_officer_id eq commUserEnv[0]}">
-																				<c:if test="${envList[2] eq commUserEnv[1]}">
-																					<c:set var="temp1"
-																						value="${commUserEnv[1]}|${commUserEnv[2]}|${envList[3]}|${envList[4]}" />
-																				</c:if>
-																			</c:if>
-																		</c:forEach>
-																		<c:set var="tempEnvIds" value="${tempEnvIds},${temp1}" />
-																	</c:forEach>
-																	<c:set var="envIdsStrSplit"
-																		value="${fn:split(fn:substringAfter(tempEnvIds,','),',')}" />
-																	<c:set var="var_approval_given" value="false" />
-																	<c:if test="${not empty envList}">
-																		<c:forEach var="i" items="${envIdsStrSplit}"
-																			varStatus="iStatus">
-																			<td class="a-center v-a-middle"
-																				id="envtd_${iStatus.count}"><c:set
-																					var="tempStrSplit" value="${fn:split(i,'|')}" /> <c:choose>
-																					<c:when test="${tempStrSplit[0] gt 0}">
-																						<c:choose>
-																							<c:when test="${tempStrSplit[1] eq 1}">
-																								<c:set var="var_approval_given" value="true" />
-																								<input type="checkbox" disabled="disabled"
-																									checked="checked" />
-																								<input style="display: none;" type="checkbox"
-																									class="isOpening" value="${var_enc_officer_id}"
-																									id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									checked="checked" />
-																								<input style="display: none;" type="checkbox"
-																									class="isOpenApproved"
-																									value="${var_enc_officer_id}"
-																									id="envOpenApproved_${var_tempofficer_id}_${iStatus.count}"
-																									name="envOpenApproved_${var_tempofficer_id}_${iStatus.count}"
-																									checked="checked" />
-																							</c:when>
-																							<c:otherwise>
-																								<c:choose>
-																									<c:when
-																										test="${(committeeType eq 1 and tempStrSplit[2] eq 1)}">
-																										<input type="checkbox" disabled="disabled"
-																											checked="checked" />
-																										<input style="display: none;" type="checkbox"
-																											class="isOpening"
-																											onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')"
-																											value="${var_enc_officer_id}"
-																											id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																											name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																											checked="checked" />
-																									</c:when>
-																									<c:when
-																										test="${(committeeType eq 2 and tempStrSplit[3] eq 1)}">
-																										<input type="checkbox" class="isOpening"
-																											value="${var_enc_officer_id}"
-																											onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')"
-																											id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																											name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																											checked="checked" />
-																									</c:when>
-																									<c:otherwise>
-																										<input type="checkbox" class="isOpening"
-																											value="${var_enc_officer_id}"
-																											id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																											onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')"
-																											name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																											checked="checked" />
-																									</c:otherwise>
-																								</c:choose>
-																							</c:otherwise>
-																						</c:choose>
-																					</c:when>
-																					<c:otherwise>
-																						<c:choose>
-																							<c:when
-																								test="${(committeeType eq 1 and tempStrSplit[2] eq 1)}">
-																								<input type="checkbox" disabled="disabled" />
-																								<input style="display: none;" type="checkbox"
-																									class="isOpening" value="${var_enc_officer_id}"
-																									id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" />
-																							</c:when>
-																							<c:when
-																								test="${(committeeType eq 2 and tempStrSplit[3] eq 1)}">
-																								<input type="checkbox" class="isOpening"
-																									value="${var_enc_officer_id}"
-																									id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" />
-																							</c:when>
-																							<c:otherwise>
-																								<input type="checkbox" class="isOpening"
-																									value="${var_enc_officer_id}"
-																									id="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									name="envOpenMember_${var_tempofficer_id}_${iStatus.count}"
-																									onclick="onClickChkbox('${var_enc_officer_id}_${iStatus.count}')" />
-																							</c:otherwise>
-																						</c:choose>
-																					</c:otherwise>
-																				</c:choose></td>
-																		</c:forEach>
-																	</c:if>
-																	<td class="a-center v-a-middle"><a href="#"
-																		onclick="removeRow(${committeeUserData.id})">remove</a><input
-																		type="hidden" name="hdofficerId"
-																		value="${officerDtl.id}" /></td>
-																</tr>
-															</c:forEach>
-
-															<%-- 											<c:forEach items="${committeeUserDetails}" var="officerDtl"> --%>
-															<%--     										<tr id="${officerDtl.id}"> --%>
-															<%--         											<td><c:out value="${officerDtl.officername}"/><br><c:out value="${officerDtl.emailid}"/><br>SE,IT</td> --%>
-															<%--         											<c:forEach items="${envList}" var="envList">	 --%>
-															<%-- 														<td><input type="checkbox" value="${envList[1]}_${officerDtl.id}"></td>	 --%>
-															<%-- 													</c:forEach>		 --%>
-															<%--         											<td><a href="#" onclick="removeRow(${officerDtl.id})">remove</a><input type="hidden" name="hdofficerId" value="${officerDtl.id}" /></td>   --%>
-															<!--     										</tr> -->
-
-															<%-- 											</c:forEach> --%>
-														</c:if>
-													</tbody>
-													<tbody>
-														<tr id="trMinApprovalReq">
-															<%--min approval edit evaluation committee --%>
-															<th class="a-left">Minimum approval require</th>
-															<c:set var="var_env_opened_evaluated" value="" />
-															<input type="hidden" id="minCommMembersReq"
-																name="minCommMembersReq" value="${minMember}" />
-															<c:forEach items="${envList}" var="envList"
-																varStatus="envListStatus">
-																<c:choose>
-																	<c:when test="${committeeType eq 1}">
-																		<c:set var="var_env_opened_evaluated"
-																			value="${var_env_opened_evaluated}|${envList[2]},${envList[3]}" />
-																	</c:when>
-																	<c:when test="${committeeType eq 2}">
-																		<c:set var="var_env_opened_evaluated"
-																			value="${var_env_opened_evaluated}|${envList[2]},${envList[4]}" />
-																	</c:when>
-																</c:choose>
-																<th><c:set var="temp_count" value="0" /> <c:forEach
-																		items="${userMinApproval}" var="envAppList"
-																		varStatus="envAppListStatus">
-																		<c:if test="${envList[2] eq envAppList[0]}">
-																			<c:set var="temp_count" value="${temp_count+1}" />
-																			<c:set var="var_total_approval"
-																				value="${envAppList[1]}" />
-																			<c:set var="var_min_approval"
-																				value="${envAppList[2]}" />
-																			<c:set var="var_min_approval_given" value="" />
-																			<c:if
-																				test="${(committeeType eq 1 and envAppList[3] eq 1)}">
-																				<c:set var="var_min_approval_given"
-																					value="style=\"display: none;\"" />${var_min_approval} of 
-	               										</c:if>
-
-																			<select
-																				${var_min_approval_given} name="minApprovalReq_${envListStatus.count}"
-																				id="minApprovalReq_${envListStatus.count}"
-																				style="width: 50px;">
-																				<c:forEach begin="${committeeType eq 1 ? 1 : 0}"
-																					end="${var_total_approval}" var="totalAppStatus">
-																					<c:set var="var_sel_min_approval" value="" />
-																					<c:if test="${totalAppStatus eq var_min_approval}">
-																						<c:set var="var_sel_min_approval"
-																							value="selected=\"selected\"" />
-																					</c:if>
-																					<option value="${totalAppStatus}"${var_sel_min_approval}>${totalAppStatus}</option>
-																				</c:forEach>
-																			</select>
-																			<%-- 	               										<label name="lblMinApproval" id="lblMinApproval_${envListStatus.count}">${var_total_approval}</label> --%>
-																			<input name="minApprovalReqHidd"
-																				id="minApprovalReqHidd_${envListStatus.count}"
-																				type="hidden" style="width: 30px;" type="text"
-																				value="${var_total_approval}" />
-																		</c:if>
-																	</c:forEach> <c:if test="${temp_count eq 0}">
-																		<select name="minApprovalReq_${envListStatus.count}"
-																			id="minApprovalReq_${envListStatus.count}"
-																			style="width: 50px;"><option value="0"
-																				selected="selected">0</option>
-																		</select>
-																		<%-- 	               									<label name="lblMinApproval" id="lblMinApproval_${envListStatus.count}">0</label> --%>
-																		<input name="minApprovalReqHidd"
-																			id="minApprovalReqHidd_${envListStatus.count}"
-																			type="hidden" style="width: 30px;" type="text"
-																			value="0" />
-																	</c:if></th>
-															</c:forEach>
-															<th></th>
-														</tr>
-													</tbody>
-												</table>
-												<div>
-													<c:if test="${operType ne 'Edit'}">
-														<input type="checkbox" name="isTECTOCSame"
-															id="isTECTOCSame" value="1" />TOC & TEC are same
-										</c:if>
-												</div>
-												<div>
-													<input type="hidden" name="hdTenderId" value="${tenderId}" />
-													<input type="hidden" name="hdCommitteId"
-														value="${committeeId}" /> <input type="hidden"
-														name="hdEnvCount" value="${envCount}" /> <input
-														type="hidden" name="hdIsApproved" value="${isApproved}" />
-													<input type="hidden" name="hdCommitteeTypeId"
-														value="${committeeType}" /> <input type="hidden"
-														id="memberCount" name="memberCount"
-														value="${var_total_member}" />
-													<button type="submit" class="btn btn-submit">Submit</button>
-												</div>
-											</form:form>
-										</div>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		</section>
-
-	</div>
-	</div>
-</body>
-</html>
+           <%@include file="../../includes/footer.jsp"%>

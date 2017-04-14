@@ -1,14 +1,12 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 <spring:message code="lbl_live" var="meetingLive" />
 <spring:message code="lbl_not_started" var="meetingNotStart"/>
 <spring:message code="lbl_close" var="meetingOver"/>
 <spring:message code="lbl_online" var="onlineMode"/>
 <spring:message code="lbl_offline" var="offlineMode"/>
 <spring:message code="title_tender_createcomitee" var="prebidcommittee"/>
+
 
 <c:choose>
     <c:when test="${preBidObj[0][6] eq 0}">
@@ -29,12 +27,6 @@
     </c:otherwise>
 </c:choose>
 <c:set var="meetingMode" value="${prebidDtls[1] eq 1 ? onlineMode : offlineMode}" />
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
 <div class="content-wrapper">
 <section class="content">
 	<div class="row">
@@ -44,9 +36,18 @@
 
 						<div class="box-header with-border">
 							<h3 class="box-title"><spring:message code="lbl_upload_mom" /></h3>
-							<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}" class="btn btn-submit pull-right" style="margin-top:0px;"><< Go To Tender Dashboard</a>
+							<div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< go back to dashboard</a></div>
+							
 						</div>
-					
+						<c:if test="${not empty successMsg}">
+						<div class="alert alert-success"><spring:message code="${successMsg}" /></div>
+						</c:if>
+
+			<c:if test="${not empty errorMsg}">
+						<div class="alert alert-danger">
+							<spring:message code="${errorMsg}" />
+						</div>
+			</c:if>
 						<div class="box-body">
 							<div class="row">
 
@@ -67,8 +68,8 @@
 						                    <tbody>
 						                    <tr>
 						                        <td class="a-center"><spring:message  text="${meetingMode}" /></td>
-						                        <td class="a-center">${prebidDtls[2]}</td>
-						                        <td class="a-center">${prebidDtls[3]}</td>
+						                        <td class="a-center">${prebidstartdate}</td>
+						                        <td class="a-center">${prebidenddate}</td>
 						                        <td class="a-center"><spring:message text="${meetingStatus}" /></td>
 						                    </tr>
 						                    </tbody>
@@ -79,7 +80,7 @@
             </div>
             </div>
             </div>
-            			<c:if test="${prebidDtls[3] lt currentDate}">
+            			<c:if test="${prebidstartdate lt currentDate}">
 					       <div class="row">
 								<div class="col-lg-12 col-md-12 col-xs-12">
 									<%@include file="./UploadDocuments.jsp"%>
@@ -92,9 +93,4 @@
 </div>
 </section>
 </div>
-
-</div>
-
-</body>
-
-</html>
+<%@include file="../../includes/footer.jsp"%>

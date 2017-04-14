@@ -1,25 +1,5 @@
-<!DOCTYPE html>
-<html>
-<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
-	pageEncoding="ISO-8859-1"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
-<script type="text/javascript">
-	function getStates() {
- 		$('#countryForm').attr('action', '${pageContext.servletContext.contextPath}/etender/buyer/getState');
-		$( "#countryForm" ).submit();
-	}
-	function getCities() {
-		$('#countryForm').attr('action', '${pageContext.servletContext.contextPath}/etender/buyer/getCity');
-		$( "#countryForm" ).submit();
-	}
-</script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 
 <div class="content-wrapper">
 <div class="box-body">
@@ -74,6 +54,14 @@
 	</div>
 	</div>
 	</div>
-</div>
-</body>
-</html>
+<script type="text/javascript">
+	function getStates() {
+ 		$('#countryForm').attr('action', '${pageContext.servletContext.contextPath}/etender/buyer/getState');
+		$( "#countryForm" ).submit();
+	}
+	function getCities() {
+		$('#countryForm').attr('action', '${pageContext.servletContext.contextPath}/etender/buyer/getCity');
+		$( "#countryForm" ).submit();
+	}
+</script>
+<%@include file="../../includes/footer.jsp"%>

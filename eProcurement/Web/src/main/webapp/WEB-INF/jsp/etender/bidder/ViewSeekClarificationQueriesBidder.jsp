@@ -1,28 +1,9 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.custom.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/jquery.cookie.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-		<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">        
+<%@include file="../../includes/head.jsp"%>
+        <%@include file="../../includes/masterheader.jsp"%>
+      
         <spring:message code="lbl_create_dept" var="createdepartment"/>
-        <title>${createdepartment}</title>
-        <script type="text/javascript">
-           </script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: auto; ">
-
+       
+<div class="content-wrapper">
 <section class="content-header">
 </section>
 
@@ -32,7 +13,7 @@
 					
 					<div class="box">
 						<div class="box-header with-border">
-	               						<h3 class="box-title">Respond to query</h3>
+	               						<h3 class="box-title"><spring:message code="respond_query_bidder"/></h3>
 						</div>
 						<div class="box-header with-border">
 								<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"><< Back to tenderdashboard</a>
@@ -70,8 +51,10 @@
 											<c:forEach items="${tblQuestionAnswersLst}" var="tblQuestionAnswers" varStatus="cnt">
     										<tr>
     												<td>${cnt.index+1}</td>
+    												<c:set var="queDate" value="queId_${tblQuestionAnswers.questionId}" />
+        											<c:set var="ansDate" value="ansId_${tblQuestionAnswers.questionId}" />
         											<td><c:out value="${tblQuestionAnswers.question}"/></td>
-        											<td><c:out value="${tblQuestionAnswers.questionDate}"/></td>
+        											<td><c:out value="${questionDates[queDate]}"/></td>
         											<c:choose>
         												<c:when test="${tblQuestionAnswers.answerBy eq 0}">
         													<td><a href="${pageContext.servletContext.contextPath}/etender/bidder/responseQueryView/${tenderId}/${envelopeId}/${sessionObject.bidderId}/${tblQuestionAnswers.questionId}" title="">Reply</a></td>		
@@ -93,13 +76,7 @@
 						</div>
 					</div>
 				</div>
-				</div>
+		
 </section>
-
 </div>
-  
-</div>
-  
-</body>
-
-</html>
+<%@include file="../../includes/footer.jsp"%>

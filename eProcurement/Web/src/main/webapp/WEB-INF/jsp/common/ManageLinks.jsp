@@ -1,25 +1,7 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="./../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>        
-        <spring:message code="lbl_manage_link" var="lbl_manage_link"/>
-        <title>${lbl_manage_link}</title>
-        <script type="text/javascript">
-            $(document).ready(function() {
-            
-        	});
-           </script>
-</head>
+<%@include file="./../includes/head.jsp"%>
+       <%@include file="./../includes/masterheader.jsp"%>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="./../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: 1000px; ">
+ <div class="content-wrapper">       
 <section class="content-header">
 			<h1>
 				${lbl_manage_link}
@@ -47,11 +29,9 @@
 	</div>			
 </section>
 
-
 </div>
 
-</div>
-
+  
 <script type="text/javascript">
 loadListPage('listingDiv',9);
 function callActionItem(cthis){
@@ -63,8 +43,10 @@ function callActionItem(cthis){
 	
 }
 </script>
-  <script type="text/javascript">
-  
-</script>
-    </body>
-</html>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+            
+        	});
+           </script>
+  <%@include file="./../includes/footer.jsp"%>

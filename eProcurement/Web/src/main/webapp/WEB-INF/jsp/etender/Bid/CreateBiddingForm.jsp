@@ -1,46 +1,36 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@include file="../../includes/head.jsp"%>
 <jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../../includes/header.jsp"%>
-  <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
-</head>
+<%@include file="../../includes/masterheader.jsp"%>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
+ 
+       <c:if test="${not empty successMsg}">
+      		<div class="alert alert-success">  ${successMsg}</div>
+		</c:if>
 	<div class="content-wrapper">
 		<section class="content-header">
-			<c:if test="${not empty successMsg}">
-      		<div class="alert alert-success">  ${successMsg}</div>
-		</c:if>	
-     	</section>
-     	<section class="content">
-     	<div id="listingDiv">
+				<div id="listingDiv">
 				</div>
+     	</section>
     </div>
-	<%@include file="../../includes/footer.jsp"%>
+	
 	
 
-	</div>
+
 <script type="text/javascript">
 loadListPage('listingDiv',1);
 function callActionItem(cthis){
 	var actionname = $(cthis).attr("actionname");
-	if(actionname == "edit"){
+	if(actionname.toLowerCase() == "edit"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child(4)').html()
 		window.location = "${pageContext.servletContext.contextPath}/etender/buyer/createevent/"+tenderId
-	}else if(actionname == "view"){
+	}else if(actionname.toLowerCase() == "view"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child(4)').html()
 		window.location = "${pageContext.servletContext.contextPath}/etender/buyer/viewtender/"+tenderId+"/0"
-	}else if(actionname == "dashboard"){
+	}else if(actionname.toLowerCase() == "dashboard"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child(4)').html()
 		window.location = "${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/"+tenderId
 	}
 	
 }
 </script>
-</body>
-</html>
+<%@include file="../../includes/footer.jsp"%>

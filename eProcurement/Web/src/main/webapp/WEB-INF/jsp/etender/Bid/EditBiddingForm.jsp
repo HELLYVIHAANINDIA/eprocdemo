@@ -1,31 +1,20 @@
-<!DOCTYPE html>
-<html>
-<%@page import="com.eprocurement.etender.model.TblTenderEnvelope"%>
-<%@page import="java.util.List"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<%@include file="../../includes/header.jsp"%>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../includes/leftaccordion.jsp"%>
-         
-        <div class="content-wrapper">
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+<div class="content-wrapper">
             <section class="content-header">
                 <h1>
-                     Edit Bidding Form <small></small>
+                     <spring:message code="lbl_edit_bidding_form" /> <small></small>
                 </h1>
             </section>
             <section class="content">
                 
-                <form id="tenderDtBean" name="tenderDtBean" action="/eProcurement/eBid/Bid/saveForm" method="get"  onsubmit="return createJSON();">
+                <form id="tenderDtBean" name="tenderDtBean" action="${pageContext.servletContext.contextPath}/eBid/Bid/saveForm" method="post"  onsubmit="return createJSON();">
 
                 <div class="row">
                     <div class="col-lg-12 col-md-12">
                         <div class="box">
                             <div class="box-header with-border">
-                                <h3 class="box-title">Create Bidding Form</h3>
+                                <h3 class="box-title"><spring:message code="lbl_create_bidding_form" /></h3>
                             </div>
                              <div class="row">
                                     <div class="col-lg-2">
@@ -37,7 +26,7 @@
 
                                     </div>
                                     <div class="col-lg-2">
-                                        <div class="form_filed">Update bidding form</div>
+                                        <div class="form_filed"><spring:message code="lbl_update_bidding_form" /></div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -50,7 +39,7 @@
 
                                     </div>
                                     <div class="col-lg-2">
-                                        <div class="form_filed">Update bidding form table details</div>
+                                        <div class="form_filed"><spring:message code="lbl_upadte_bidding_form_table_details" /></div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -63,7 +52,7 @@
 
                                     </div>
                                     <div class="col-lg-2">
-                                        <div class="form_filed">Update bidding form table structure</div>
+                                        <div class="form_filed"><spring:message code="lbl_update_bidding_form_table_structure" /></div>
                                     </div>
                                 </div>
                             
@@ -77,7 +66,7 @@
 
                                     </div>
                                     <div class="col-lg-2">
-                                        <div class="form_filed">Add Column</div>
+                                        <div class="form_filed"><spring:message code="lbl_add_column" /></div>
                                     </div>
                                 </div>
                             
@@ -94,7 +83,7 @@
 
                                     </div>
                                     <div class="col-lg-2">
-                                        <div class="form_filed">Delete Column</div>
+                                        <div class="form_filed"><spring:message code="lbl_delete_column" /></div>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -110,7 +99,7 @@
 
                                     </div>
                                     <div class="col-lg-2">
-                                        <div class="form_filed">Add/Delete Table Rows</div>
+                                        <div class="form_filed"><spring:message code="lbl_add/delete_table_row" /></div>
                                     </div>
                                 </div>
 
@@ -120,7 +109,7 @@
                                     <div class="col-lg-12 col-md-12 col-xs-12" id="FormTable">
                                         <div class="row">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Form Type</div>
+                                                <div class="form_filed"><spring:message code="lbl_form_type" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <label id="lblFormType"></label>
@@ -128,7 +117,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Form Name</div>
+                                                <div class="form_filed"><spring:message code="field_formName" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <input type="text" id="FormName" name="FormName" class="form-control" placeholder="Select Form Name">
@@ -136,7 +125,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Form Header</div>
+                                                <div class="form_filed"><spring:message code="lbl_form_header" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <textarea rowa="3" class="form-control" id="FromHeader"  name="FromHeader" placeholder="Select Form Header" ></textarea>
@@ -144,7 +133,7 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Form Footer</div>
+                                                <div class="form_filed"><spring:message code="lbl_form_footer" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <textarea rowa="3" class="form-control" id="FormFooter" name="FormFooter" placeholder="Select Form Footer" ></textarea>
@@ -152,83 +141,83 @@
                                         </div>
                                         <div class="row">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Required Bid Supporting Document</div>
+                                                <div class="form_filed"><spring:message code="lbl_required_bid_supporting_document" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <select class="form-control" id="RequiredSupportingDoc" name="RequiredSupportingDoc">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is Mandatory</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_mandatory" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <select class="form-control" id="IsMandatory" name="IsMandatory">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
                                         
                                         <div class="row" style="display:none">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is Encrypted Document?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_encrypted_document" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <select class="form-control" id="Encrypted" name="Encrypted">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
                                         
                                         <div class="row" style="display:none">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is Encryption Required?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_encrypted_required" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <select class="form-control" id="EncryptionReq" name="EncryptionReq">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
                                         
                                         <div class="row" style="display:none">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is Evaluation Required?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_evaluation_required" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <select class="form-control" id="IsEvaluation" name="IsEvaluation">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
                                         
                                         <div class="row" style="display:none">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is Item Wise Document Allowed?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_item_wise_document_allowed" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                     <select class="form-control" id="IsMandatory" name="IsItemWiseDoc">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
                                         
                                         <div class="row" style="display:none">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is Multiple Filling?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_multiple_filling" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <select class="form-control" id="IsMandatory" name="IsMultiple">
-                                                    <option value="1">Yes</option>
-                                                    <option value="0">No</option>
+                                                    <option value="1"><spring:message code="label_yes" /></option>
+                                                    <option value="0"><spring:message code="label_no" /></option>
                                                 </select>
                                             </div>
                                         </div>
@@ -241,36 +230,36 @@
 
 
                                             <div class="col-lg-2" >
-                                                <div class="form_filed">Is Price Bidding Form ?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_price_bidding_form" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <div class="form_bx">
-                                                    <label> <input type="radio" name="rdbPriceBidding" id="rdbPriceBiddingY"  value="1">Yes										</label>
-                                                    <label> <input type="radio" name="rdbPriceBidding" id="rdbPriceBiddingN"  value="0" checked="true" >No
+                                                    <label> <input type="radio" name="rdbPriceBidding" id="rdbPriceBiddingY"  value="1"><spring:message code="label_yes" />										</label>
+                                                    <label> <input type="radio" name="rdbPriceBidding" id="rdbPriceBiddingN"  value="0" checked="true" ><spring:message code="label_no" />
                                                     </label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="row" style="display:none" id="dvConsortium">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is consortium  applicable?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_consortium_applicable" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <div class="form_bx">
-                                                    <label> <input name="rdbConsortium" id="rdbConsortiumY" type="radio" value="1">Yes</label>
-                                                    <label> <input name="rdbConsortium" id="rdbConsortiumN" type="radio" value="0" checked="true">No </label>
+                                                    <label> <input name="rdbConsortium" id="rdbConsortiumY" type="radio" value="1"><spring:message code="label_yes" /></label>
+                                                    <label> <input name="rdbConsortium" id="rdbConsortiumN" type="radio" value="0" checked="true"><spring:message code="label_no" /> </label>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="row" style="display:none" id="dvSecondaryPartner">
                                             <div class="col-lg-2">
-                                                <div class="form_filed">Is applicable for secondary partner?</div>
+                                                <div class="form_filed"><spring:message code="lbl_is_applicable_for_secondary_partner" /></div>
                                             </div>
                                             <div class="col-lg-10">
                                                 <div class="form_bx">
-                                                    <label> <input name="rdbsecondaryPartner" id="rdbsecondaryPartnerY" type="radio" value="1">Yes</label>
-                                                    <label> <input name="rdbsecondaryPartner" id="rdbsecondaryPartnerN" type="radio" value="0">No </label>
+                                                    <label> <input name="rdbsecondaryPartner" id="rdbsecondaryPartnerY" type="radio" value="1"><spring:message code="label_yes" /></label>
+                                                    <label> <input name="rdbsecondaryPartner" id="rdbsecondaryPartnerN" type="radio" value="0"><spring:message code="label_no" /></label>
                                                 </div>
                                             </div>
                                         </div>
@@ -278,8 +267,8 @@
                                     </div>
 
                                     <div class="col-md-12 text-center">
-                                        <button type="submit" class="btn btn-submit" id="btnSubmitForm">Submit</button>
-                                        <button type="button" class="btn btn-submit">Reset</button>
+                                        <button type="submit" class="btn btn-submit" id="btnSubmitForm"><spring:message code="label_submit" /></button>
+                                        <button type="button" class="btn btn-submit"><spring:message code="lbl_reset" /></button>
                                     </div>
                                 </div>
                             </div>
@@ -289,8 +278,7 @@
                     <input type="text" id="hdnFormId" name="hdnFormId">
                  </form>       
             </section>
-        </div>
-</div>
+  </div>     
 <script src="${pageContext.servletContext.contextPath}/resources/PageJS/BiddingForm.js" type="text/javascript"></script>
 
 <script>
@@ -454,5 +442,6 @@
              
               
 </script>
-    </body>
-</html>
+<%@include file="../../includes/footer.jsp"%>
+
+   

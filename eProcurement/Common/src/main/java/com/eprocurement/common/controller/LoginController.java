@@ -239,12 +239,12 @@ public class LoginController {
                         	}
                         }
                     } else {
-                    	redirectAttributes.addFlashAttribute("message", "Your request is pending for approval");
+                    	redirectAttributes.addFlashAttribute("message", "Username or password is invalid");
                     	redirect="redirect:loginfailed";
                         throw new BadCredentialsException("User doesn't exists");
                     }
                 }else{
-                	redirectAttributes.addFlashAttribute("message", "Your request is pending for approval");
+                	redirectAttributes.addFlashAttribute("message", "Username or password is invalid");
                 	redirect="redirect:loginfailed";
                     throw new BadCredentialsException("User doesn't exists");
                 }
@@ -283,7 +283,7 @@ public class LoginController {
 	
 	@RequestMapping(value = {"/loginfailed"}, method = RequestMethod.GET)
 	public String loginfailed() {
-	    return "Login";
+		return "Login";
 	}
 	
 	@RequestMapping(value = {"/getforgotpassword"}, method = RequestMethod.GET)

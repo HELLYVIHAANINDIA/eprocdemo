@@ -21,7 +21,6 @@
                                     <br/>${data[5]}-${data[4]}
                                     <input type="hidden" value="${data[0]}_${data[6]}" name="UnMappedCoId"/>
                                 </td>
-                                <%-- <td><abc:href href="common/admin/viewbidderprofile/${data[0]}" label="${data[1]}" target="_blank" title="${var_lbl_coprofile}"/></td> --%>
                             </tr>
                         </c:forEach>
                         <tr id="searchResult_2">

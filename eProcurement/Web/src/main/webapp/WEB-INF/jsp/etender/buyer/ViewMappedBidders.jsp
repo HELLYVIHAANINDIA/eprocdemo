@@ -1,38 +1,10 @@
-<!DOCTYPE html>
-<html>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-      <!-----data table script -->
-                  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/jquery.dataTables.min.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/dataTables.buttons.min.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/buttons.flash.min.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/jszip.min.js "></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/pdfmake.min.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/vfs_fonts.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/buttons.html5.min.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/buttons.print.min.js"></script>
-  <script src="${pageContext.servletContext.contextPath}/resources/js/datatable/fnReloadAjax.js"></script>  
-  <link href="${pageContext.servletContext.contextPath}/resources/js/datatable/css/buttons.dataTables.min.css" rel="stylesheet" />
-                 <!-----data table script -->
-  <link href="${pageContext.servletContext.contextPath}/resources/css/ui.dynatree.css" rel="stylesheet" type="text/css" id="skinSheet">
-   <!-----data table css -->
-  <link type="text/css" rel="stylesheet" media="all" href="${pageContext.servletContext.contextPath}/resources/js/datatable/css/demo_table_jui.css" >
-  <link type="text/css" rel="stylesheet" media="all" href="${pageContext.servletContext.contextPath}/resources/js/datatable/css/jquery-ui-1.8.11.custom.css" >
-         <!-----data table css -->
-                
-                
-                <title><spring:message code="title_heading_tender_viewmappedbidder" var="var_title"/>${var_title}</title>
-    </head>
-    <spring:message code="msg_sendbidder_mail" var="msgMail"/>
+<%@include file="../../includes/head.jsp"%>
+       <%@include file="../../includes/masterheader.jsp"%>
+      
+  
+<spring:message code="msg_sendbidder_mail" var="msgMail"/>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: auto; ">
+<div class="content-wrapper">
 
 <section class="content-header">
 
@@ -108,8 +80,6 @@
 </section>
 
 </div>
-</div>
-
 
 <script>
     var isAuction='${isAuction}';
@@ -162,5 +132,5 @@
 }
 
 </script>
-</body>
-</html>
+
+<%@include file="../../includes/footer.jsp"%>

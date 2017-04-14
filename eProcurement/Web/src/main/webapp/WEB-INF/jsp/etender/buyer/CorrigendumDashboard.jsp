@@ -1,18 +1,7 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../../includes/header.jsp"%>
-</head>
-	
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-	
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 <div class="content-wrapper">
-
-<section class="content-header">
+		<section class="content-header">
 <!-- 		onsubmit="return validation();" -->
 <form id="tenderDtBean" name="tenderDtBean" onsubmit="return validation();" action="${pageContext.servletContext.contextPath}/etender/buyer/submittendercorrigendum" method="post" >
 <div class="main_container o-hidden" id="temp">
@@ -50,10 +39,7 @@
 				</c:if>
 					</div></div></form>
          	</section></div>
-	<%@include file="../../includes/footer.jsp"%>
-</div>
 <script type="text/javascript">
 $("#corrigendumText").wysihtml5();
 </script>
-</body>
-</html>
+<%@include file="../../includes/footer.jsp"%>

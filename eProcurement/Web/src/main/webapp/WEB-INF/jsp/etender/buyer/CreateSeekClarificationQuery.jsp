@@ -1,53 +1,16 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
+<%@include file="../../includes/head.jsp"%>
+        <%@include file="../../includes/masterheader.jsp"%>
         <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-		<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">        
+		 
         <spring:message code="lbl_create_dept" var="createdepartment"/>
-        <title>${createdepartment}</title>
-        <script type="text/javascript">
-        
-        function validate(){
-            $(".err").remove();
-            var vbool = true;
-            // Set this value to avoid validation of file upload
-//             $("#txtDocDesc").val('tempvalue');
-            if(!valOnSubmit()) {
-                vbool = false;
-            }
-         	return disableBtn(vbool);
-
-        }
-        function setQuestionStatus(action){
-                $("#txtQueryStatus").val(action);
-                //alert($("#txtQueryStatus").val());
-        }
-        
-        var VALIDATE_MSG_REQUIRED = 'Please enter';
-        var VALIDATE_MSG_SELECT = 'Please select';
-        var VALIDATE_MSG_ALLOW_MAX='Allows Max. ';
-        var VALIDATE_MSG_TENDERBRIEF='characters';
-        var isDepartmentExists=false;
-           </script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: auto;">
+       
+<div class="content-wrapper">
 
 <section class="content-header">
 </section>
 
 <section class="content">
-	<div class="row">
+<div class="row">
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 					<div class="box">
 					
@@ -76,7 +39,7 @@
 										</div>
 										<div class="col-lg-5">
 											<div class="form_filed">
-												<textarea name="txtaQuery" title="Post Question" isrequired="true" maxlength="1000" validation="length,alphanumwithnewchar"> </textarea>
+												<textarea name="txtaQuery" title="Post Question" isrequired="true" maxlength="1000" validation="length,rgx_alphanumwithnewchar"> </textarea>
 											</div>
 										</div>
 									</div>
@@ -106,11 +69,31 @@
 						</div>
 					</div>
 				</div>
-			</div>
+				</div>
 </section>
-
-</div>  
-
 </div>
-    </body>
-</html>
+        <script type="text/javascript">
+        
+        function validate(){
+            $(".err").remove();
+            var vbool = true;
+            // Set this value to avoid validation of file upload
+//             $("#txtDocDesc").val('tempvalue');
+            if(!valOnSubmit()) {
+                vbool = false;
+            }
+         	return disableBtn(vbool);
+
+        }
+        function setQuestionStatus(action){
+                $("#txtQueryStatus").val(action);
+                //alert($("#txtQueryStatus").val());
+        }
+        
+        var VALIDATE_MSG_REQUIRED = 'Please enter';
+        var VALIDATE_MSG_SELECT = 'Please select';
+        var VALIDATE_MSG_ALLOW_MAX='Allows Max. ';
+        var VALIDATE_MSG_TENDERBRIEF='characters';
+        var isDepartmentExists=false;
+           </script>
+           <%@include file="../../includes/footer.jsp"%>

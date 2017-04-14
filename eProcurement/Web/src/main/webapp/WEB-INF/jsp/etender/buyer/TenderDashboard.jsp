@@ -1,24 +1,17 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+<%@include file="../../includes/head.jsp"%>
+
+<%@include file="../../includes/masterheader.jsp"%>
+<%@page import="java.util.TimeZone"%>
+<%@page import="java.util.Calendar"%>
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="com.eprocurement.etender.model.TblTender"%>
+<%@ taglib uri="http://www.ctpl.com/functions" prefix="util" %>
 <jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../../includes/header.jsp"%>
 
-<style type="text/css">
-.pullright{
-	float: right;
-}
-.pullleft{
-	float: left;
-}
-</style>
-
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery-ui.min.css">
 <spring:message code="link_create" var="createlink" />
 <spring:message code="link_tender_edit" var="editlink" />
 <spring:message code="workflow_pending" var="workflow_pending" />
-<spring:message code="link_tender_view" var="viewlink" />
+<spring:message code="label_view" var="viewlink" />
 <spring:message code="link_tender_publish" var="publishlink" />   
 <spring:message code="link_tender_processinwf" var="processworkflowlink"/>
 <spring:message code="link_tender_configurewf_for_bid_opening" var="link_tender_configurewf_for_bid_opening"/>
@@ -53,283 +46,243 @@
 <spring:message code = "lbl_publish_mom"              var = "var_lbl_publish_mom" />
 <spring:message code="lbl_view_doc" var="lbl_view_doc"/>
 <spring:message	code="label_publish" var="label_publish"/>
- 
-
-<style>
-.customCls{
-background:#f0f0f0;
-border:1px solid #b1c2ca;
-width:100%
-}
-       
-</style>
-
 <spring:message  code="title_upload_documents" var="title_upload_documents"/>
+<spring:message code="msg_alert_delete_formula" var="msg_alert_delete_formula"/>
 
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="min-height: auto;">
-
-    <c:if test="${not empty successMsg}">
-    	<c:choose>
-    		<c:when test="${fn:contains(successMsg, '_')}">
-    			<div class="alert alert-success"><spring:message code="${successMsg}"/></div>
-    		</c:when>
-    		<c:otherwise>
-    			<div class="alert alert-success">${successMsg}</div>
-    		</c:otherwise>
-    	</c:choose>
-	</c:if>
+	<div class="content-wrapper">
+	<section class="content-header">
+<c:choose>
+	<c:when test="${isAuction eq 1}">
+		<h1 class="pull-left"><spring:message code="lbl_auction_dashboard" /></h1>
+		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing" class="pull-right"><< <spring:message code="lbl_go_to_auction_list" /></a>
+	</c:when>
+	<c:when test="${isAuction eq 0}">
+		<h1 class="pull-left">Tender Dashboard</h1>
+		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="pull-right"> << <spring:message code="lbl_back_tenderlist"/></a>
+	</c:when>
+</c:choose>
+		
+	</section>
 	
-	<c:if test="${not empty errorMsg}">
-	    <c:choose>
-    		<c:when test="${fn:contains(errorMsg, '_')}">
-    			<div class="alert alert-danger"><spring:message code="${errorMsg}"/></div>
-    		</c:when>
-    		<c:otherwise>
-    			<div class="alert alert-danger">${errorMsg}</div>
-    		</c:otherwise>
-    	</c:choose>
-	</c:if>
+	<div class="clearfix"></div>
+	<c:if test="${isAuction eq 0}">    
+		<section class="content">
+			<c:if test="${not empty successMsg}">
+				<c:choose>
+					<c:when test="${fn:contains(successMsg, '_')}">
+						<div class="alert alert-success">
+							<spring:message code="${successMsg}" />
+						</div>
+					</c:when>
+					<c:otherwise>
+						<div class="alert alert-success">${successMsg}</div>
+					</c:otherwise>
+				</c:choose>
+			</c:if>
+
+			<c:if test="${not empty errorMsg}">
+				<c:choose>
+					<c:when test="${fn:contains(errorMsg, '_')}">
+						<div class="alert alert-danger">
+							<spring:message code="${errorMsg}" />
+						</div>
+					</c:when>
+					<c:otherwise>
+						<div class="alert alert-danger">${errorMsg}</div>
+					</c:otherwise>
+				</c:choose>
+			</c:if>
+			
+        
 	
-<c:if test="${isAuction eq 0}">            
-
-<section class="content-header">
-<h1 class="pull-left">RFX</h1>
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="btn btn-submit pull-right" style="margin-top:0px;"><< <spring:message code="lbl_back_tenderlist"/></a>
-</section>
-
-<section class="content">
-
+			<%@include file="TenderSummary.jsp"%>
+			
 <div class="row">
-	<%@include file="TenderSummary.jsp"%>
-</div>
-
-<div class="row">
-<div class="col-md-12">
-<div class="box">
-<div class="box-header with-border">
-<h3 class="box-title">Notice & Document</h3>
-</div>
-<div class="box-body">
-
-<div id="collapse1" class="panel-collapse">
-				<div class="row">
-					<div class="col-md-3"><div class="vt"><spring:message code="field_notice"/></div></div>
+  <div class="col-md-12">
+	<div class="box">
+		<div class="box-header with-border" data-toggle="collapse" href="#collapse1">
+		<h3 class="box-title"><a>Tender notice</a></h3>
+		</div>
+		<div class="box-body">
+			<div class="row">
+				<div class="col-md-12">      
+      <div id="collapse1" class="panel-collapse">
+				<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="field_notice"/></div>
 					<div class="col-md-9">
 						<c:choose>
 							<c:when test="${tblTender.cstatus eq '0'}">
-								<c:if test="${(empty corrigendumWorkflowList && isTenderWorkflowStarted ne true) or (workflowToInitiator eq true)}">
-								<a href="${pageContext.servletContext.contextPath}/etender/buyer/createevent/${tblTender.tenderId}" class="tnd_bttn"><spring:message	code="label_edit" /> </a>
+								<c:if test="${((empty corrigendumWorkflowList && isTenderWorkflowStarted ne true) or (workflowToInitiator eq true)) && workflowDone ne true}">
+								<c:set var="encParamCreateEvent" value="${pageContext.servletContext.contextPath}/etender/buyer/biddermapping/${tblTender.tenderId}" />
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/createevent/${tblTender.tenderId}"><spring:message	code="label_edit" /> </a>
 								</c:if> 
 								<c:choose>
-									<c:when test="${tblTender.isWorkflowRequired eq 1 && workflowDone eq true}">
-										<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" onclick="return validatePublishTender(${tblTender.tenderId})" class="tnd_bttn">${label_publish}</a>
+									<c:when test="${tblTender.isWorkflowRequired eq 1 && workflowDone eq true && workflowToInitiator eq true}">
+										|&nbsp;<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" onclick="return validatePublishTender(${tblTender.tenderId})">${label_publish}</a>
 									</c:when>
 									<c:when test="${tblTender.isWorkflowRequired eq 0}">
-										<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" onclick="return validatePublishTender(${tblTender.tenderId})" class="tnd_bttn">${label_publish}</a>
+										|&nbsp;<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" onclick="return validatePublishTender(${tblTender.tenderId})">${label_publish}</a>
 									</c:when>
 								</c:choose>
-							  <a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtender/${tblTender.tenderId}/0" class="tnd_bttn"><spring:message	code="label_view" /></a>
-							  <a href="${pageContext.servletContext.contextPath}/etender/buyer/deleteTender/${tenderId}" onclick="return confirm('<spring:message code="msg_tender_delete_confirm"/>')" class="tnd_bttn"><spring:message code="link_tender_delete"/></a>
+							  |&nbsp;<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtender/${tblTender.tenderId}/0">${viewlink}</a>
+							  <%-- |&nbsp;<a href="${pageContext.servletContext.contextPath}/etender/buyer/deleteTender/${tenderId}" onclick="return confirm('<spring:message code="msg_tender_delete_confirm"/>')"><spring:message code="link_tender_delete"/></a> --%>
 							</c:when>
 							<c:otherwise>
-								<a	href="${pageContext.servletContext.contextPath}/etender/buyer/viewtender/${tblTender.tenderId}/0" class="tnd_bttn"><spring:message	code="label_view" /></a>
-								<a href="${pageContext.servletContext.contextPath}/common/addEditMarquee/${tenderId}" class="tnd_bttn"><spring:message code="lbl_add_edit_biddermsg"/></a>
+								<a	href="${pageContext.servletContext.contextPath}/etender/buyer/viewtender/${tblTender.tenderId}/0">${viewlink}</a>
+								|&nbsp;<a href="${pageContext.servletContext.contextPath}/common/addEditMarquee/${tenderId}" ><spring:message code="lbl_add_edit_biddermsg"/></a>
 							</c:otherwise>
 						</c:choose>
 					</div>
 				</div>
-				<div class="row">
-					<c:if test="${tblTender.tenderMode eq 2 or tblTender.tenderMode eq 3}">
-						<div class="col-md-3"><div class="vt"><spring:message code="field_bidder"/></div>
-						</div>
-						<div class="col-md-9">
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/biddermapping/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="lbl_mapbidder"/> </a>
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewmappedbidders/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="title_heading_tender_viewmappedbidder"/> </a>
-					</div>
-					</c:if>
-				</div>
-				<div class="row">
-					<div class="col-md-3"><div class="vt"><spring:message code="field_documents"/></div>
+				
+				<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="field_documents"/>
 					</div>
 					<div class="col-md-9">
 					<c:choose>
-					<c:when test="${(empty corrigendumWorkflowList && isTenderWorkflowStarted ne true) or (workflowToInitiator eq true)}">
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/tendernitdocument/${tblTender.tenderId}/0" class="tnd_bttn">${title_upload_documents}</a>
+					<c:when test="${(empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  && tblTender.cstatus eq 0) or (workflowToInitiator eq true and tblTender.cstatus eq 0)}">
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/tendernitdocument/${tblTender.tenderId}/0">${title_upload_documents}</a>
+						| <a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tblTender.tenderId}/${tenderNITObjectId}/${tblTender.tenderId}/0/0" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a>
 					</c:when>
 					<c:when test="${documentEndDateOver ne true}">
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tenderNITObjectId}/${tblTender.tenderId}/${tblTender.tenderId}/0/0" class="tnd_bttn" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a>
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tblTender.tenderId}/${tenderNITObjectId}/${tblTender.tenderId}/0/0" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a>
 					</c:when>
 					</c:choose>
 					</div>
 				</div>
-				<c:if test="${tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)}">
-				<div class="row">
-					<div class="col-md-3"><div class="vt">Terms & Condition</div>
+				<c:if test="${tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)}">
+				<div class="col-md-12">
+					<div class="col-md-3">Terms & Condition
 					</div>
 					<div class="col-md-9">
-					<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcreatetermandconditions/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="lbl_update_term_condition"/> </a>
+					<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcreatetermandconditions/${tblTender.tenderId}"><spring:message code="lbl_update_term_condition"/> </a>
 					</div>
 				</div>
 				</c:if>
 				<c:if test="${tblTender.cstatus eq 1}">
-				<div class="row">
-					<div class="col-md-3"><div class="vt">Cancel tender</div>
+				<div class="col-md-12">
+					<div class="col-md-3">Cancel tender
 					</div>
 					<div class="col-md-9">
-					<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcanceltender/${tblTender.tenderId}" class="tnd_bttn">Cancel tender</a>
+					<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcanceltender/${tblTender.tenderId}">Cancel tender</a>
 					</div>
 				</div>
 				</c:if>
-<%-- 				<c:if test="${copyTenderRequired eq true}"> --%>
-				<div class="row">
-					<div class="col-md-3"><div class="vt">Copy tender</div>
-					</div>
-					<div class="col-md-9">
-					<a href="#" onclick="copyTender();" class="tnd_bttn">Copy tender</a>
-					</div>
-				</div>
-<%-- 				</c:if> --%>
 			</div>
-
-</div>			
-			
+				</div>
+			</div>
+		</div>
+	</div>
+  </div>
 </div>
-
-</div>
-
-</div>
-
-<div class="row">
-<div class="col-md-12">
-
-<div class="box">
-
-<div class="box-header with-border">
-<h3 class="box-title">Notice & Document</h3>
-</div>
-
-<div class="box-body">
-
-<div class="row">
 
 <!--  Corrigendum Start -->
 <c:if test="${tblTender.cstatus eq 1}">
-
-<div class="col-md-12">
-    
-<div class="panel-heading customCls" data-toggle="collapse" href="#corrigendum" >
-        <h4 class="panel-title">
-          <a><spring:message code="label_corrigendum"/></a>
-        </h4>
-      </div>
-      
-<div id="corrigendum" class="panel-collapse pnl">
-      
-<c:choose>
-     		
-<c:when test="${not empty currentCorrigendum}">
 <div class="row">
-<div class="col-md-3"><div class="vt"><spring:message code="label_corrigendum"/></div></div>
-<div class="col-md-9">
-<c:if test="${submissionDateOver ne true}">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcorrigendum/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="label_edit"/></a>
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/tendercorrigendum/${tenderId}/${currentCorrigendum.corrigendumId}" class="tnd_bttn"><spring:message code="label_edit_notice"/></a>
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/deletecorrigendum/${tenderId}/${currentCorrigendum.corrigendumId}" class="tnd_bttn" onclick="return confirmCorrigenudmDelete()">${deletelink}</a>
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/tendernitdocument/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}" class="tnd_bttn">${title_upload_documents}</a> |
-</c:if>
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewcorrigendum/${tenderId}"><spring:message code="label_view"/></a>
-<c:choose>
-<c:when test="${tblTender.isWorkflowRequired eq 1 && corrigendumWorkflowDone eq true && submissionDateOver ne true}">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" class="tnd_bttn" onclick="return validatePublishTender(${tblTender.tenderId})">${label_publish}</a>
-</c:when>
-<c:when test="${tblTender.isWorkflowRequired eq 0 && submissionDateOver ne true}">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" class="tnd_bttn" onclick="return validatePublishTender(${tblTender.tenderId})">${label_publish}</a>
-</c:when>
-</c:choose>
-<c:if test="${submissionDateOver ne true}">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/showpublishcorrigendum/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}" class="tnd_bttn"><spring:message code="label_publish"/></a>
-</c:if>
-</div>
-</div>
-</c:when>
-			
-<c:when test="${empty currentCorrigendum}">		
-<div class="row">
-<div class="col-md-3"><div class="vt"><spring:message code="label_corrigendum"/></div></div>
-<div class="col-md-9">
-<c:if test="${submissionDateOver ne true }">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcorrigendum/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="label_create"/></a> |
-</c:if>	
-<c:if test="${not empty tblCorrigendum}">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewcorrigendum/${tenderId}" class="tnd_bttn"><spring:message code="label_view"/></a>
-</c:if>
-</div>
-</div>
-</c:when>
-			
-</c:choose>
-			
-<c:if test="${not empty tblCorrigendum }">
-<c:forEach items="${tblCorrigendum}" var="items" varStatus="indx">
-<c:if test="${items.cstatus ne '0'}">
-<div class="row">
-<div class="col-md-3">
-<div class="vt"><spring:message code="lbl_create_corrigendum_text"/> ${indx.count}</div>
-</div>
-<div class="col-md-3"><div class="vt">${items.corrigendumText}</div></div>
-</div>
+  <div class="col-md-12">
+	<div class="box">
+		<div class="box-header with-border" data-toggle="collapse" href="#corrigendum">
+			<h3 class="box-title"><a><spring:message code="label_corrigendum"/></a></h3>
+		</div>
+		<div class="box-body">
+			<div class="row">
+				      <div id="corrigendum" class="panel-collapse">
+     		<c:choose>
+     		<c:when test="${not empty currentCorrigendum}">
+					<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="label_corrigendum"/></div>
+					<div class="col-md-9">
+						<c:if test="${isAnyConsentReceived ne true && isCurrentWorkflowStart ne true}">
+							<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcorrigendum/${tblTender.tenderId}"><spring:message code="label_edit"/></a>
+							| <a href="${pageContext.servletContext.contextPath}/etender/buyer/tendercorrigendum/${tenderId}/${currentCorrigendum.corrigendumId}"><spring:message code="label_edit_notice"/></a>
+							| <a href="${pageContext.servletContext.contextPath}/etender/buyer/deletecorrigendum/${tenderId}/${currentCorrigendum.corrigendumId}" onclick="return confirmCorrigenudmDelete()">${deletelink}</a>
+							| <a href="${pageContext.servletContext.contextPath}/etender/buyer/tendernitdocument/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}">${title_upload_documents}</a> |
+						</c:if>
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tblTender.tenderId}/${tenderNITObjectId}/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}/0" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a> |
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewcorrigendum/${tenderId}/0">${viewlink}</a>
+						<!-- hideCorrigendumPublish : if workflow enable then only this will be true-->
+						<c:choose>
+						<c:when test="${hideCorrigendumPublish ne true && isCorrigendumWorkflowStarted ne true && isAnyConsentReceived ne true && ((tblTender.isWorkflowRequired eq 0) or (tblTender.isWorkflowRequired eq 1 && corrigendumWorkflowDone eq true && corrigendumWorkflowToInitiator eq true))}">
+								| <a href="${pageContext.servletContext.contextPath}/etender/buyer/showpublishcorrigendum/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}"><spring:message code="label_publish"/></a>	
+						</c:when>
 						
-<c:if test="${documentEndDateOver ne true}">						
-<div class="row">
-<div class="col-md-3">
-<div class="vt"><spring:message code="field_documents"/></div>
+						</c:choose>
+						
+					</div>
+				</div>
+			</c:when>
+			<c:when test="${empty currentCorrigendum}">
+			<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="label_corrigendum"/></div>
+					<div class="col-md-9">
+					<c:if test="${isAnyConsentReceived ne true }">
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcorrigendum/${tblTender.tenderId}"><spring:message code="label_create"/></a> |
+					</c:if>	
+					<c:if test="${not empty tblCorrigendum}">
+					  <a href="${pageContext.servletContext.contextPath}/etender/buyer/viewcorrigendum/${tenderId}/0">${viewlink}</a>
+					</c:if>
+					</div>
+				</div>
+			</c:when>
+			</c:choose>
+			<br/>
+			<c:if test="${not empty tblCorrigendum }">
+				<c:forEach items="${tblCorrigendum}" var="items" varStatus="indx">
+					<c:if test="${items.cstatus ne '0'}">
+						<div class="col-md-12 border">
+							<div class="col-md-3">
+								<spring:message code="lbl_create_corrigendum_text"/> ${indx.count}
+							</div>
+							<div class="col-md-3">${items.corrigendumText}</div>
+						</div>
+						<c:if test="${documentEndDateOver ne true}">
+						<div class="col-md-12 border">
+							<div class="col-md-3">
+								<spring:message code="corrigendum_view_doc"/>
+							</div>
+							<div class="col-md-3">
+					  			<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tblTender.tenderId}/${tenderNITObjectId}/${tblTender.tenderId}/${items.corrigendumId}/0" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a>
+							</div>
+						</div>
+						</c:if>
+					</c:if>
+				</c:forEach>
+			</c:if>
+			</div>
+			</div>
+		</div>
+	</div>
+  </div>
 </div>
-<div class="col-md-3">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tenderNITObjectId}/${tblTender.tenderId}/${tblTender.tenderId}/${items.corrigendumId}/0" class="tnd_bttn" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a>
-</div>
-</div>
-</c:if>
-</c:if>
-</c:forEach>
-</c:if>
-			
-</div>
-			
-</div>
-    
 </c:if>
 <!-- Corrigendum End  -->
 
-<div class="col-md-12 pn">
-     
-<div class="panel-heading customCls" data-toggle="collapse" href="#Bid">
-<h4 class="panel-title"><a><spring:message code="var_page_title_biddingForm" /></a></h4>
-</div>
-                <%int envId=0;
+<div class="row">
+  <div class="col-md-12">
+	<div class="box">
+		<div class="box-header with-border" data-toggle="collapse" href="#Bid">
+			<h3 class="box-title"><a><spring:message code="var_page_title_biddingForm" /></a></h3>
+		</div>
+		<div class="box-body">
+			<div class="row">
+				                <%int envId=0;
                 int cnt=0;
                     %>
-<div id="Bid" class="panel-collapse pnl">
-	    	
-<div class="row">
-
-<div class="col-md-3"><div class="vt"><spring:message code="var_page_title_biddingForm" /></div></div>
-<div class="col-md-9">
-<c:if test="${tblTender.cstatus ne 1 && tblTender.cstatus ne 2 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)}">
-<a href="${pageContext.servletContext.contextPath}/eBid/Bid/createForm?tenderId=${tenderId}" class="tnd_bttn">${createlink}</a>
-<a href="${pageContext.servletContext.contextPath}/eBid/Bid/getFormLibrary/${tenderId}" class="tnd_bttn">Form Library</a>
-</c:if> 
-</div>
-
-</div>
-      
-<c:if test="${not empty biddingForm }">
-<c:forEach items="${biddingForm}" var="items">
+      	<div id="Bid" class="panel-collapse">
+	    	<div class="col-md-12 border">
+	    	<c:if test="${(tblTender.cstatus ne 1 && tblTender.cstatus ne 2 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
+	    		<div class="col-md-3"><spring:message code="var_page_title_biddingForm" /></div>
+	            <div class="col-md-9">
+                       	<a href="${pageContext.servletContext.contextPath}/eBid/Bid/createForm/${tenderId}">${createlink}</a>
+                       | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getFormLibrary/${tenderId}"><spring:message code="lbl_library" /></a>
+                       <c:if test="${tblTender.isItemwiseWinner eq 0 && tblTender.isWeightageEvaluationRequired eq 1 && not empty biddingForm && not empty FormStatusLst}">
+                       | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/assignWeightToForm/${tenderId}"><spring:message code="lbl_assign_weight_to_forms" /></a>
+                       </c:if>
+     			</div>
+			</c:if>
+                                        <div class="col-md-12">       
+                                        <c:if test="${not empty biddingForm }">
+				<c:forEach items="${biddingForm}" var="items">
                                     
                                     <c:forEach items="${FormStatusLst}" var="status">
                                         <c:set var="staarr" value="${fn:split(status,'_')}"/>
@@ -353,269 +306,411 @@ width:100%
                                        
                                     </c:forEach>
                                   
-<c:choose>
-<c:when test="${items.tblTenderEnvelope.envelopeId ne envId}">
-<%cnt=1;%>
-
-<div class="row">
-<div class="col-md-12">
-<h3 class="box-title bd-title">  ${items.tblTenderEnvelope.envelopeName }</h3>
-</div>
-</div>
-
-
-<div class="row">                                                         
-<c:if test="${items.formId  ne -1}">
-                                                                 
-<div class="col-md-3">
-<div class="vt">
-                                                                 <%=cnt++%> )&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+                                                 <c:choose>
+							<c:when test="${items.tblTenderEnvelope.envelopeId ne envId}">
+                                                           <%cnt=1;%>
+                                                            <div class="col-md-12 border">
+                                                                <div class="row text-bold text-primary"><h3>  ${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h3> </div>
+                                                           
+                                                                 <c:if test="${items.formId  ne -1}">
+                                                                     <div class="col-md-3"><%=cnt++%> )&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
                                                                     <c:if test="${items.isMandatory eq 1}">*</c:if>
-                                                                  </div>  
-                                                                 <h3 class="box-title bd-title">${fromStatus}</h3>
-</div>
-                                                                 
-<div class="col-md-9">
-                                                                     <c:if test="${tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)}">
-                                                                    <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${items.formId}/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="label_edit"/></a>   
+                                                                    
+                                                                    <br><h6>${fromStatus}</h6></div>
+                                                                <div class="col-md-9">
+                                                                     <c:if test="${(tblTender.cstatus eq 0 and empty corrigendumWorkflowList and isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
+	                                                                    <c:choose>
+					                                                		<c:when test="${items.isEncryptionReq ne 0  and items.isPriceBid eq 1}">
+					                                                			<a href="javascript:"  onclick="alert('${msg_alert_delete_formula}')"><spring:message code="label_edit"/></a> |
+					                                                		</c:when>
+					                                                		<c:otherwise>
+					                                                			<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${tblTender.tenderId}/${items.formId}"><spring:message code="label_edit"/></a> |
+					                                                		</c:otherwise>
+					                                                	</c:choose>
                                                                      </c:if>
-                                                                     <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false" class="tnd_bttn"><spring:message code="label_view"/></a>
+                                                                     <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${viewlink}</a>
 
                                                                    
-                                                                         <c:if test="${items.isPriceBid eq 1 && items.loadNoOfItems ne 0 && tblTender.cstatus ne 1}">
+                                                                         <c:if test="${items.isPriceBid eq 1 && items.loadNoOfItems ne 0 && tblTender.cstatus eq 0}">
 
-                                                                         
+                                                                         |
                                                                             <c:if test ="${ items.isEncryptionReq eq 0}">
-                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> <spring:message code="label_Formula"/></a>   
+                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" > <spring:message code="label_Formula"/></a>   
                                                                             </c:if>
 
                                                                             <c:if test ="${ items.isEncryptionReq ne 0}">  
-                                                                                  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> Edit Formula</a>  
+                                                                                  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" > <spring:message code="lbl_edit_formula" /></a>
                                                                              </c:if>
 
                                                                          </c:if>
-                                                                       
-                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner eq 1}"> <!-- form should be mand one more cond-->
+                                                                      
+                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner eq 1 &&  empty openingDateOver}"> <!-- form should be mand one more cond-->
+                                                                            |
                                                                             
-                                                                            
-                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getEvaluationColumn/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> 
-                                                                                    <spring:message code="label_Evaluation"/>
+                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getEvaluationColumn/${tblTender.tenderId}/${items.formId}" > 
+                                                                                    <c:set var="evaluationColumnCount" value="0"/>
+                                                                                    <c:forEach items="${evaluationMap}" var="entry">
+                                                                                      
+                                                                                        <c:if test="${entry.key eq items.formId}">
+                                                                                            <c:if test="${entry.value gt 0}">
+                                                                                                <c:set var="evaluationColumnCount" value="${evaluationColumnCount+1}"/>
+                                                                                            </c:if>
+                                                                                        </c:if>
+                                                                                    </c:forEach>
+                                                                                   
+                                                                                    <c:if test="${evaluationColumnCount eq 0}">
+                                                                                     <spring:message code="label_Evaluation"/>
+                                                                                 </c:if>
+                                                                                 <c:if test="${evaluationColumnCount gt 0}">
+                                                                                     Edit Evaluation Column
+                                                                                 </c:if>
+                                                                                   
                                                                                 </a> 
                                                                          </c:if>   
-                                                                           
-                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner ne 1 && items.isMandatory eq 1   }"> <!-- form should be mand one more cond-->      
-                                                                               <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getPriceSumaryColumn/${tblTender.tenderId}/${items.formId}" class="tnd_bttn">
-                                                                                    Create Price Summary</a>
+                                                                         
+                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner ne 1 && items.isMandatory eq 1  &&  empty openingDateOver }"> <!-- form should be mand one more cond-->      
+                                                                              | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getPriceSumaryColumn/${tblTender.tenderId}/${items.formId}" >
+                                                                                 
+                                                                                 <c:set var="priceSummaryCount" value="0"/>
+                                                                                 <c:forEach items="${priceSummaryMap}" var="entry">
+                                                                                     <c:if test="${entry.key eq items.formId}">
+                                                                                         <c:if test="${entry.value gt 0}">
+                                                                                             <c:set var="priceSummaryCount" value="${priceSummaryCount+1}"/>
+                                                                                         </c:if>
+                                                                                     </c:if>
+                                                                                 </c:forEach>
+                                                                                 <c:if test="${priceSummaryCount eq 0}">
+                                                                                     <spring:message code="lbl_create_price_summary" />
+                                                                                 </c:if>
+                                                                                 <c:if test="${priceSummaryCount gt 0}">
+                                                                                    <spring:message code="lbl_edit_price_summary" />
+                                                                                 </c:if>
+                                                                                    </a>
                                                                          </c:if>
                                                                         
-                                                                        <c:if test="${items.isDocumentReq eq 1 && items.isPriceBid eq 0 && tblTender.cstatus ne 1}">
-                                                                         
+                                                                        <c:if test="${items.isDocumentReq eq 1 && items.isPriceBid eq 0 && tblTender.cstatus eq 0}">
+                                                                         |
 
-                                                                        <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createFormDocument/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> <spring:message code="label_Document_upload"/></a>   
+                                                                        <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createFormDocument/${tblTender.tenderId}/${items.formId}" > <spring:message code="label_Document_upload"/></a>   
                                                                          </c:if>
-                                                                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${items.formId}/${tblTender.tenderId}/0" class="tnd_bttn">Test Form</a>   
+                                                                                                                              |  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${items.formId}/0" ><spring:message code="lbl_test" /></a>   
                                                                            
                                                                                                                               
-                                                                           <c:if test="${tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)}">                                               
-                                                                                                                                 <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}" onclick="return confirm('Are you sure you want to delete form?')" class="tnd_bttn">Delete Form</a>
+                                                                           <c:if test="${tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)}">                                               
+                                                                                                                              |   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}" onclick="return confirm('Are you sure you want to delete form?')" ><spring:message code="link_delete_corrigendum" /></a>
                                                                            </c:if> 
                                                        
-</div>
-                                                                
-</c:if>
-                                                              
-<c:if test="${items.formId  eq -1}">
-<div class="col-md-9"><div class="vt">No forms mapped with this envelope. </div></div>
-</c:if>  
-                                                                 
-</div>
+                                                                </div>
+                                                              </c:if>
+                                                                 <c:if test="${items.formId  eq -1}">
+                                                                     <div class="col-md-9"><spring:message code="lbl_no_forms_mapped_wih_this_envelop" /> </div>
+                                                                 </c:if>  
+                                                            </div>
 
-<c:set value="${items.tblTenderEnvelope.envelopeId}" var="envId"/>
+                                                                        
+                                                                      <c:set value="${items.tblTenderEnvelope.envelopeId}" var="envId"/>
                                                          
-</c:when>
+                                                                 
 
-<c:otherwise>
-
-<c:if test="${items.formId  ne -1}">
-
-<div class="row">
-
-<div class="col-md-3">
-<div class="vt">
-<%=cnt++%>)&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
-<c:if test="${items.isMandatory eq 1}">*</c:if>  
-</div>                                                              
-<h3 class="box-title bd-title">${fromStatus}</h3>
-</div>
-
-<div class="col-md-9">
-                                                                       <c:if test="${tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)}">
-                                                                  
-                                                                        <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${items.formId}/${tblTender.tenderId}" class="tnd_bttn"><spring:message code="label_edit"/></a>   
-                                                                  
+                                                        </c:when>
+							<c:otherwise>
+                                                            <c:if test="${items.formId  ne -1}">
+                                                            <div class="col-md-12 border">
+                                                                <div class="col-md-3"><%=cnt++%>)&nbsp;<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+                                                                 <c:if test="${items.isMandatory eq 1}">*</c:if>
+                                                                   
+                                                                <br><h6>${fromStatus}</h6></div>
+                                                                <div class="col-md-9">
+                                                                       <c:if test="${(tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
+                                                                       
+                                                                  	<c:choose>
+                                                                  		<c:when test="${items.isEncryptionReq ne 0  and items.isPriceBid eq 1}">
+                                                                  			<a href="javascript:"  onclick="alert('${msg_alert_delete_formula}')"><spring:message code="label_edit"/></a> |
+                                                                  		</c:when>
+                                                                  		<c:otherwise>
+                                                                  			<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${tblTender.tenderId}/${items.formId}"><spring:message code="label_edit"/></a> |
+                                                                  		</c:otherwise>
+                                                                  	</c:choose>
+                                                                        
                                                                     </c:if>
-                                                                     <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false" class="tnd_bttn"><spring:message code="label_view"/></a>
+                                                                     <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${viewlink}</a>
 
                                                                     
                                                                         <c:if test="${items.isPriceBid eq 1 && items.loadNoOfItems ne 0 && tblTender.cstatus ne 1 }">
 
-                                                                         
+                                                                         |
                                                                          <c:if test ="${ items.isEncryptionReq eq 0}">
-                                                                            <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> <spring:message code="label_Formula"/></a>   
+                                                                            <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" > <spring:message code="label_Formula"/></a>   
                                                                         </c:if>
                                                                                                                                                 
                                                                           <c:if test ="${items.isEncryptionReq ne 0}">  
-                                                                              <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> Edit Formula</a>  
+                                                                              <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${items.formId}" > <spring:message code="lbl_edit_formula" /></a>  
                                                                          </c:if>
                                                                         </c:if>
 
-                                                                       <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner eq 1}"> <!-- form should be mand one more cond-->
+                                                                       <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner eq 1 && empty openingDateOver}"> <!-- form should be mand one more cond-->
+                                                                            |
                                                                             
-                                                                            
-                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getEvaluationColumn/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> 
-                                                                                    <spring:message code="label_Evaluation"/>
+                                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getEvaluationColumn/${tblTender.tenderId}/${items.formId}" > 
+                                                                                    <c:set var="evaluationColumnCount" value="0"/>
+                                                                                    <c:forEach items="${evaluationMap}" var="entry">
+                                                                                        <c:if test="${entry.key eq items.formId}">
+                                                                                            <c:if test="${entry.value gt 0}">
+                                                                                                <c:set var="evaluationColumnCount" value="${evaluationColumnCount+1}"/>
+                                                                                            </c:if>
+                                                                                        </c:if>
+                                                                                    </c:forEach>
+                                                                                    <c:if test="${evaluationColumnCount eq 0}">
+                                                                                     <spring:message code="label_Evaluation"/>
+                                                                                 </c:if>
+                                                                                 <c:if test="${evaluationColumnCount gt 0}">
+                                                                                    <spring:message code="lbl_edit_evaluation_column" />
+                                                                                 </c:if>
                                                                                 </a> 
                                                                          </c:if>   
                                                                            
-                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner ne 1 && items.isMandatory eq 1}"> <!-- form should be mand one more cond-->      
-                                                                               <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getPriceSumaryColumn/${tblTender.tenderId}/${items.formId}" class="tnd_bttn">
-                                                                                    Create Price Summary</a>
-                                                                         </c:if>
-                                                                                                                                                <c:if test="${items.isDocumentReq eq 1 && items.isPriceBid eq 0 && tblTender.cstatus ne 1}">
-                                                                        
 
-                                                                        <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createFormDocument/${tblTender.tenderId}/${items.formId}" class="tnd_bttn"> <spring:message code="label_Document_upload"/></a>   
+                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner ne 1 && items.isMandatory eq 1 &&  empty openingDateOver}"> <!-- form should be mand one more cond-->      
+
+                                                                      
+                                                                              | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getPriceSumaryColumn/${tblTender.tenderId}/${items.formId}" >
+                                                                                 <c:set var="priceSummaryCount" value="0"/>
+                                                                                 <c:forEach items="${priceSummaryMap}" var="entry">
+                                                                                     <c:if test="${entry.key eq items.formId}">
+                                                                                        <c:if test="${entry.value gt 0}">
+                                                                                            <c:set var="priceSummaryCount" value="${priceSummaryCount+1}"/>
+                                                                                        </c:if>
+                                                                                     </c:if>
+                                                                                 </c:forEach>
+                                                                                 <c:if test="${priceSummaryCount eq 0}">
+                                                                                    <spring:message code="lbl_create_price_summary" />
+                                                                                 </c:if>
+                                                                                 <c:if test="${priceSummaryCount gt 0}">
+                                                                                    <spring:message code="lbl_edit_price_summary" />
+                                                                                 </c:if>
+                                                                                </a>
+                                                                         </c:if>
+                                                                          <c:if test="${items.isDocumentReq eq 1 && items.isPriceBid eq 0 && tblTender.cstatus ne 1}">
+                                                                        |
+
+                                                                        <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createFormDocument/${tblTender.tenderId}/${items.formId}" > <spring:message code="label_Document_upload"/></a>   
                                                                         </c:if>
                                                                        
-                                                                              <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${items.formId}/${tblTender.tenderId}/0" class="tnd_bttn">Test Form</a> 
-                                                                             <c:if test="${tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)}">                                               
+                                                                            |  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${items.formId}/0"  ><spring:message code="lbl_test" /></a> 
+                                                                             <c:if test="${(tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">                                               
                                                                                
-                                                                               <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure You Want to delete')" class="tnd_bttn">Delete Form</a>
+                                                                            |   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure You Want to delete')" ><spring:message code="link_delete_corrigendum" /></a>
                                                                             </c:if>
-</div>
+                                                                </div>
+                                                            </div>
 
-</div>
+                                                            </c:if>
+                                                                    <c:set value="${items.tblTenderEnvelope.envelopeId}" var="envId"/>
+                                                         
 
-</c:if>
-
-<c:set value="${items.tblTenderEnvelope.envelopeId}" var="envId"/>
-
-</c:otherwise>
-
-</c:choose>
+                                                        </c:otherwise>
+						</c:choose>
                                     
-</c:forEach>
-
-</c:if>
+                                                                               
+				
+                                   
+				</c:forEach>
+			</c:if>
 			
-</div>
-
-</div>
-
-<c:if test="${tblTender.isPreBidMeeting eq 1}">
-    <div class="col-md-12 pn">
-  		<div class="panel-heading customCls" data-toggle="collapse" href="#preBid" >
-        	<h4 class="panel-title"><a>Prebid</a></h4>
-      	</div>
-      	<div id="preBid" class="panel-collapse pnl">
-	    	<div class="row">
-	    		<div class="col-md-3"><div class="vt"><spring:message code="var_page_title" /></div></div>
-	            <div class="col-md-9">
-	            <c:choose>
-	            	<c:when test="${prebidEndDateOver ne true}">
-	            		<c:if test="${prebidCommitteeId eq 0}">
-			            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcreatecommitee/${tenderId}" class="tnd_bttn">${createlink}</a> |
-			            	</c:if>
-			            <c:if test="${prebidCommitteeId ne 0}">
-			            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/geteditcommitee/${tenderId}/${prebidCommitteeId}" class="tnd_bttn">${editlink}</a> |
-							<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${prebidCommitteeId}/3" class="tnd_bttn">${viewlink}</a> 
-						</c:if>
-	            	</c:when>
-	            	<c:otherwise>
-	            		<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${prebidCommitteeId}/3" class="tnd_bttn">${viewlink}</a> 
-	            	</c:otherwise>
-	            </c:choose>
-	            </div>
-				<c:if test="${prebidCommitteeId ne 0}">	             
-	             <div class="col-md-3"><div class="vt">Prebid minutes of meeting</div></div>
-	             <div class="col-md-9"><a href="${pageContext.servletContext.contextPath}/etender/buyer/gettendertabcontent/${tenderId}/3" class="tnd_bttn">Upload </a>
-	             <a href="${pageContext.servletContext.contextPath}/etender/buyer/publishprebidmom/${tenderId}/${prebidCommitteeId}" class="tnd_bttn">Publish </a></div>
-	             </c:if>
-			</div>
+	             </div>
 			</div>
 		</div>
-	</c:if>
+			</div>
+		</div>
+	</div>
+  </div>
+</div>
+	
+<c:if test="${tblTender.tenderMode eq 2 or tblTender.tenderMode eq 3}">
+<div class="row">
+  <div class="col-md-12">
+	<div class="box">
+		<div class="box-header with-border">
+			<div class="col-md-3"><h3 class="box-title"><a><spring:message code="field_bidder"/></a></h3>
+		</div>
+		<div class="col-md-9">
+			<c:if test="${isSingleEnvelopeOpened eq false}">
+				<c:set var="encParamBidderMap" value="${pageContext.servletContext.contextPath}/etender/buyer/biddermapping/${tblTender.tenderId}" />
+            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/biddermapping/${tblTender.tenderId}?enc=${util:encryptParam(encParamBidderMap)}"><spring:message code="lbl_mapbidder"/> </a>
+				|
+            </c:if>	
+            <a href="${pageContext.servletContext.contextPath}/etender/buyer/viewmappedbidders/${tblTender.tenderId}"><spring:message code="title_heading_tender_viewmappedbidder"/> </a>
+        </div>
+		</div>
+	</div>
+  </div>
+</div>
+</c:if>
+<c:if test="${tblTender.isPreBidMeeting eq 1}">
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+			<div class="box-header with-border" data-toggle="collapse" href="#preBid">
+				<h3 class="box-title"><a>Prebid Committee</a></h3>
+			</div>
+			<div class="box-body">
+				<div class="row">
+					<div id="preBid" class="panel-collapse">
+				    	<div class="col-md-12 border">
+				    		<div class="col-md-3"><spring:message code="var_page_title" /></div>
+				            <div class="col-md-9">
+				            	<c:choose>
+				            		<c:when test="${tblTender.cstatus eq 0}">
+						            		<c:if test="${prebidCommitteeId eq 0}">
+								            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcreatecommitee/${tenderId}">${createlink}</a> 
+								            </c:if>
+								            <c:if test="${prebidCommitteeId ne 0}">
+								            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/geteditcommitee/${tenderId}/${prebidCommitteeId}">${editlink}</a> |
+												<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${prebidCommitteeId}/3">${viewlink}</a> 
+											</c:if>
+						            </c:when>
+						            <c:otherwise>
+						            	<c:choose>
+							            	<c:when test="${prebidEndDateOver ne true}">
+							            		<c:if test="${prebidCommitteeId eq 0}">
+									            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/getcreatecommitee/${tenderId}">${createlink}</a> 
+									            </c:if>
+									            <c:if test="${prebidCommitteeId ne 0}">
+									            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/geteditcommitee/${tenderId}/${prebidCommitteeId}">${editlink}</a> |
+													<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${prebidCommitteeId}/3">${viewlink}</a> 
+												</c:if>
+							            	</c:when>
+							            	<c:otherwise>
+							            		<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${prebidCommitteeId}/3">${viewlink}</a> 
+							            	</c:otherwise>
+						            	</c:choose>
+						            </c:otherwise>
+				            	</c:choose>
+				            </div>
+							<c:if test="${prebidCommitteeId ne 0 and prebidlive eq true}">	 
+							<form class="form" action="${pageContext.servletContext.contextPath}/etender/buyer/publishprebidmom" method="post" id="publishPrebidMOM">
+								<input type="hidden" name="hdTenderId" value="${tenderId}" />
+								<input type="hidden" name="hdPrebidCommitteeId" value="${prebidCommitteeId}" />
+							</form>	            
+				             <div class="col-md-3"><spring:message code="lbl_prebid_publish_meeting"/></div>
+				             <div class="col-md-9"><a href="${pageContext.servletContext.contextPath}/etender/buyer/gettendertabcontent/${tenderId}/3">Upload </a> |
+				             <a href="#" onclick="javascript:{return publishMOM();}" id="publishPrebidMOMLnk"><spring:message code="label_publish"/></a></div>
+				             </c:if>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</c:if>
 
-<div class="col-md-12 pn">
-  		<div class="panel-heading customCls" data-toggle="collapse" href="#bidOpening" >
-        	<h4 class="panel-title"><a>Bid Opening</a></h4>
-      	</div>
-		<div id="bidOpening" class="panel-collapse pnl">
-			<div class="row">
-				<div class="col-md-3"><div class="vt"><spring:message code="var_page_title" /></div></div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+			<div class="box-header with-border">
+				<div class="col-md-3"><h3 class="box-title"><a>Tender Opening Committee</a></h3></div>
 				<div class="col-md-9">
 					<c:choose>
-	            	<c:when test="${true}">
-	            		<c:if test="${openingCommitteeId eq 0}">
-							<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcommittee/${tenderId}/1" class="tnd_bttn">${createlink}</a>
-						</c:if>
-						<c:if test="${openingCommitteeId ne 0}">
-			            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/editcommittee/${tenderId}/1/1" class="tnd_bttn">${editlink}</a> 
-							<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${openingCommitteeId}/1" class="tnd_bttn">${viewlink}</a>  
-						</c:if>
-	            	</c:when>
-	            	<c:otherwise>
-	            		<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${openingCommitteeId}/1" class="tnd_bttn">${viewlink}</a>
-	            	</c:otherwise>
+		            	<c:when test="${isSingleEnvelopeOpened eq false}">
+		            		<c:if test="${openingCommitteeId eq 0}">
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcommittee/${tenderId}/1">${createlink}</a> |
+							</c:if>
+							<c:if test="${openingCommitteeId ne 0 and isSingleEnvelopeOpened eq false}">
+				            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/editcommittee/${tenderId}/1/1">${editlink}</a> |
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${openingCommitteeId}/1">${viewlink}</a> 
+							</c:if>
+		            	</c:when>
+		            	<c:otherwise>
+		            		<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${openingCommitteeId}/1">${viewlink}</a> |
+		            	</c:otherwise>
 	            	</c:choose>
-<%-- 					<a href="#">${publishlink}</a> | --%>
 					<c:choose>
-							<c:when test="${tblTender.cstatus eq '1'}">
-								<a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/1" class="tnd_bttn">Opening Consent</a>
-							</c:when>
+						<c:when test="${tblTender.cstatus eq '1' and submissionDateOver eq true}">
+							<a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/1">Opening Consent</a>
+						</c:when>
 					</c:choose>
 	          	</div>
 			</div>
 		</div>
-     </div>
-     
-<!-- work flow start -->
-<c:if test="${tblTender.isWorkflowRequired eq 1}">
-     <div class="col-md-12 pn">
-  		<div class="panel-heading customCls" data-toggle="collapse" href="#workFlow" >
-        	<h4 class="panel-title"><a><spring:message code="label_workflow" /></a></h4>
-      	</div>
-		<div id="workFlow" class="panel-collapse pnl">
-			<div class="row">
-				<div class="col-md-3"><div class="vt"><spring:message code="label_notice_workflow" /></div></div>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+			<div class="box-header with-border">
+				<div class="col-md-3"><h3 class="box-title"><a><spring:message code="tab_tender_evaluatebid"/> Committee</a></h3></div>
+				<div class="col-md-9">
+		            <c:choose>
+		            	<c:when test="${isSingleEnvelopeIsEvaluated eq false}">
+			            	<c:if test="${evaluationCommitteeId eq 0}">
+			            		<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcommittee/${tenderId}/2">${createlink}</a> |
+			            	</c:if>
+			            	<c:if test="${evaluationCommitteeId ne 0}">
+				            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/editcommittee/${tenderId}/2/1">${editlink}</a> |
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${evaluationCommitteeId}/2">${viewlink}</a>
+							</c:if>    
+						</c:when>
+						<c:otherwise>
+							<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${evaluationCommitteeId}/2">${viewlink}</a> 
+						</c:otherwise>
+					</c:choose>
+					<c:choose>
+						<c:when test="${tblTender.cstatus eq '1' and tblTender.isEvaluationDone eq 0 and submissionDateOver eq true}">
+							| <a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/2">Evaluation Consent</a>
+						</c:when>
+						<c:when test="${tblTender.cstatus eq '1' and tblTender.isEvaluationDone eq 1 and submissionDateOver eq true}">
+							| <a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/2">Evaluated</a>
+						</c:when>
+					</c:choose>
+	             </div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- work flow start -->	
+
+<c:if test="${tblTender.isWorkflowRequired eq 1 }">	
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+			<div class="box-header with-border" data-toggle="collapse" href="#workFlow">
+				<h3 class="box-title"><a><spring:message code="label_workflow" /></a></h3>
+			</div>
+			<div class="box-body">
+				<div class="row">
+							<div id="workFlow" class="panel-collapse">
+			<div class="col-md-12 border">
+				<div class="col-md-3"><spring:message code="label_notice_workflow" /></div>
 				<div class="col-md-9">
 				<c:choose>
-				<c:when test="${allowToCreateWorkflow}"><!-- if workflow is not stated or approval is done -->
-	            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0" onclick="return validatePublishTender(${tblTender.tenderId})" class="tnd_bttn">${createlink}</a>
+				<c:when test="${allowToCreateWorkflow && tblTender.cstatus eq 0}"><!-- if workflow is not stated or approval is done -->
+	            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0" onclick="return validatePublishTender(${tblTender.tenderId})">${createlink}</a>
 	            </c:when>
-            	<c:when test="${not empty workflowToMe}">
-					<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0" class="tnd_bttn">${workflow_pending}</a>
+            	<c:when test="${not empty workflowToMe && tblTender.cstatus eq 0}">
+					<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0">${workflow_pending}</a>
 				</c:when>
         		<c:when test="${isTenderWorkflowStarted}">
-	        		<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0" class="tnd_bttn">${viewlink}</a>
+	        		<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0">${viewlink}</a>
         		</c:when>
 	            </c:choose>
 	          	</div>
 			</div>
 			<c:if test="${tblTender.cstatus eq 1 && not empty tblCorrigendum && not empty corrigendumWorkflowList}">
 			<c:forEach items="${corrigendumWorkflowList}" var="corrigendumWorkflow" varStatus="indx">
-			<div class="row">
-				<div class="col-md-3"><div class="vt">Corrigendum <spring:message code="label_workflow" /> ${indx.count}</div></div>
+			<div class="col-md-12 border">
+				<div class="col-md-3">Workflow Corrigendum  ${indx.count}</div>
 				<div class="col-md-9">
 				<c:choose>
 					<c:when test="${corrigendumWorkflow.corrigendumAllowToCreateWorkflow}"><!-- if workflow is not stated or approval is done -->
-		            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/${corrigendumWorkflow.corrigendumId}" class="tnd_bttn">${createlink}</a>
+		            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/${corrigendumWorkflow.corrigendumId}">${createlink}</a>
 		            </c:when>
 	            	<c:when test="${corrigendumWorkflow.corrigendumWorkflowToMe}">
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/${corrigendumWorkflow.corrigendumId}" class="tnd_bttn">${workflow_pending}</a>
+						<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/${corrigendumWorkflow.corrigendumId}">${workflow_pending}</a>
 					</c:when>
 	        		<c:when test="${corrigendumWorkflow.isCorrigendumWorkflowStarted}">
-	        		<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/${corrigendumWorkflow.corrigendumId}" class="tnd_bttn">${viewlink}</a>
+	        		<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/${corrigendumWorkflow.corrigendumId}">${viewlink}</a>
 	        		</c:when>    	
 	            </c:choose>
 	          	</div>
@@ -623,311 +718,411 @@ width:100%
 			</c:forEach>
 			</c:if>
 		</div>
-     </div>
-     </c:if>
-<!-- work flow end -->
-    
-<div class="col-md-12 pn">
-  		<div class="panel-heading customCls" data-toggle="collapse" href="#bidEvaluation" >
-        	<h4 class="panel-title"><a><spring:message code="tab_tender_evaluatebid"/></a></h4>
-      	</div>
-      	<div id="bidEvaluation" class="panel-collapse pnl">
-	    	<div class="row">
-	    		<div class="col-md-3"><div class="vt"><spring:message code="var_page_title" /></div></div>
-	            <div class="col-md-9">
-	            <c:choose>
-	            	<c:when test="${tblTender.isEvaluationDone eq 0}">
-	            	<c:if test="${evaluationCommitteeId eq 0}">
-	            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/createcommittee/${tenderId}/2" class="tnd_bttn">${createlink}</a>
-	            	</c:if>
-	            	<c:if test="${evaluationCommitteeId ne 0}">
-	            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/editcommittee/${tenderId}/2/1" class="tnd_bttn">${editlink}</a>
-					<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${evaluationCommitteeId}/2" class="tnd_bttn">${viewlink}</a>
-					</c:if>    
-					</c:when>
-					<c:otherwise>
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/getviewcommitee/${tenderId}/${evaluationCommitteeId}/2" class="tnd_bttn">${viewlink}</a> 
-					</c:otherwise>
-					</c:choose>
-					<c:choose>
-							<c:when test="${tblTender.cstatus eq '1' and tblTender.isEvaluationDone eq 0}">
-							<a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/2" class="tnd_bttn">Evaluation</a>
-							</c:when>
-							<c:when test="${tblTender.cstatus eq '1' and tblTender.isEvaluationDone eq 1}">
-							<a href="${pageContext.servletContext.contextPath}/etender/buyer/gettabcontent/${tenderId}/2" class="tnd_bttn">Evaluted</a>
-							</c:when>
-					</c:choose>
-	             </div>
+				</div>
 			</div>
 		</div>
 	</div>
-
 </div>
-
+</c:if>
+<!-- work flow end -->
+<c:if test="${tblTender.isBidConverted eq 0 and tblTender.biddingType eq 2 and tblTender.cstatus ne 2 and isdecryptionlevelStarted }">
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+	        <div class="box-header with-border">
+				<div class="col-md-3"><h3 class="box-title"><a><spring:message code="lbl_currency_conversion" /></a></h3></div>
+				<div class="col-md-9">
+					<c:if test="${tblTender.cstatus eq '1' and  submissionDateOver eq true}">
+	                   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/convertBidderBid/${tenderId}"><spring:message code="lbl_bid_conversion" /></a>
+	                </c:if>
+	            </div>
+	        </div>
+		</div>
+	</div>
 </div>
-
+</c:if>
+<!-- Tender Result -->
+<c:if test="${tblTender.cstatus eq '1' and tblTender.isEvaluationDone eq 1 and ((tblTender.isBidConverted ne 0 && tblTender.biddingType eq 2) or (tblTender.isBidConverted eq 0 && tblTender.biddingType eq 1))}">
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+  		<div class="box-header with-border">
+        	<div class="col-md-3"><h3 class="box-title"><a>Tender Result</a></h3></div>
+        	<div class="col-md-9">
+        	<c:set value="${isResultShareDone}" var="isResultShareConfigured"/>
+        		<c:if test="${tblTender.autoResultSharing eq '1' and !isResultShareConfigured}">
+        			<spring:url value="/etender/buyer/getresultsharing/${tenderId}/1" var="urlConfigure"/>
+					<a href="${urlConfigure}">Configure</a>
+        		</c:if>
+        		<c:if test="${tblTender.autoResultSharing eq '1' and isResultShareConfigured}">
+        			<a href="${pageContext.servletContext.contextPath}/etender/buyer/getresultsharing/${tblTender.tenderId}/2">View Result Sharing</a> |
+        			<a href="${pageContext.servletContext.contextPath}/etender/buyer/getresult/${tblTender.tenderId}">Result</a>
+        		</c:if>
+        		<c:if test="${tblTender.autoResultSharing eq '0'}">
+        			<a href="${pageContext.servletContext.contextPath}/etender/buyer/getresult/${tblTender.tenderId}">Result</a>
+        		</c:if>
+        	</div>
+      	</div>
+	  </div>
+	</div>
 </div>
-
+</c:if>
+<c:if test="${poId gt 0}">
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+			<div class="box-header with-border" data-toggle="collapse" href="#purchaseOrder">
+				<h3 class="box-title"><a>Purchase order</a></h3>
+			</div>
+			<div class="box-body">
+				<div class="row">
+							<div id="purchaseOrder" class="panel-collapse">
+			<div class="col-md-12 border">
+				<div class="col-md-3">Purchase order</div>
+				<div class="col-md-9">
+					<c:choose>
+							<c:when test="${tblTender.cstatus eq '1'}">
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/getpurchaseorderdashboard/${tenderId}/${poId}">Dashboard</a>
+							</c:when>
+							<c:otherwise>
+								
+							</c:otherwise>
+					</c:choose>
+				</div>
+	          	</div>
+			</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
-</div>
-
+</c:if>
+</c:if>
 </section>
 
-<div id="targetDiv"></div>
 
-</c:if>
+ 
+ <c:if test="${isAuction eq 1}">
+ 
+<%--      <a href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing" class="pull-right"><< Go To Auction List</a> --%>
+	<%@include file="AuctionSummary.jsp"%>
 
-
-<c:if test="${isAuction eq 1}">
-
-	<section class="content-header">
-		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing" class="btn btn-submit" style="margin-top:0px;"><< Go To Auction List</a>
-	</section>
-	
-	<section class="content">
-	
-		<%@include file="AuctionSummary.jsp"%>
-		
-		<div class="row">
-			<div class="col-md-12">
-				<div class="box">
-					<div class="box-body">
-						<div class="row">
-
-									<div class="col-md-12 pn">
-										<div class="panel-heading customCls" data-toggle="collapse"
-											href="#collapse1">
-											<h4 class="panel-title">
-												<a>Notice & Document</a>
-											</h4>
-										</div>
-										<div id="collapse1" class="panel-collapse pnl">
-										
-											<div class="row">
-												<div class="col-md-3">
-													<div class="vt"><spring:message code="field_notice" /></div>
-												</div>
-												<div class="col-md-9">
-													<c:choose>
-														<c:when test="${tblTender.cstatus eq '0'}">
-															<a href="${pageContext.servletContext.contextPath}/eBid/Bid/createAuction/${tblTender.tenderId}" class="tnd_bttn"><spring:message
-																	code="label_edit" /> </a> 
-							  								<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}"
-																onclick="return validatePublishTender(${tblTender.tenderId})" class="tnd_bttn">Approve</a>
-															<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0" class="tnd_bttn"><spring:message
-																	code="label_view" />
-															</a>
-                                                            <a href="${pageContext.servletContext.contextPath}/eBid/Bid/loginReport/${tblTender.tenderId}" class="tnd_bttn">Login
-																Report</a>
-														</c:when>
-														<c:otherwise>
-															<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0" class="tnd_bttn"><spring:message
-																	code="label_view" />
-															</a>
-                                                            <a href="${pageContext.servletContext.contextPath}/eBid/Bid/loginReport/${tblTender.tenderId}" class="tnd_bttn">Login
-																Report</a>
-														</c:otherwise>
-													</c:choose>
-												</div>
-											</div>
-
-											<div class="row">
-												<div class="col-md-3">
-													<div class="vt"><spring:message code="field_documents" /></div>
-												</div>
-												<div class="col-md-9">
-													<a href="${pageContext.servletContext.contextPath}/etender/buyer/tendernitdocument/${tblTender.tenderId}/0" class="tnd_bttn">Upload
-														document</a>
-												</div>
-											</div>
-
-											<div class="row">
-												<div class="col-md-3"><div class="vt">Copy Auction</div></div>
-												<div class="col-md-9">
-													<a href="${pageContext.servletContext.contextPath}/etender/buyer/copytender/${tblTender.tenderId}" class="tnd_bttn">Copy
-														Auction</a>
-												</div>
-											</div>
-
-										</div>
-										
-										</div>
-									
-									
-									
-									
-									
-									<div class="col-md-12 pn">
-										<div class="panel-heading customCls" data-toggle="collapse"
-											href="#Bid">
-											<h4 class="panel-title">
-												<a>Bidding Form</a>
-											</h4>
-										</div>
-
-										<div id="Bid" class="panel-collapse pnl">
-											<div class="row">
-												<div class="col-md-3">
-													<div class="vt"><spring:message code="var_page_title_biddingForm" /></div>
-												</div>
-												<div class="col-md-9">
-													<c:set var="formcount" value="0" />
-													<c:if test="${not empty biddingForm }">
-														<c:forEach items="${biddingForm}" var="item">
-															<c:if test="${item.formId != -1}">
-																<c:set var="formcount" value="${formcount+1}" />
-															</c:if>
-
-														</c:forEach>
-													</c:if>
-													<c:if test="${formcount eq 0}">
-														<c:set var="count" value="0" />
-														<c:if test="${not empty biddingForm }">
-															<c:forEach items="${biddingForm}" var="item">
-																<c:if test="${count eq 0}">
-																	<c:if test="${item.formId eq -1}">
-																		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/createForm?tenderId=${tenderId}" class="tnd_bttn">${createlink}</a>
-																		<ahref="${pageContext.servletContext.contextPath}/eBid/Bid/getFormLibrary/${tenderId}" class="tnd_bttn">Form
-																			Library</a>
-																		<c:set var="count" value="${count+1}" />
-																	</c:if>
-																</c:if>
-															</c:forEach>
-														</c:if>
-													</c:if>
-
-												</div>
-
-
-												<div class="col-md-12">
-
-													<c:if test="${not empty biddingForm }">
-
-														<c:forEach items="${biddingForm}" var="item">
-															<c:if test="${item.formId != -1}">
-																<div class="row">
-																	<div class="col-md-1">${item.formId}</div>
-																	<div class="col-md-2">${item.formName}</div>
-																	<div class="col-md-9">
-																		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${item.formId}/${tblTender.tenderId}" class="tnd_bttn"><spring:message
-																				code="label_edit" /></a> 
-																		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${item.formId}/0/false" class="tnd_bttn"><spring:message
-																				code="label_view" />
-																		</a>
-																		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${item.formId}/${tblTender.tenderId}/0" class="tnd_bttn">Test
-																			Form</a>
-
-
-																		<c:if test="${ item.isEncryptionReq eq 0}">
-                                                                           <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${item.formId}" class="tnd_bttn">
-																				<spring:message code="label_Formula" />
-																			</a>
-																		</c:if>
-
-																		<c:if test="${  item.isEncryptionReq ne 0}">  
-                                                                            <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${item.formId}" class="tnd_bttn">
-																				Edit Formula</a>
-																		</c:if>
-
-																		<c:if
-																			test="${item.cstatus ne 1 or tblTender.cstatus ne 1}">
-                                            <a
-																			<a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${item.formId}" class="tnd_bttn"
-																				onclick="return confirm('Are you sure you want to delete form?')">Delete</a>
-																		</c:if>
-																	</div>
-
-																</div>
-															</c:if>
-
-
-
-														</c:forEach>
-													</c:if>
-
-												</div>
-											</div>
-										</div>
-									</div>
-
-
-									<c:if test="${tblTender.biddingAccess eq 0}">
-										<div class="col-md-12 pn">
-											<div class="panel-heading customCls" data-toggle="collapse"
-												href="#bidOpening">
-												<h4 class="panel-title">
-													<a>Map Bidders</a>
-												</h4>
-											</div>
-											<div id="bidOpening" class="panel-collapse pnl">
-
-												<div class="row">
-													<div class="col-md-3">
-														<div class="vt"><spring:message code="field_bidder" /></div>
-													</div>
-													<div class="col-md-9">
-														<a href="${pageContext.servletContext.contextPath}/etender/buyer/biddermapping/${tblTender.tenderId}" class="tnd_bttn">Bidder
-															Mapping</a>
-														<c:if test="${tblTender.cstatus ne 1}">
-														<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewmappedbidders/${tblTender.tenderId}" class="tnd_bttn">Mapped
-																Bidders</a>
-														</c:if>
-
-													</div>
-												</div>
-
-											</div>
-										</div>
-									</c:if>
-
-
-									<!-- work flow start -->
-									<c:if test="${tblTender.cstatus eq 1}">
-										<div class="col-md-12 pn">
-											<div class="panel-heading customCls" data-toggle="collapse"
-												href="#bidOpening">
-												<h4 class="panel-title">
-													<a>Result</a>
-												</h4>
-											</div>
-											<div id="bidOpening" class="panel-collapse pnl">
-
-												<div class="row">
-													<div class="col-md-3"><div class="vt">Report</div></div>
-													<div class="col-md-9">
-
-														<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuctionResult/${tblTender.tenderId}" class="tnd_bttn">
-															<c:if test="${tblTender.isAuctionStop eq 1}">Resume Auction</c:if>
-															<c:if test="${tblTender.isAuctionStop eq 0}">Stop Auction</c:if>
-
-														</a>
-
-													</div>
-												</div>
-
-											</div>
-										</div>
-									</c:if>
-
-									<!-- work flow end -->
-
-								</div>
+	<div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-border" data-toggle="collapse" href="#collapse1">
+					<h3 class="box-title">
+						<a><spring:message code="label_notice_document" /></a>
+					</h3>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-md-12">
+							      <div id="collapse1" class="panel-collapse">
+				<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="lbl_auction_notice" /></div>
+					<div class="col-md-9">
+						<c:choose>
+							<c:when test="${tblTender.cstatus eq '0'}">
+								<c:if test="${tblTender.isWorkflowRequired eq 0 or isTenderWorkflowStarted ne true or (workflowToInitiator eq true and workflowDone ne true)}">
+								<a href="${pageContext.servletContext.contextPath}/eBid/Bid/createAuction/${tblTender.tenderId}"><spring:message code="label_edit" /> </a> | 
+								</c:if> 
+								<c:choose>
+									<c:when test="${tblTender.isWorkflowRequired eq 0 or (tblTender.isWorkflowRequired eq 1 && workflowDone eq true && workflowToInitiator eq true)}">
+										&nbsp;<a href="${pageContext.servletContext.contextPath}/etender/buyer/publishtender/${tblTender.tenderId}" onclick="return validatePublishTender(${tblTender.tenderId})"><spring:message code="label_workflow_approve" /></a> |
+									</c:when>
+								</c:choose>								
+                                                                &nbsp;<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0">${viewlink}</a>&nbsp;|
+                                                                 
+                                                        </c:when>
+							<c:otherwise>
+								<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0">${viewlink}</a>&nbsp;
+                                                                <c:if test="${tblTender.cstatus eq '1'}">
+                                                                  |
+                                                                &nbsp;<a href="${pageContext.servletContext.contextPath}/etender/Bid/loginReport/${tblTender.tenderId}">Login Report</a>
+                                            
+                                                                </c:if>             </c:otherwise>
+						</c:choose>
+					</div>
+				</div>
+                                <c:if test="${tblTender.cstatus ne 2}">
+				<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="lbl_auction_document" />
+					</div>
+					<div class="col-md-9">
+					<a href="${pageContext.servletContext.contextPath}/etender/buyer/tendernitdocument/${tblTender.tenderId}/0"><spring:message code="title_upload_documents" /></a>
+					</div>
+				</div>
+                                </c:if>
+<%
+     TblTender tblTender=(TblTender)request.getAttribute("tblTender");
+     SimpleDateFormat dateFormatGmt = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+     dateFormatGmt.setTimeZone(TimeZone.getTimeZone("GMT"));
+     SimpleDateFormat dateFormatLocal = new SimpleDateFormat("yyyy-MMM-dd HH:mm:ss");
+     %>				
+     <%
+     
+      if(tblTender.getAuctionEndDate().after(dateFormatLocal.parse( dateFormatGmt.format(new Date()))))
+      {
+      %>
+       <c:if test="${tblTender.cstatus eq 1}">
+				<div class="col-md-12">
+					<div class="col-md-3"><spring:message code="lbl_cancel_auction" />
+					</div>
+					<div class="col-md-9">
+                        <a href="${pageContext.servletContext.contextPath}/etender/buyer/getcanceltender/${tblTender.tenderId}" onclick="return confirm('Are You Sure You Want Cancel the Auction')"><spring:message code="lbl_cancel_auction" /></a>
+					</div>
+				</div>
+			</c:if>
+      <%
+      }
+     %>
+				
+			</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		
-	</section>
-	          
- <div id="targetDiv"></div> 
- </c:if>
+	</div>
+   
+   <div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-border" data-toggle="collapse" href="#Bid">
+					<h3 class="box-title">
+						<a><spring:message code="var_page_title_biddingForm" /></a>
+					</h3>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-md-12">
+							      	<div id="Bid" class="panel-collapse">
+	    	<div class="col-md-12 border">
+	    		<div class="col-md-3"><spring:message code="var_page_title_biddingForm" /></div>
+	            <div class="col-md-9">
+                        <c:set var="formcount" value="0"/>
+                        <c:if test="${not empty biddingForm }">
+                            <c:forEach items="${biddingForm}" var="item">
+                                 <c:if test="${item.formId != -1}">
+                                     <c:set var="formcount" value="${formcount+1}"/>
+                                 </c:if>
+                                 
+                            </c:forEach>
+                        </c:if>
+                        <c:if test="${formcount eq 0}">
+                        <c:set var="count" value="0"/>
+                        <c:if test="${not empty biddingForm }">
+                            <c:forEach items="${biddingForm}" var="item">
+                                <c:if test="${count eq 0}" >
+                                   <c:if test="${item.formId eq -1}">
+                                       
+                                    <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createForm/${tenderId}" >${createlink}</a>
+                                      | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getFormLibrary/${tenderId}"><spring:message code="title_tender_formlibrary" /></a>
+                                      <c:set var="count" value="${count+1}"/>
+                                </c:if> 
+                                </c:if>
+                            </c:forEach>
+                        </c:if>
+                        </c:if>
+                        
+                                 </div>
+                                 
+	            	
+                                        <div class="col-md-12">       
+                                        
+                                <c:if test="${not empty biddingForm }">
+                                    
+				<c:forEach items="${biddingForm}" var="item">
+                                   <c:if test="${item.formId != -1}">
+                                    <div class="col-md-12">
+                                        <div class="col-md-1">${item.formId}</div>
+                                        <div class="col-md-2">${item.formName}</div>
+                                        <div class="col-md-9">
+                                        <c:if test="${tblTender.cstatus eq 0}">
+                                            <c:if test="${tblTender.isWorkflowRequired eq 0 or isTenderWorkflowStarted ne true or (workflowToInitiator eq true and workflowDone ne true)}">
+                                        		<c:choose>
+                                                		<c:when test="${items.isEncryptionReq ne 0  and items.isPriceBid eq 1}">
+                                                			<a href="javascript:"  onclick="alert('${msg_alert_delete_formula}')">33333333<spring:message code="label_edit"/></a> |
+                                                		</c:when>
+                                                		<c:otherwise>
+                                                			<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${tblTender.tenderId}/${item.formId}"><spring:message code="label_edit"/></a> |   
+                                                		</c:otherwise>
+                                                	</c:choose>
+                                        	</c:if>
+                                        </c:if>
+                                       <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${item.formId}/0/false">${viewlink}</a>
+                                        
+                                        |<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${item.formId}/0">Test Form</a>
+                                        <c:if test="${tblTender.isWorkflowRequired eq 0 or isTenderWorkflowStarted ne true or (workflowToInitiator eq true and workflowDone ne true)}">
+                                         <c:if test="${tblTender.cstatus eq 0}">
+                                                   <c:if test ="${ item.isEncryptionReq eq 0}">
+                                                       |<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${item.formId}" > <spring:message code="label_Formula"/></a>   
+                                                   </c:if>
 
+                                                   <c:if test ="${  item.isEncryptionReq ne 0}">  
+                                                        | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormulaColumns/${tblTender.tenderId}/${item.formId}" > Edit Formula</a>  
+                                                   </c:if>
+                                         </c:if>
+                                        
+                                        <c:if test="${item.cstatus ne 2 && workflowDone ne true && (tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0))}">
+                                            |<a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${item.formId}" onclick="return confirm('Are you sure you want to delete form?')"><spring:message code="link_delete_corrigendum" /></a>
+                                        </c:if>
+                                        </c:if>
+                                        </div>
 
+                                    </div>              
+                                   </c:if>
+                                                                               
+				
+                                   
+				</c:forEach>
+			</c:if>
+			
+	             </div>
+			</div>
+		</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+   </div>
+
+<c:if test="${tblTender.biddingAccess eq 0}"> 
+   <div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-border" data-toggle="collapse" href="#bidOpening">
+					<h3 class="box-title">
+						<h4 class="panel-title"><a><spring:message code="lbl_map_bidders" />	</a></h4>
+					</h3>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-md-12">
+									<div id="bidOpening" class="panel-collapse">
+			
+				<div class="col-md-12 border">
+					<div class="col-md-3"><spring:message code="field_bidder"/>
+					</div>
+					<div class="col-md-9">
+                                            <c:if test="${tblTender.cstatus ne 1 && tblTender.cstatus ne 2}">
+                                                    <a href="${pageContext.servletContext.contextPath}/etender/buyer/biddermapping/${tblTender.tenderId}"><spring:message code="lbl_bidder_mapping" />	</a>|
+        					
+						</c:if>
+						 <a href="${pageContext.servletContext.contextPath}/etender/buyer/viewmappedbidders/${tblTender.tenderId}"><spring:message code="lbl_mapped_bidders" /></a>
+						
+						
+					</div>
+				</div>
+			
+		</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+   </div>
+</c:if>           
+<!-- work flow start -->
+<c:if test="${tblTender.isWorkflowRequired eq 1}">	
+<div class="row">
+	<div class="col-md-12">
+		<div class="box">
+			<div class="box-header with-border" data-toggle="collapse" href="#workFlow">
+				<h3 class="box-title"><a><spring:message code="label_workflow" /></a></h3>
+			</div>
+			<div class="box-body">
+				<div class="row">
+							<div id="workFlow" class="panel-collapse">
+			<div class="col-md-12 border">
+				<div class="col-md-3"><spring:message code="label_notice_workflow" /></div>
+				<div class="col-md-9">
+				<c:choose>
+				<c:when test="${allowToCreateWorkflow}"><!-- if workflow is not stated or approval is done -->
+	            	<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0" onclick="return validatePublishTender(${tblTender.tenderId})">${createlink}</a>
+	            </c:when>
+            	<c:when test="${not empty workflowToMe}">
+					<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0">${workflow_pending}</a>
+				</c:when>
+        		<c:when test="${isTenderWorkflowStarted}">
+	        		<a href="${pageContext.servletContext.contextPath}/etender/buyer/viewtenderworkflow/${tenderId}/0">${viewlink}</a>
+        		</c:when>
+	            </c:choose>
+	          	</div>
+			</div>
+		</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
+</c:if>
+<!-- Workflow end -->
+     
+   
+       
+     <c:if test="${tblTender.cstatus eq 1}">
+     
+     <div class="row">
+		<div class="col-md-12">
+			<div class="box">
+				<div class="box-header with-border" data-toggle="collapse" href="#bidOpening">
+					<h3 class="box-title"><a><spring:message code="field_view_rslt" />	</a></h3>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-md-12">
+									<div id="bidOpening" class="panel-collapse">
+			
+				<div class="col-md-12 border">
+					<div class="col-md-3"><spring:message code="tab_tender_reports" />	
+					</div>
+					<div class="col-md-9">
+                                           <%
+                                               if((tblTender.getAuctionStartDate().equals(dateFormatLocal.parse( dateFormatGmt.format(new Date())))  ||  tblTender.getAuctionStartDate().before(dateFormatLocal.parse( dateFormatGmt.format(new Date())))) && tblTender.getAuctionEndDate().after(dateFormatLocal.parse(dateFormatGmt.format(new Date()))))
+                                           {
+                                               %>
+						<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuctionResult/${tblTender.tenderId}">
+                                                    <c:if test="${tblTender.isAuctionStop eq 1}"><spring:message code="lbl_resume_auction" />	</c:if>
+                                                    <c:if test="${tblTender.isAuctionStop eq 0}"><spring:message code="lbl_stop_auction" /></c:if>
+                                                   
+                                                </a>
+                                            <%
+                                           }
+                                           if(tblTender.getAuctionEndDate().before(dateFormatLocal.parse( dateFormatGmt.format(new Date()))))
+                                           {
+                                           %>
+                                          
+                                           <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewResult/${tblTender.tenderId}">
+                                                    
+                                                    <c:if test="${tblTender.isAuctionStop eq 0}"><spring:message code="lbl_view_result" /></c:if>
+                                                   
+                                                </a>
+                                           <%
+                                           }
+                                           %>
+						
+						
+					</div>
+				</div>
+			
+		</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	 </div>
 
-<%@include file="../../includes/footer.jsp"%>
-
-<script type="text/javascript">
+     </c:if>
+      
+ </c:if>
+ 
+ <div id="targetDiv"></div>
+</div>
+ <script type="text/javascript">
 function confirmCorrigenudmDelete(){
 	return confirm("Are you sure you want to delete corrigendum ?");
 }
@@ -988,8 +1183,8 @@ function validatePublishMsg(publishTenderError){
 		   showDialog(url);
 		   return false;
 		});
-
-		$("#targetDiv").dialog({  //create dialog, but keep it closed
+	//create dialog, but keep it closed
+		$("#targetDiv").dialog({  
 		   autoOpen: false,
 		   height: 300,
 		   width: 700,
@@ -1000,20 +1195,32 @@ function validatePublishMsg(publishTenderError){
 		    $("#targetDiv").load(url);
 		    $("#targetDiv").dialog("open");         
 		}
+		
+// 		    $('#publishPrebidMOMLnk').click(function(e) {
+// 		        e.preventDefault();
+		        
+// 		    });
  });
  
- function copyTender(){
-	 var tenderId='${tblTender.tenderId}';
-     if(confirm('<spring:message code="msg_tender_cnfrm_copytender" />')){
-    	 $(".successMsg").hide();
-    	 window.location = "${pageContext.servletContext.contextPath}/etender/buyer/copytender/"+tenderId;
-    }
-}
+ function publishMOM(){
+	 $('#publishPrebidMOM').submit();
+ }
  
  </script>
 
-</div>
-
-</body>
-
-</html>
+<style type="text/css">
+.pullright{
+	float: right;
+}
+.pullleft{
+	float: left;
+}
+</style>
+ <style>
+       .customCls{
+       	background:gainsboro;border:1px solid #374850;
+       	width:94%
+       }
+       
+       </style>
+<%@include file="../../includes/footer.jsp"%>

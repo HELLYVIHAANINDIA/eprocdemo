@@ -1,25 +1,9 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="./../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>        
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
+<script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
         <spring:message code="lbl_manage_user" var="lbl_manage_user"/>
-        <title>${lbl_manage_user}</title>
-        <script type="text/javascript">
-            $(document).ready(function() {
-            
-        	});
-        </script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="./../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: auto; ">
+   <div class="content-wrapper">   
 <section class="content-header">
 <h1>Administration</h1>
 </section>
@@ -48,34 +32,33 @@
 					</div>
 				</div>
 				<form id="tenderListForm" style="display: none;">
-				<c:if test="${sessionObject.isOrgenizationUser eq 0}">
+				<c:if test="${sessionObject.isCTPLUser eq 0}">
 					<input type="hidden" value="${tblGrandParentDept.deptId}" class="searchEqual" columnName="b.grandParentDeptId" name="b.grandParentDeptId">
 					<input type="hidden"  id="jsonSearchCriteria" name="jsonSearchCriteria">
+					
 					</c:if>
+					<input type="hidden"  name="defaultOrder" id="defaultOrder" value="4:Desc">
 				</form>
 </div>				
 </section>
-
-</div>  
-
-</div>
-
+</div> 
 <script type="text/javascript">
 loadListPage('listingDiv',7,'tenderListForm');
 function callActionItem(cthis){
 	var actionname = $(cthis).attr("actionname");
-	console.log(actionname);
+	var officerId  = getColumnIndex('officerId');
 	if(actionname.toLowerCase() == "edit"){
-		var officerId = $(cthis).closest("tr").find('td:nth-child(5)').html()
-		window.location = "${pageContext.servletContext.contextPath}/common/user/geteditofficer/"+officerId;
+		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
+		window.location = "${pageContext.servletContext.contextPath}/common/user/geteditofficer/"+officerId+"/admin";
 	}
-	
+	if(actionname.toLowerCase() == "delete"){
+		jConfirm("Are you sure you want to delete user ?","Manage User",function (result) { 
+			if(result){
+				officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
+				window.location = "${pageContext.servletContext.contextPath}/common/user/deleteuser/"+officerId;
+			}
+        }); 
+	}
 }
 </script>
-  <script type="text/javascript">
-  
-</script>
-
-</body>
-
-</html>
+ <%@include file="../../includes/footer.jsp"%>

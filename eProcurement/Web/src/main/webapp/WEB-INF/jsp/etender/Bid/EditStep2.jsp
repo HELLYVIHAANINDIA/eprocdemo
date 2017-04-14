@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 <%@page import="com.eprocurement.etender.model.TblTenderCell"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="com.eprocurement.etender.model.TblTenderColumn"%>
@@ -8,11 +8,8 @@
 <%@page import="java.util.List"%>
 <%@page import="com.eprocurement.etender.model.TblTenderForm"%>
 <%@page import="java.util.Map"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-        <%@include file="../../includes/header.jsp"%>
 
-        <%
+<%
              int userType=1; //This value will come from the session
             
             Map formStructure = (Map) request.getAttribute("formStructure");
@@ -44,74 +41,75 @@
             DataTypeMessage.add("");
             DataTypeMessage.add("");
         %>
-</head>
+<div class="content-wrapper">
+<section class="content-header">
+	<h1>
+		<spring:message code="link_tender_edit" />
+	</h1>
+</section>
+<section class="content">
+	<form id="tenderDtBean" name="tenderDtBean"
+		action="${pageContext.servletContext.contextPath}/eBid/Bid/updateBiddingFormValue"
+		method="post" onsubmit="return createJSON();">
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-        <div class="content-wrapper">
-        
-            <section class="content-header">
-                <h1>edit  
-                </h1>
-            </section>
-            
-            <section class="content">
-                <form id="tenderDtBean" name="tenderDtBean" action="/eProcurement/eBid/Bid/updateBiddingFormValue" method="get"  onsubmit="return createJSON();">
-
-                <div class="row">
-                    <div class="col-lg-12 col-md-12">
-                        <div class="box">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">  <%=tblTenderForm.getFormName()%> </h3>
-                            </div>
-                            <div class="box-body">
-                                <div class="row">
-                                        <div class="col-md-12">
-                                            <h3 style="padding-top:0px;margin-top:0px;"><%=tblTenderForm.getFormHeader()%></h3>
-                                        </div>
-                                        <%
+		<div class="row">
+			<div class="col-lg-12 col-md-12">
+				<div class="box">
+					<div class="box-header with-border">
+						<h3 class="box-title">
+							<%=tblTenderForm.getFormName()%>
+						</h3>
+					</div>
+					<div class="box-body">
+						<div class="row">
+							<div class="col-md-12">
+								<h3 style="padding-top: 0px; margin-top: 0px;"><%=tblTenderForm.getFormHeader()%></h3>
+							</div>
+							<%
                                             int count=0;
                                             for(TblTenderTable tblTenderTable:lstTable)
                                             {
                                                 List <TblTenderColumn>lstCol=(List)column.get(tblTenderTable.getTableId());
                                         %>
-                                     
-                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 
-                                        	<div class="box">
+							<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 
-						<div class="box-header with-border">
-							<h3 class="box-title"><b><%=tblTenderTable.getTableName()%></b></h3>
-						</div>
-                                                <div class="box-header with-border">
-							<h3 class="box-title"><%=tblTenderTable.getTableHeader()%></h3>
-						</div>
+								<div class="box">
 
-						<div class="box-body">
-							<div class="row">
-								<div class="col-lg-12 col-md-12 col-xs-12">
-									<table class="table table-striped table-responsive" id="tbl_<%=count++%>" tableId="<%=tblTenderTable.getTableId()%>">
-										<thead>
-											<tr>
-                                                                                            <%for(TblTenderColumn obj:lstCol)
+									<div class="box-header with-border">
+										<h3 class="box-title">
+											<b><%=tblTenderTable.getTableName()%></b>
+										</h3>
+									</div>
+									<div class="box-header with-border">
+										<h3 class="box-title"><%=tblTenderTable.getTableHeader()%></h3>
+									</div>
+
+									<div class="box-body">
+										<div class="row">
+											<div class="col-lg-12 col-md-12 col-xs-12">
+												<table class="table table-striped table-responsive"
+													id="tbl_<%=count++%>"
+													tableId="<%=tblTenderTable.getTableId()%>">
+													<thead>
+														<tr>
+															<%for(TblTenderColumn obj:lstCol)
                                                                                             {
                                                                                                 %>
-                                                                                                <th><%=obj.getColumnHeader()%></th>
-                                                                                                <%}
+															<th><%=obj.getColumnHeader()%></th>
+															<%}
                                                                                                     %>
-											</tr>
-										</thead>
-										<tbody>
-                                                                                    <%
+														</tr>
+													</thead>
+													<tbody>
+														<%
                                                                                         String ColId="";
                                                                                         for(int i=0;i<tblTenderTable.getNoOfRows();i++)
                                                                                         {String formula="no data";
                                                                                             columnCount=0;
                                                                                                  %>
-                                                                                            <tr id="tr<%=i%>">
-                                                                                                <%
+														<tr id="tr<%=i%>">
+															<%
                                                                                                     for(TblTenderColumn  TblTenderColumn:  lstCol)
                                                                                                     {
                                                                                                         String key=tblTenderTable.getTableId()+"_"+TblTenderColumn.getColumnId()+"_"+i+"_"+columnCount;
@@ -123,8 +121,9 @@
                                                                                                         }
                                                                                                 
                                                                                                 %>
-                                                                                                     <td tableid="1" trid="<%=i%>" colKey="<%=TblTenderColumn.getColumnId()%>">
-                                                                                                    <%
+															<td tableid="1" trid="<%=i%>"
+																colKey="<%=TblTenderColumn.getColumnId()%>">
+																<%
 //                                                                                                         out.println("col id= "+TblTenderColumn.getColumnId()+" contains: "+formFormulaWithColumn.containsKey(TblTenderColumn.getColumnId()+""));
                                                                                                         if(formFormulaWithColumn!=null && formFormulaWithColumn.containsKey(TblTenderColumn.getColumnId()+"") )
                                                                                                         {
@@ -175,15 +174,21 @@
                                                                                                                         if(isTextBox && isShown)
                                                                                                                         {
                                                                                                                         %>
-<!--                                                                                                                         <label>123</label> -->
-                                                                                                                        <input type="text" onblur="ValidateInput(<%=dataType%>,this);" att="1" placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType())
-                                                                                                                               %>" colKey="<%=TblTenderColumn.getColumnId()%>" value="<%=value%>" class="clstxtcell_<%=Col.contains(TblTenderColumn.getColumnId())%>" rowid="<%=i%>"
-                                                                                                                               id=<%=ColId%>>
-                                                                                                                        <%}
+																<!--                                                                                                                         <label>123</label> -->
+																<input type="text"
+																onblur="ValidateInput(<%=dataType%>,this);" att="1"
+																placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType())
+                                                                                                                               %>"
+																colKey="<%=TblTenderColumn.getColumnId()%>"
+																value="<%=value%>"
+																class="clstxtcell_<%=Col.contains(TblTenderColumn.getColumnId())%>"
+																rowid="<%=i%>" id=<%=ColId%>> <%}
                                                                                                                          else if(!isTextBox && isShown)
                                                                                                                         {%>
-                                                                                                                        <input type="text" onblur="ValidateInput(<%=dataType%>,this);" disabled="true" value="<%=value%>" id=<%=ColId%>>
-                                                                                                                        <%}
+																<input type="text"
+																onblur="ValidateInput(<%=dataType%>,this);"
+																disabled="true" value="<%=value%>" id=<%=ColId%>>
+																<%}
                                                                                                                         
                                                                                                                         break;
                                                                                                                     case 3:
@@ -194,113 +199,123 @@
                                                                                                                            if(isTextBox && isShown)
                                                                                                                         {
                                                                                                                         %>
-                                                                                                                        <label>321</label>
-                                                                                                                        
-                                                                                                                        <input type="text" onblur="ValidateInput(<%=dataType%>,this);"  att="2" placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType())
-                                                                                                                               %>" colKey="<%=TblTenderColumn.getColumnId()%>" value="<%=value%>"  class="clstxtcell_<%=Col.contains(TblTenderColumn.getColumnId())%>"  rowid="<%=i%>"
-                                                                                                                               id=<%=ColId%>>
-                                                                                                                        <%}
+																<label>321</label> <input type="text"
+																onblur="ValidateInput(<%=dataType%>,this);" att="2"
+																placeholder="<%=DataTypeMessage.get(TblTenderColumn.getDataType())
+                                                                                                                               %>"
+																colKey="<%=TblTenderColumn.getColumnId()%>"
+																value="<%=value%>"
+																class="clstxtcell_<%=Col.contains(TblTenderColumn.getColumnId())%>"
+																rowid="<%=i%>" id=<%=ColId%>> <%}
                                                                                                                          else if(!isTextBox && isShown)
                                                                                                                         {%>
-                                                                                                                        <input type="text" onblur="ValidateInput(<%=dataType%>,this);" disabled="true" value="<%=value%>" id=<%=ColId%>>
-                                                                                                                        <%}
+																<input type="text"
+																onblur="ValidateInput(<%=dataType%>,this);"
+																disabled="true" value="<%=value%>" id=<%=ColId%>>
+																<%}
                                                                                                                             break;
                                                                                                                     case 6:
                                                                                                                        if(isTextBox && isShown)
                                                                                                                         {
                                                                                                                        %>
-                                                                                                                       <label ><%=i+1%></label>
-                                                                                                                       <%
+																<label><%=i+1%></label> <%
                                                                                                                            }
                                                                                                                         else if(!isTextBox && isShown)
                                                                                                                         {%>
-                                                                                                                        <label ><%=i+1%></label>
-                                                                                                                        <%}
+																<label><%=i+1%></label> <%}
                                                                                                                         break;
                                                                                                                     case 7:
                                                                                                                    if(isTextBox && isShown)
                                                                                                                         {
                                                                                                                         %>
-                                                                                                                        <input type="date" onblur="ValidateInput(<%=dataType%>,this);" colKey="<%=TblTenderColumn.getColumnId()%>" value="<%=value%>">
-                                                                                                                        <%}
+																<input type="date"
+																onblur="ValidateInput(<%=dataType%>,this);"
+																colKey="<%=TblTenderColumn.getColumnId()%>"
+																value="<%=value%>"> <%}
                                                                                                                          else if(!isTextBox && isShown)
                                                                                                                         {%>
-                                                                                                                        <input type="date" onblur="ValidateInput(<%=dataType%>,this);" readonly="true" value="<%=value%>" id=<%=ColId%>>
-                                                                                                                        <%}
+																<input type="date"
+																onblur="ValidateInput(<%=dataType%>,this);"
+																readonly="true" value="<%=value%>" id=<%=ColId%>>
+																<%}
                                                                                                                         break;
                                                                                                                     case 8:
                                                                                                                     %>
-                                                                                                                    <select colKey="<%=TblTenderColumn.getColumnId()%>" ><option>--Select--</option></select>
-                                                                                                                    <%
+																<select colKey="<%=TblTenderColumn.getColumnId()%>"><option><spring:message
+																			code="lbl_select" /></option></select> <%
                                                                                                                         break;
                                                                                                                     case 9:
                                                                                                                        if(isTextBox && isShown)
                                                                                                                         {
                                                                                                                         %>
-                                                                                                                        <input type="file" >
-                                                                                                                        <%}
+																<input type="file"> <%}
                                                                                                                          else if(!isTextBox && isShown)
                                                                                                                         {%>
-                                                                                                                        <input type="file"  readonly="true" >
-                                                                                                                        <%}
+																<input type="file" readonly="true"> <%}
                                                                                                                         break;
                                                                                                                     default:
                                                                                                                         %>
-                                                                                                                        <input type="text" colKey="<%=TblTenderColumn.getColumnId()%>"  class="clstxtcell_<%=Col.contains(TblTenderColumn.getColumnId())%>" rowid="<%=i%>" id=<%=ColId%> >
-                                                                                                                        <%
+																<input type="text"
+																colKey="<%=TblTenderColumn.getColumnId()%>"
+																class="clstxtcell_<%=Col.contains(TblTenderColumn.getColumnId())%>"
+																rowid="<%=i%>" id=<%=ColId%>> <%
                                                                                                                         break;   
                                                                                                                 }
                                                                                                    
 %>
-</td>
-<%
+															</td>
+															<%
     columnCount++;
 }
                                                                                                     %>
-                                                                                                    <td><input type="hidden" id="hdnFormula" value="<%=formula%>"><INPUT type="hidden" ID="hdn"></td>
-                                                                                            </tr>
-                                                                                        <%}
+															<td><input type="hidden" id="hdnFormula"
+																value="<%=formula%>"><INPUT type="hidden"
+																ID="hdn"></td>
+														</tr>
+														<%}
                                                                                         %>
-                                                                                </tbody>
-									</table>
+													</tbody>
+												</table>
+											</div>
+										</div>
+									</div>
+									<div class="box-header with-border">
+										<h3 class="box-title"><%=tblTenderTable.getTableFooter()%></h3>
+									</div>
+
 								</div>
+
+							</div>
+							<% }
+                                            %>
+
+							<div class="col-lg-12">
+								<h3><%=tblTenderForm.getFormFooter()%></h3>
+							</div>
+
+							<div class="col-md-12 text-center">
+								<button type="submit" class="btn btn-submit" id="btnSubmitForm">
+									<spring:message code="label_submit" />
+								</button>
+								<button type="button" class="btn btn-submit">
+									<spring:message code="lbl_reset" />
+								</button>
 							</div>
 						</div>
-                                                                                        <div class="box-header with-border">
-							<h3 class="box-title"><%=tblTenderTable.getTableFooter()%></h3>
-						</div>
-
 					</div>
-
-                                        </div>
-                                           <% }
-                                            %>
-                                            
-                                            <div class="col-lg-12">
-                                                <h3><%=tblTenderForm.getFormFooter()%></h3>
-                                            </div>
-                                    
-                                      <div class="col-md-12 text-center">
-                                        <button type="submit" class="btn btn-submit" id="btnSubmitForm">Submit</button>
-                                        <button type="button" class="btn btn-submit">Reset</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                                            <input type="hidden" id="hdnFormId" name="hdnFormId" value="<%=tblTenderForm.getFormId()%>">
-                                            <input type="hidden" id="txtJson" name="txtJson">
-                                                <input type="hidden" value="<%=tenderId%>" name="hdntenderId">
-                    </form>       
-            </section>
-        </div>
-                                               
-<%@include file="../../includes/footer.jsp"%>
-
+				</div>
+			</div>
+		</div>
+		<input type="hidden" id="hdnFormId" name="hdnFormId"
+			value="<%=tblTenderForm.getFormId()%>"> <input type="hidden"
+			id="txtJson" name="txtJson"> <input type="hidden"
+			value="<%=tenderId%>" name="tenderId">
+	</form>
+</section>
 </div>
 
- <script>
+
+<script>
 $( document ).ready(function() {
    
     $(".clstxtcell_true").blur(function() {
@@ -355,9 +370,8 @@ function calculateFormula(formula,rowid,cmd)
         return s;
     } 
        
-</script>
-    </body>
-</html>
-      
+                                                </script>
+<%@include file="../../includes/footer.jsp"%>
 
-	
+
+

@@ -1,18 +1,13 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 <jsp:useBean id="now" class="java.util.Date" />
-<c:if test="${param.pageFrom ne 'viewTender'}">
-	<%@include file="../../includes/header.jsp"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+	
+<c:if test="${pageFrom ne 1}">
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 </c:if>
-  <style>
-  .black{
-  	color: black;
-  	font-style: oblique;
-  }
-  </style>
-  <link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery-ui.min.css">
+  
+ 
    <spring:message code="title_tender_th_viewcorrigendum" var="title_tender_th_viewcorrigendum"/>
    <spring:message code="title_tender_th_viewcorrigendum_no" var="title_tender_th_viewcorrigendum_no"/>
    <spring:message code="lbl_create_corrigendum_text" var="create_corrigendum_text"/>
@@ -37,33 +32,26 @@
 		<c:set value="${items.corrigendumId}" var="corrigendumId"/>
 	</c:if>
 </c:forEach>
-</head>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
+<div class="content-wrapper">
 
- <div class="content-wrapper">
+<c:if test="${pageFrom ne 1}">
+<section class="content-header">
+<h1>Corrigendum Detail</h1>   
+<a class="pull-right" href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a>                                
+</section>
+</c:if>
 
-		<section class="content-header">		
-				<c:if test="${param.pageFrom ne 'viewTender'}">
-					<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="btn btn-submit"><<
-						Go To Tender Dashboard</a>
-				</c:if>
-				
-					<h1>Corrigendum Detail</h1>		
-		</section>
-		
-		
-				<div class="col-md-12">
-					<div class="box">
-						<div class="box-header with-border">
-							<h3 class="box-title">${title_tender_th_viewcorrigendum_no} ${counter} (Published)</h3>
-						</div>
-						<div class="box-body">
-							<div class="row">
-								<div class="col-md-12">
-									<div class="borderRadius t_space o-x panel-container table-border"  id="pdfReportDiv">   
+<c:set var="clsForSec" value="content"/>
+<c:if test="${pageFrom eq 1}">
+<c:set var="clsForSec" value=""/>
+</c:if>
+
+<section class="${clsForSec}">						
+   						
+	                            <div id="pdfReportDiv">
+	                            <spring:message code="lbl_view_doc" var="lbl_view_doc"/>   
+	                            
                                 <table class="tableView m-bottom" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <c:set var="counter" value="${fn:length(resultList)}"/>
                                 <c:choose>
@@ -71,56 +59,63 @@
                                         <c:forEach items="${resultList}" var="cList">
                                             <c:choose>
                                                 <c:when test="${cList.cstatus eq 1}">
+                                                
+                                                    <div class="row">                                                     
+                                                          <div class="col-sm-12">  
+                                                          	<h5 class="box-title">${title_tender_th_viewcorrigendum_no} ${counter} : Published view</h5>
+                                                          </div>                                                        
+                                                    </div>
                                                     
-<!--                                                     <tr  class="gradi" style="height: 40px;"> -->
-<%--                                                         <td  width="28%" class="f-bold">${title_tender_th_viewcorrigendum} : </td> --%>
-<%--                                                         <td colspan="6">${cList.id} </td> --%>
-
-<!--                                                     </tr> -->
-                                                    <tr>
-                                                        <td  width="28%"  class="f-bold v-a-top" <spring:message code="lbl_create_corrigendum_text"/> : </td>
-                                                        <td colspan="6">
-                                                        	<div class="o-auto fancybox-lock-test display table-border border-for-table pull-left" style="width:650px;">
-                                                        		${cList.ctext}
-                                                        	</div>
-                                                        </td>
-                                                    </tr>
+                                                    <div class="row">
+                                                    <div class="col-sm-3 col-xs-12"><spring:message code="lbl_create_corrigendum_text"/> : </div>
+                                                    <div class="col-sm-3 col-xs-12">${cList.ctext}</div>
+                                                    </div>
+                                                    
+                                                    <c:if test="${not empty cList.id}">
+                                                    <div class="row">
+                                                        <div class="col-sm-3 col-xs-12"><spring:message code="corrigendum_view_doc"/> : </div>
+                                                        <div class="col-sm-3 col-xs-12">
+                                                        	<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tenderId}/${tenderNITObjectId}/${tenderId}/${cList.id}/0" data-target="#myModal" class="myModel" data-toggle="modal">${lbl_view_doc}</a>
+                                                        </div>
+                                                        
+                                                    </div>
+                                                    </c:if>
+                                                    
                                                     <c:if test="${fn:length(cList.details) gt 0}">
-                                                        <tr class="gradi black">
-                                                            <td>${thtenderfieldname}</td>
-                                                            <td>${thtenderoldvalue}</td>
-                                                            <td>${thtendernewvalue}</td>
-                                                        </tr>
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12"><strong>${thtenderfieldname}</strong></div>
+                                                            <div class="col-sm-3 col-xs-12"><strong>${thtenderoldvalue}</strong></div>
+                                                            <div class="col-sm-3 col-xs-12"><strong>${thtendernewvalue}</strong></div>
+                                                        </div>
                                                     </c:if>
+                                                    
                                                     <c:forEach items="${cList.details}" var="cDetailList">
-                                                        <tr>
-                                                            <td>
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">
                                                                  <spring:message code="${cDetailList.fieldName}"/>
-                                                            </td>
-                                                            <td>
-                                                            	<div class="o-auto fancybox-lock-test display table-border border-for-table pull-left" style="width:315px;">
-                                                                	${cDetailList.oldValue}
-                                                                </div>
-                                                            </td>
-                                                            <td>
-                                                            	<div class="o-auto fancybox-lock-test display table-border border-for-table pull-left" style="width:315px;">
-                                                                	${cDetailList.newValue}
-                                                                </div>
-                                                            </td>
-                                                        </tr>
+                                                            </div>
+                                                            <div class="col-sm-3 col-xs-12">                                                            	
+                                                                	${cDetailList.oldValue}                                                             
+                                                            </div>
+                                                            <div class="col-sm-3 col-xs-12">                                                           	
+                                                                	${cDetailList.newValue}                                                                
+                                                            </div>
+                                                        </div>
                                                     </c:forEach>
+                                                    
                                                     <c:if test="${fn:length(cList.currencies) gt 0}">
-                                                        <tr class="gradi">
-                                                            <td colspan="2">${th_tender_currency}</td>
-                                                            <td>${th_tender_action}</td>
-                                                        </tr>
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">${th_tender_currency}</div>
+                                                            <div class="col-sm-3 col-xs-12">${th_tender_action}</div>
+                                                        </div>
                                                     </c:if>
+                                                    
                                                     <c:forEach items="${cList.currencies}" var="currList">
-                                                        <tr>
-                                                            <td colspan="2">
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">
                                                                 ${currList.currencyName}
-                                                            </td>      
-                                                            <td>
+                                                            </div>      
+                                                            <div class="col-sm-3 col-xs-12">
                                                                 <c:choose>
                                                                     <c:when test="${currList.action eq 'New'}">
                                                                         <span style="color: green"> ${currList.action}</span>
@@ -129,21 +124,23 @@
                                                                          <span style="color: red"> ${currList.action}</span>
                                                                     </c:otherwise>
                                                                 </c:choose>
-                                                            </td>
-                                                        </tr>
+                                                            </div>
+                                                        </div>
                                                     </c:forEach>
+                                                    
                                                     <c:if test="${fn:length(cList.forms) gt 0}">
-                                                        <tr class="gradi">
-                                                            <td colspan="2">${title_tenderform}</td>
-                                                            <td>${th_tender_action}</td>
-                                                        </tr>
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">${title_tenderform}</div>
+                                                            <div class="col-sm-3 col-xs-12">${th_tender_action}</div>
+                                                        </div>
                                                     </c:if>
+                                                    
                                                     <c:forEach items="${cList.forms}" var="frmList">
-                                                        <tr>
-                                                            <td colspan="2">
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">
                                                                 ${frmList.formName}
-                                                            </td>      
-                                                            <td>
+                                                            </div>      
+                                                            <div class="col-sm-3 col-xs-12">
                                                                 <c:choose>
                                                                     <c:when test="${frmList.action eq 'New'}">
                                                                         <span style="color: green">${frmList.action}</span>
@@ -152,21 +149,23 @@
                                                                         <span style="color: red"> ${frmList.action}</span>
                                                                     </c:otherwise>
                                                                 </c:choose>       
-                                                            </td>
-                                                        </tr>
+                                                            </div>
+                                                        </div>
                                                     </c:forEach>
+                                                    
                                                     <c:if test="${fn:length(cList.envelopes) gt 0}">
-                                                        <tr class="gradi">
-                                                            <td colspan="2">${title_envelopeform}</td>
-                                                            <td>${th_tender_action}</td>
-                                                        </tr>
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">${title_envelopeform}</div>
+                                                            <div class="col-sm-3 col-xs-12">${th_tender_action}</div>
+                                                        </div>
                                                     </c:if>
+                                                    
                                                     <c:forEach items="${cList.envelopes}" var="envList">
-                                                        <tr>
-                                                            <td colspan="2">
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">
                                                                 ${envList.envelopeName}
-                                                            </td>      
-                                                            <td>
+                                                            </div>      
+                                                            <div class="col-sm-3 col-xs-12">
                                                                 <c:choose>
                                                                     <c:when test="${envList.action eq 'New'}">
                                                                         <span style="color: green">${envList.action}</span>
@@ -175,15 +174,18 @@
                                                                         <span style="color: red"> ${envList.action}</span>
                                                                     </c:otherwise>
                                                                 </c:choose>       
-                                                            </td>
-                                                        </tr>
+                                                            </div>
+                                                        </div>
                                                     </c:forEach>
+                                                    
                                                     <c:if test="${fn:length(cList.documents) gt 0}">
-                                                        <tr  class="no-border">
-                                                            <th colspan="6">${lbl_tender_document}</th>  
-                                                        </tr>
-                                                        <tr  class="no-border">
-                                                            <td colspan="6">                                                                         
+                                                    
+                                                        <div class="row">
+                                                            <div class="col-sm-3 col-xs-12">${lbl_tender_document}</div>  
+                                                        </div>
+                                                        
+                                                        <div class="row">
+                                                            <div class="col-xs-12">                                                                         
                                                                 <table width="100%" width="100%" cellpadding="0" cellspacing="0" border="0" class="formField1 m-top border-right">
                                                                     <tr>
                                                                         <th width="25%">${fields_tender_docname}</th>                                                                                        
@@ -204,65 +206,65 @@
                                                                         </tr>
                                                                 </c:forEach>
                                                              </table>
-                                                            </td>
-                                                        </tr>
+                                                            </div>
+                                                        </div>
                                                     </c:if>
                                                 </c:when>
                                             <c:otherwise>
-                                            <c:if test="${param.pageFrom ne 'viewTender' && sessionObject.userTypeId ne 2 && userType ne 0}"><!-- without login  -->
-                                                <tr class="gradi" style="height: 40px;font-weight: bold" >
-                                                     <td colspan="3"><h2>${title_tender_th_viewcorrigendum_no} ${counter} (Not yet published)</h2>                                                           
-                                                     </td>
-                                                 </tr>
-<!--                                                  <tr> -->
-<%--                                                      <td  width="28%"  class="f-bold"> ${title_tender_th_viewcorrigendum} :  </td> --%>
-<%--                                                      <td colspan="2">${cList.id} </td> --%>
+                                            <c:if test="${pageFrom ne 1 && sessionObject.userTypeId ne 2 && userType ne 0}"><!-- without login  -->
+                                                <div class="row">
+                                                     <div class="col-sm-3 col-xs-12"><h2>${title_tender_th_viewcorrigendum_no} ${counter} (Not yet published)</h2>                                                           
+                                                     </div>
+                                                 </div>
 
-<!--                                                  </tr> -->
-                                                 <tr>
-                                                     <td  width="28%" class="f-bold v-a-top"><spring:message code="lbl_create_corrigendum_text"/> :  </td>
-                                                     <td colspan="2" class="no-padding">
+                                                 <div class="row">
+                                                     <div class="col-sm-3 col-xs-12"><spring:message code="lbl_create_corrigendum_text"/> :  </div>
+                                                     <div class="col-sm-3 col-xs-12">
                                                      	<div class="o-auto fancybox-lock-test display table-border border-for-table pull-left" style="width:650px;">
                                                      		${cList.ctext}
                                                      	</div>
-                                                     </td>
-                                                 </tr>
+                                                     </div>
+                                                 </div>
+                                                 
                                                  <c:if test="${fn:length(cList.details) gt 0 && not empty thtenderfieldname}">
-                                                     <tr class="gradi black">
-                                                         <td width="28%">${thtenderfieldname}</td>
-                                                         <td>${thtenderoldvalue}</td>
-                                                         <td>${thtendernewvalue}</td>
-                                                     </tr>
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">${thtenderfieldname}</div>
+                                                         <div class="col-sm-3 col-xs-12">${thtenderoldvalue}</div>
+                                                         <div class="col-sm-3 col-xs-12">${thtendernewvalue}</div>
+                                                     </div>
                                                  </c:if>
+                                                 
                                                  <c:forEach items="${cList.details}" var="cDetailList">
-                                                     <tr>
-                                                         <td  width="28%" class="v-a-top border-top-none">
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">
                                                              <spring:message code="${cDetailList.fieldName}"/> 
-                                                         </td>
-                                                         <td class="v-a-top">
+                                                         </div>
+                                                         <div class="col-sm-3 col-xs-12">
 	                                                         <div class="o-auto fancybox-lock-test display table-border border-for-table pull-left" style="width:315px;">
 	                                                             	${cDetailList.oldValue}
 	                                                         </div>
-                                                         </td>
-                                                         <td class="v-a-top">
+                                                         </div>
+                                                         <div class="col-sm-3 col-xs-12">
 	                                                         <div class="o-auto fancybox-lock-test  display table-border border-for-table pull-left" style="width:315px;">
 	                                                             ${cDetailList.newValue}
 	                                                         </div>
-                                                         </td>
-                                                     </tr>
+                                                         </div>
+                                                     </div>
                                                  </c:forEach>
+                                                 
                                                  <c:if test="${fn:length(cList.currencies) gt 0}">
-                                                     <tr class="gradi">
-                                                         <td colspan="2">${th_tender_currency}</td>
-                                                         <td>${th_tender_action}</td>
-                                                     </tr>
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">${th_tender_currency}</div>
+                                                         <div class="col-sm-3 col-xs-12">${th_tender_action}</div>
+                                                     </div>
                                                  </c:if>
+                                                 
                                                  <c:forEach items="${cList.currencies}" var="currList">
-                                                     <tr>
-                                                         <td colspan="2">
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">
                                                              ${currList.currencyName}
-                                                         </td>      
-                                                         <td>
+                                                         </div>      
+                                                         <div class="col-sm-3 col-xs-12">
                                                              <c:choose>
                                                                  <c:when test="${currList.action eq 'New'}">
                                                                      <span style="color: green">${currList.action}</span>
@@ -271,21 +273,23 @@
                                                                      <span style="color: red"> ${currList.action}</span>
                                                                  </c:otherwise>
                                                              </c:choose>
-                                                         </td>
-                                                     </tr>
+                                                         </div>
+                                                     </div>
                                                  </c:forEach>
+                                                 
                                                  <c:if test="${fn:length(cList.forms) gt 0}">
-                                                     <tr class="gradi">
-                                                         <td colspan="2">Tender Form</td>
-                                                         <td>${th_tender_action}</td>
-                                                     </tr>
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">Tender Form</div>
+                                                         <div class="col-sm-3 col-xs-12">${th_tender_action}</div>
+                                                     </div>
                                                  </c:if>
+                                                 
                                                  <c:forEach items="${cList.forms}" var="frmList">
-                                                     <tr>
-                                                         <td colspan="2">
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">
                                                              ${frmList.formName}
-                                                         </td>      
-                                                         <td>                                                                           
+                                                         </div>      
+                                                         <div class="col-sm-3 col-xs-12">                                                                           
                                                              <c:choose>  
                                                                  <c:when test="${frmList.action eq 'New'}">
                                                                      <span style="color: green">${frmList.action}</span>
@@ -294,21 +298,23 @@
                                                                      <span style="color: red"> ${frmList.action}</span>
                                                                  </c:otherwise>
                                                              </c:choose>       
-                                                         </td>
-                                                     </tr>
+                                                         </div>
+                                                     </div>
                                                  </c:forEach>
+                                                 
                                                  <c:if test="${fn:length(cList.envelopes) gt 0}">
-                                                     <tr class="gradi">
-                                                         <td colspan="2">${title_envelopeform}</td>
-                                                         <td>${th_tender_action}</td>
-                                                     </tr>
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">${title_envelopeform}</div>
+                                                         <div class="col-sm-3 col-xs-12">${th_tender_action}</div>
+                                                     </div>
                                                  </c:if>
+                                                 
                                                  <c:forEach items="${cList.envelopes}" var="envList">
-                                                     <tr>
-                                                         <td colspan="2">
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">
                                                              ${envList.envelopeName}
-                                                         </td>      
-                                                         <td>
+                                                         </div>      
+                                                         <div class="col-sm-3 col-xs-12">
                                                              <c:choose>
                                                                  <c:when test="${envList.action eq 'New'}">
                                                                      <span style="color: green">${envList.action}</span>
@@ -317,15 +323,17 @@
                                                                      <span style="color: red"> ${envList.action}</span>
                                                                  </c:otherwise>
                                                              </c:choose>       
-                                                         </td>
-                                                     </tr>
+                                                         </div>
+                                                     </div>
                                                  </c:forEach>
+                                                 
                                                  <c:if test="${fn:length(cList.documents) gt 0}">
-                                                     <tr  class="no-border" class="gradi">
-                                                         <td colspan="3">${lbl_tender_document}</td>  
-                                                     </tr>
-                                                     <tr  class="no-border">
-                                                         <td colspan="6">                                                                         
+                                                     <div class="row">
+                                                         <div class="col-sm-3 col-xs-12">${lbl_tender_document}</div>  
+                                                     </div>
+                                                     
+                                                     <div class="row">
+                                                         <div class="col-xs-12">                                                                         
                                                              <table width="100%" width="100%" cellpadding="0" cellspacing="0" border="0" class="formField1 m-top">
                                                                  <tr class="gradi">
                                                                      <td width="25%">${fields_tender_docname}</td>                                                                                        
@@ -346,8 +354,8 @@
                                                                      </tr>
                                                                  </c:forEach>
                                                              </table>
-                                                         </td>
-                                                     </tr>
+                                                         </div>
+                                                     </div>
 
                                                  </c:if>                   
                                              </c:if>
@@ -357,55 +365,45 @@
                                         </c:forEach>
                                     </c:when>
                                     <c:otherwise>
-                                        <tr>
-                                            <td colspan="3">
-                                                <spring:message code='msg_tender_biddermap_empty' />
-                                            </td>
-                                        </tr>
+                                        <div class="row">
+                                            <div class="col-sm-3 col-xs-12">
+                                                <spring:message code='msg_tender_no_corrigendum_found' />
+                                            </div>
+                                        </div>
                                     </c:otherwise>
                                 </c:choose>                                        
                             </table>
+                            
                         </div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			
-		
-		
-</div>
+                  		
+   </section>
+    <div id="targetDiv"></div>
+  </div>  
+   
 
-	<c:if test="${param.pageFrom ne 'viewTender'}">
+<script type="text/javascript">
+$(document).ready(function(){
+
+	 $('a.myModel').click(function(){   //bind handlers
+		   var url = $(this).attr('href');
+		   showDialog(url);
+		   return false;
+		});
+
+		$("#targetDiv").dialog({  //create dialog, but keep it closed
+		   autoOpen: false,
+		   height: 300,
+		   width: 700,
+		   modal: true
+		});
+
+		function showDialog(url){  //load content and open dialog
+		    $("#targetDiv").load(url);
+		    $("#targetDiv").dialog("open");         
+		}
+});
+</script>
+
+   <c:if test="${pageFrom ne 1}">
 		<%@include file="../../includes/footer.jsp"%>
 	</c:if>
-
-	</div>
-
-<div id="targetDiv"></div>
-
-	<script type="text/javascript">
-		$(document).ready(function() {
-
-			$('a.myModel').click(function() { //bind handlers
-				var url = $(this).attr('href');
-				showDialog(url);
-				return false;
-			});
-
-			$("#targetDiv").dialog({ //create dialog, but keep it closed
-				autoOpen : false,
-				height : 300,
-				width : 700,
-				modal : true
-			});
-
-			function showDialog(url) { //load content and open dialog
-				$("#targetDiv").load(url);
-				$("#targetDiv").dialog("open");
-			}
-		});
-	</script>
-	
-</body>
-</html>

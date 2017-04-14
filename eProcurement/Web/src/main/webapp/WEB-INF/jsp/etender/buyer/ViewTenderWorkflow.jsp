@@ -1,19 +1,9 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../../includes/header.jsp"%>
-<style type="text/css">
-.pullright{
-	float: right;
-}
-.pullleft{
-	float: left;
-}
-</style>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery-ui.min.css">
-<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
+
+<%@include file="../../includes/head.jsp"%>
+ <%@include file="../../includes/masterheader.jsp"%>
+
+
+
 <spring:message code="link_create" var="createlink" />
 <spring:message code="link_tender_edit" var="editlink" />
 <spring:message code="link_tender_view" var="viewlink" />
@@ -48,43 +38,52 @@
 <spring:message code="label_workflow" var="labelworkflow" />
 <spring:message code="th_tender_action" var="action" />
 <spring:message code="label_select_user" var="labelselectuser" />
-<spring:message code="lbl_remark" var="lblremark" />
+<spring:message code="lbl_remark" var="lbl_remark" />
 <spring:message code="btn_submit" var="btn_submit" />
-
-<link href="${pageContext.servletContext.contextPath}/resources/js/datatable/css/buttons.dataTables.min.css" rel="stylesheet" />           
-       <style>
-       .customCls{
-       	background:gainsboro;border:1px solid #374850;
-       	width:94%
-       }
+           
+     
        
-       </style>
+
        <c:if test="${not empty successMsg}">
       <div class="alert alert-success">  ${successMsg}</div>
       </c:if>
-</head>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper">
-
+	
+	<div class="content-wrapper">
 	<section class="content-header">
-		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="btn btn-submit" style="margin-top:0px; margin-bottom:10px;"><< <spring:message code="lbl_back_dashboard"/></a>
-		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="btn btn-submit" style="margin-top:0px; margin-bottom:10px;"><spring:message code="lbl_back_tenderlist"/></a> 
+	<c:choose>
+	<c:when test="${tblTender.isAuction eq 0}">
+	<h1 class="pull-left">View Tender Workflow</h1>
+	</c:when>
+	<c:when test="${tblTender.isAuction eq 1}">
+	<h1 class="pull-left">View Auction Workflow</h1>
+	</c:when></c:choose>
+	
+		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="pull-right"><< <spring:message code="lbl_back_dashboard"/></a>
+		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="pull-right"><< <spring:message code="lbl_back_tenderlist"/></a> 
 	</section>
-
-<%@include file="TenderSummary.jsp"%>
-
-<div class="clearfix"></div>
-
-<div class="col-md-12">
-	<div class="box">
-		<div class="box-body">
-			<div class="row">
-				<div class="col-md-12">
-					<c:if test="${not empty tblWorkflowForUser}">
+	
+	<section class="content">
+	<c:choose>
+	<c:when test="${tblTender.isAuction eq 1}">
+		<%@include file="AuctionSummary.jsp"%>
+	</c:when>
+	<c:when test="${tblTender.isAuction eq 0}">
+		<%@include file="TenderSummary.jsp"%>
+	</c:when>
+	
+	</c:choose>
+		<c:if test="${not empty tblWorkflowForUser}">
+		<div class="row">
+			<div class="col-md-12">
+				<div class="box">
+					<div class="box-header with-border">
+						<h3 class="box-title"></h3>
+					</div>
+					<div class="box-body">
+						<div class="row">
+							<div class="col-md-12">
+								<c:if test="${not empty tblWorkflowForUser}">
 		<table class="table hover"> 
 			<tr style="background-color: #3c8dbc">
 				<th>${th_srno}</th>
@@ -92,7 +91,7 @@
 				<th>${th_forwarded_by}</th>
 				<th>${th_forwarded_to}</th>
 				<th>${th_action_taken}</th>
-				<th>${lblremark}</th>
+				<th>${lbl_remark}</th>
 				<th>${th_dateandtime}</th>
 				<th>${col_action}</th>
 			</tr>
@@ -123,35 +122,34 @@
 			</c:choose>
 			</td>
  			<td>${items.remarks}</td>
-			<td>${items.createdDate}</td>
-			<td><a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${objectId}/${tenderId}/${childId}/${items.workflowId}/0" data-target="#myModal" class="myModel" data-toggle="modal">View Document</a></td>
+			<td>${items.createdDate}</td>														
+			<td><a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tenderId}/${objectId}/${childId}/${items.workflowId}/0" data-target="#myModal" class="myModel" data-toggle="modal">View Document</a></td>
 			</tr>
 			</c:forEach>
 			
 		</table>
 </c:if>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</div>
-
-
-<div class="col-md-12">
-	<div class="box">
-		<div class="box-body">
-			<div class="row">
-				<div class="col-md-12">
-
-<form id="tenderDtBean" name="tenderDtBean" onsubmit="return validation();" action="${pageContext.request.contextPath}/etender/buyer/addworkflow" method="post" >
-
-<c:if test="${allowCreateWF}">
+		</c:if>
+<c:if test="${allowCreateWF}">	
+	<div class="row">
+			<div class="col-md-12">
+				<div class="box">
+					<div class="box-header with-border">
+						<h3 class="box-title">Create ${labelworkflow}</h3>
+					</div>
+					<div class="box-body">
+						<div class="row">
+							<form id="tenderDtBean" name="tenderDtBean" onsubmit="return validation();" action="${pageContext.request.contextPath}/etender/buyer/addworkflow" method="post" >
+	<input type="hidden" name="isAuction" value="${tblTender.isAuction}">
 	<div class="form-group">
-  		<div class="panel-heading lightgray" href="#c">
-			Create ${labelworkflow}
-		</div>
-		<hr>
-		<div class="row">
+  	
+		<div class="col-md-12">
 			<div class="col-md-3">
 				${action}
 			</div>
@@ -166,9 +164,9 @@
 			</select>
 			</div>
 		</div>
-		<div class="row">	
+		<div class="col-md-12">	
 			<div class="col-md-3">
-			${lbl_remark}
+			<spring:message code="lbl_comment"/>
 			</div>
 			<div class="col-md-9">
 				<textarea name="remarks" id="rtfRemarks" validarr="required@@remarks:500" tovalid="true" title="remarks" class="form-control"></textarea>
@@ -176,7 +174,7 @@
 			</div>
 		</div>
 <div class="officerSelection">
-			<div class="row">
+			<div class="col-md-12">
 										<div class="col-md-3">
 											<div class="form_filed">Search By</div>
 										</div>
@@ -188,7 +186,7 @@
 											</select>
 										</div>
 									</div>	
-									<div class="row" id="nonHirarchy">
+									<div class="col-md-12" id="nonHirarchy">
 										<div class="col-md-3">
 											<div class="form_filed">Search</div>
 										</div>
@@ -197,7 +195,7 @@
 										</div>
 									</div>
 									<div id="Hirarchy" style="display: none">
-									<div class="row">
+									<div class="col-md-12">
 										<div class="col-md-3">
 											<div class="form_filed">Department</div>
 										</div>
@@ -207,7 +205,7 @@
 													</select>
 										</div>
 									</div>
-									<div class="row">
+									<div class="col-md-12">
 										<div class="col-md-3">
 											<div class="form_filed">Sub department</div>
 										</div>
@@ -217,7 +215,7 @@
 											</select>
 										</div>
 									</div>
-									<div class="row">
+									<div class="col-md-12">
 										<div class="col-md-3">
 											<div class="form_filed">Designation</div>
 										</div>
@@ -228,7 +226,7 @@
 										</div>
 									</div>
 								</div>
-									<div class="row">
+									<div class="col-md-12">
 										<div class="col-md-3">
 										</div>
 										<div class="col-md-9 pull-right">
@@ -236,7 +234,7 @@
 										</div>
 									</div>
 									
-			<div class="row">
+			<div class="col-md-12">
 				<div class="col-md-3">
 					<div class="form_filed">Officer name</div>
 				</div>
@@ -247,13 +245,13 @@
 <%-- 								<button type="button" id="addOfficer" class="btn btn-submit">Add</button>--%>
 				</div>
 			</div></div>
-		<div class="row">
+		<div class="col-md-12">
 			<div class="col-md-3"></div>
 			<div class="col-md-9 pull-left">
 			<%@include file="./UploadDocuments.jsp"%>
 			</div>
 		</div>
-		<div class="row">
+		<div class="col-md-12">
 			<div class="col-md-3"></div>
 			<div class="col-md-3 pull-left">
 			<input type="hidden" name="workflowId" id="workflowId" value="${workflowId}">
@@ -265,21 +263,17 @@
 		</div>
 	</div>
 	<div class="clearfix"></div>
-</c:if>
-</form>
-
+			</form>
+			</div>
+		</div>
+	</div>
+ </div>
 </div>
+</c:if>	
+	</section>
+	<div id="targetDiv"></div>
 </div>
-</div>
-</div>
-</div>
-
-<div id="targetDiv"></div>
-
-<div class="clearfix"></div>
-
-</div>
-
+		
 <script type="text/javascript">
 
  $(document).ready(function(){
@@ -302,8 +296,6 @@
 		    $("#targetDiv").dialog("open");         
 		}
 	 
-     var VALIDATE_MSG_REQUIRED = 'Please enter';
-     var VALIDATE_MSG_SELECT = 'Please select';
      var deptLst = '${deptLst}';
      var obj = jQuery.parseJSON(deptLst);
      
@@ -346,8 +338,8 @@
 				    return false;
 			    }
 			}
-			var officerDocId = $(".officerDocId").map(function () {
-		        return $(this).val();
+			var officerDocId = $("[officerDocId]").map(function () {
+		        return $(this).attr("officerDocId");
 		    }).get().join(',');
 		    $("#uploadedDocumentId").val(officerDocId);
 	    }catch(e){
@@ -423,7 +415,7 @@
  
  
  function getSubDepartments() {
- 	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
+	 blockUI();
  			var data = {};
          	var searchValue = $("#selDepartment").val();
          	$.ajax({
@@ -443,15 +435,15 @@
          		    		}));
          		     });
          			console.log("SUCCESS: ", data);
-         			$.unblockUI({});
+         			unBlockUI()
          		},
          		error : function(e) {
          			console.log("ERROR: ", e);
-         			$.unblockUI({});
+         			unBlockUI()
          		},
          		done : function(e) {
          			console.log("DONE");
-         			$.unblockUI({});
+         			unBlockUI()
          		}
          	});
          	return true;
@@ -459,7 +451,7 @@
  
  
  function getDesignations() {
- 	$.blockUI({message: '<h4><img src="http://s13.postimg.org/80vkv0coz/image.gif" /> Please Wait...</h4>'});
+	 blockUI();
  	var data = {};
  	var subDeptId = $("#subDept").val();
  	var parentDeptId = $("#selDepartment").val();
@@ -489,23 +481,35 @@
  		    		}));
  		     });
  			console.log("SUCCESS: ", data);
- 			$.unblockUI({});
+ 			unBlockUI()
  		},
  		error : function(e) {
  			console.log("ERROR: ", e);
- 			$.unblockUI({});
+ 			unBlockUI()
  		},
  		done : function(e) {
  			console.log("DONE");
- 			$.unblockUI({});
+ 			unBlockUI()
  		}
  	});
  }
  
  
  </script>
+   <style>
+       .customCls{
+       	background:gainsboro;border:1px solid #374850;
+       	width:94%
+       }
+       
+       </style>
+ <style type="text/css">
+.pullright{
+	float: right;
+}
+.pullleft{
+	float: left;
+}
+</style>
  
-<%@include file="../../includes/footer.jsp"%>
-</div>
-</body>
-</html>
+	<%@include file="../../includes/footer.jsp"%>

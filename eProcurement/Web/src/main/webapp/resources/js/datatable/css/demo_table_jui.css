@@ -49,7 +49,7 @@
 }
 
 .paging_full_numbers {
-	width: 350px !important;
+	width: 520px !important;
 }
 
 .dataTables_wrapper .ui-toolbar {
@@ -147,6 +147,8 @@ table.display thead th div.DataTables_sort_wrapper span {
 .dataTables_info {
 	width: 50%;
 	float: left;
+	font-weight: 400;
+	color:#016db6;
 }
 
 .dataTables_paginate {
@@ -285,7 +287,7 @@ table.display tr.even.gradeU {
 
 
 tr.odd {
-	background-color: #E2E4FF;
+	background-color: #f3f4f6;
 }
 
 tr.even {
@@ -523,4 +525,31 @@ tr.even.gradeU td.sorting_3 {
 
 .ex_highlight #example tbody tr.odd:hover, #example tbody tr.odd td.highlighted {
 	background-color: #E6FF99;
+}
+
+.dataTables_wrapper {
+  clear: both;
+  margin-top: 15px;
+  min-height: 1px;
+  position: relative;
+}
+
+
+.dataTables_length {
+  color: black;
+  float: left;
+  width: auto;
+}
+
+.dataTables_filter {
+  float: right;
+  text-align: right;
+  width: 50%;
+}
+
+label {
+  display: inline-block;
+  font-weight: 400 !important;
+  margin-bottom: 5px;
+  max-width: 100%;
 }

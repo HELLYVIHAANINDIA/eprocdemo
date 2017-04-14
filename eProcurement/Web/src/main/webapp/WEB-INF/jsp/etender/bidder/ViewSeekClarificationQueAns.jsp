@@ -1,56 +1,13 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.custom.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/jquery.cookie.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-		<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css"> 
-		<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery-ui.min.css">       
-        <spring:message code="lbl_create_dept" var="createdepartment"/>
-        <title>${createdepartment}</title>
-        <script type="text/javascript">
-	
-        $(document).ready(function(){
-        	
-        $('a.myModel').click(function(){   //bind handlers
- 		   var url = $(this).attr('href');
- 		   showDialog(url);
- 		   return false;
- 		});
-
- 		$("#targetDiv").dialog({  //create dialog, but keep it closed
- 		   autoOpen: false,
- 		   height: 300,
- 		   width: 700,
- 		   modal: true
- 		});
-
- 		function showDialog(url){  //load content and open dialog
- 		    $("#targetDiv").load(url);
- 		    $("#targetDiv").dialog("open");         
- 		}
-        });
+<%@include file="../../includes/head.jsp"%>
+        <%@include file="../../includes/masterheader.jsp"%>
         
-</script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: auto; ">
-
+        <spring:message code="lbl_create_dept" var="createdepartment"/>
+<div class="content-wrapper">
 <section class="content-header">
 </section>
 
 <section class="content">
-	<div class="row">
+<div class="row">
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 					<div class="box">
 						<div class="box-header with-border">
@@ -101,7 +58,7 @@
 									</form:form>
 									<div class="row">
 										<div class="col-lg-12 col-md-12 col-xs-12">
-											<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${objectId}/${tenderId}/${childId}/${subChildId}/${otherSubChildId}" data-target="#myModal" class="myModel" data-toggle="modal">View uploaded documents</a>
+											<a href="${pageContext.servletContext.contextPath}/etender/buyer/getDocumentList/${tenderId}/${objectId}/${childId}/${subChildId}/${otherSubChildId}" data-target="#myModal" class="myModel" data-toggle="modal">View uploaded documents</a>
 <%-- 											<%@include file="../buyer/UploadDocuments.jsp"%> --%>
 										</div>
 										<div id="targetDiv"></div>
@@ -112,11 +69,31 @@
 						</div>
 					</div>
 				</div>
-			</div>
+		</div>
 </section>
-
-</div> 
- 
 </div>
-    </body>
-</html>
+   <script type="text/javascript">
+	
+        $(document).ready(function(){
+        	
+        $('a.myModel').click(function(){   //bind handlers
+ 		   var url = $(this).attr('href');
+ 		   showDialog(url);
+ 		   return false;
+ 		});
+
+ 		$("#targetDiv").dialog({  //create dialog, but keep it closed
+ 		   autoOpen: false,
+ 		   height: 300,
+ 		   width: 700,
+ 		   modal: true
+ 		});
+
+ 		function showDialog(url){  //load content and open dialog
+ 		    $("#targetDiv").load(url);
+ 		    $("#targetDiv").dialog("open");         
+ 		}
+        });
+        
+           </script>
+<%@include file="../../includes/footer.jsp"%>

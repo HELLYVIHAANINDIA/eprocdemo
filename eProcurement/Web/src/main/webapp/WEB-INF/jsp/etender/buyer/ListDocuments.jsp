@@ -27,7 +27,18 @@
 							<td>
 							<c:choose>
 							<c:when test="${documentEndDateOver ne true}">
-							 <a href="${pageContext.servletContext.contextPath}/ajax/downloadbriefcasefile/${item["officerDocId"]}">Download</a>
+								<c:choose>
+									<c:when test="${objectId eq 6 or objectId eq 7}">
+										<a href="${pageContext.servletContext.contextPath}/ajax/downloadbriefcasefile/${item["officerDocId"]}/${objectId}/${objectId}">Download</a>
+									</c:when>
+									<c:when test="${objectId eq 3 or objectId eq 1}">
+										<a href="${pageContext.servletContext.contextPath}/ajax/downloadbriefcasefile/${item["officerDocId"]}/1">Download</a>
+									</c:when>
+									<c:otherwise>
+										<a href="${pageContext.servletContext.contextPath}/ajax/downloadbriefcasefile/${item["officerDocId"]}">Download</a>
+									</c:otherwise>
+								</c:choose>
+							 
 							 </c:when>
 							 <c:otherwise>
 							 	Document download time is over.

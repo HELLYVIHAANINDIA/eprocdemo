@@ -1,25 +1,10 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../includes/header.jsp"%>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../includes/leftaccordion.jsp"%>
+<%@include file="../includes/head.jsp"%>
+<%@include file="../includes/masterheader.jsp"%>
 
 <div class="content-wrapper">
 
 		<section class="content-header">
-			<h1>
-				General UI Kit <small></small>
-			</h1>
-			<!--<ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-        <li class="active">Dashboard</li>
-      </ol>-->
+			<h1>General UI Kit <small></small></h1>
 		</section>
 
 		<section class="content"> 
@@ -469,15 +454,4 @@
 		</section>
 
 	</div>
-
-	<footer class="main-footer">
-		<div class="pull-right hidden-xs">
-			<strong><a href="http://almsaeedstudio.com">Cahoot
-					Technologies</a>. All rights reserved.</strong>
-		</div>
-		<strong>Copyright &copy; 2016 
-	</footer>
-
-	</div>
-</body>
-</html>
+<%@include file="../../includes/footer.jsp"%>

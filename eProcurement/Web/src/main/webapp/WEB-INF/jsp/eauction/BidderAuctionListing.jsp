@@ -1,21 +1,11 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-	<%@include file="../includes/header.jsp"%>
-	  <script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-	  <link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-  <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>
+<%@include file="./../includes/head.jsp"%>
+<%@include file="./../includes/masterheader.jsp"%>
+	 
   <spring:message code="client_dateformate_hhmm" var="client_dateformate_hhmm" />
-</head>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../includes/leftaccordion.jsp"%>
 
   <div class="content-wrapper">
-  <div class="pull-right" style="cursor:pointer;"><a onclick="showHideSearch()">Search</a></div></br>
+  <div class="pull-right" style="cursor:pointer;"><a onclick="showHideSearch()"><spring:message code="lbl_search" /></a></div></br>
 	<c:if test="${not empty successMsg}">
     	<c:choose>
     		<c:when test="${fn:contains(successMsg, '_')}">
@@ -71,13 +61,13 @@
 				</div> 
                  <div class="col-md-3">
                      <select name="dateFrom1" class="dateFrom1" id="dateFrom1" onchange="checkBetween1(this);" class="form-control">
-                     <option value="searchEqual">equal</option>
-                     <option value="searchNotEqual">not equal</option>
-                     <option value="searchLessThen">less</option>
-                     <option value="searchLessThenEqual">less or equal</option>
-                     <option value="searchGreaterThen">greater</option>
-                     <option value="searchGreaterEqual">greater or equal</option>
-                     <option value="searchBetweenDate">between</option>
+                     <option value="searchEqual"><spring:message code="lbl_equal" /></option>
+                     <option value="searchNotEqual"><spring:message code="lbl_not_equal" /></option>
+                     <option value="searchLessThen"><spring:message code="lbl_less" /></option>
+                     <option value="searchLessThenEqual"><spring:message code="lbl_less_or_equal" /></option>
+                     <option value="searchGreaterThen"><spring:message code="lbl_greater" /></option>
+                     <option value="searchGreaterEqual"><spring:message code="lbl_grater_or_equal" /></option>
+                     <option value="searchBetweenDate"><spring:message code="lbl_between" /></option>
                      </select>
                  </div>
                  <div class="col-md-3">
@@ -93,13 +83,13 @@
 				</div> 
                  <div class="col-md-3">
                      <select name="dateFrom" class="dateFrom" id="dateFrom" onchange="checkBetween(this);" class="form-control">
-                     <option value="searchEqual">equal</option>
-                     <option value="searchNotEqual">not equal</option>
-                     <option value="searchLessThen">less</option>
-                     <option value="searchLessThenEqual">less or equal</option>
-                     <option value="searchGreaterThen">greater</option>
-                     <option value="searchGreaterEqual">greater or equal</option>
-                     <option value="searchBetweenDate">between</option>
+                     <option value="searchEqual"><spring:message code="lbl_equal" /></option>
+                     <option value="searchNotEqual"><spring:message code="lbl_not_equal" /></option>
+                     <option value="searchLessThen"><spring:message code="lbl_less" /></option>
+                     <option value="searchLessThenEqual"><spring:message code="lbl_less_or_equal" /></option>
+                     <option value="searchGreaterThen"><spring:message code="lbl_greater" /></option>
+                     <option value="searchGreaterEqual"><spring:message code="lbl_grater_or_equal" /></option>
+                     <option value="searchBetweenDate"><spring:message code="lbl_between" /></option>
                      </select>
                  </div>
                  <div class="col-md-3">
@@ -111,17 +101,17 @@
 			</div>
 			<div class="col-md-12">
 				<div class="col-md-3">
-					Search In
+					<spring:message code="field_search_for" />
 				</div>
 				<div class="col-md-3">
 					<select name="searchToTab" id="searchToTab" class="form-control">
                      <option value="">Select</option>
-                     <option selected="selected" value="18">All</option>
-                     <option value="1">Pending</option>
-                     <option value="6">Live</option>
-                     <option value="4">Future</option>
-                     <option value="5">Archive</option>
-                     <option value="17">Cancel</option>
+                     <option selected="selected" value="18"><spring:message code="lbl_all" /></option>
+                     <option value="1"><spring:message code="col_open_pending" /></option>
+                     <option value="6"><spring:message code="lbl_live" /></option>
+                     <option value="4"><spring:message code="lbl_future" /></option>
+                     <option value="5"><spring:message code="lbl_archive" /></option>
+                     <option value="17"><spring:message code="lbl_cancel" /></option>
                     </select>
 				</div>
 			</div>
@@ -143,17 +133,24 @@
 		</div>
 		<section class="">
 		<ul class="nav nav-tabs">
-		  <li class="listingTab" tabIndex="10"><a href="#">Live (${tenderCount.live})</a></li>
-		  <li class="listingTab" tabIndex="14"><a href="#" >Future (${tenderCount.future})</a></li>
-		  <li class="listingTab" tabIndex="13"><a href="#" >Archive (${tenderCount.archive})</a></li>
-		  <li class="listingTab" tabindex="27"><a href="#" >Cancel (${tenderCount.cancel})</a></li>
+		  <li class="listingTab" tabIndex="10"><a href="#"><spring:message code="lbl_live" />  <span class="pull-right-container">
+                                                <small class="label pull-right bg-light-white txt-light-blue mar-left-5">${tenderCount.live}</small>
+                                                </span>
+                                                </a></li>
+		  <li class="listingTab" tabIndex="14"><a href="#" ><spring:message code="lbl_future" />  <span class="pull-right-container">
+                                                <small class="label pull-right bg-light-white txt-light-blue mar-left-5">${tenderCount.future}</small></span></a></li>
+		  <li class="listingTab" tabIndex="13"><a href="#" ><spring:message code="lbl_archive" /> <span class="pull-right-container">
+                                                <small class="label pull-right bg-light-white txt-light-blue mar-left-5">${tenderCount.archive}</small>
+                                                </span>
+                                                </a></li>
+		  <li class="listingTab" tabindex="27"><a href="#" ><spring:message code="lbl_cancel" />  <span class="pull-right-container">
+                                                <small class="label pull-right bg-light-white txt-light-blue mar-left-5">${tenderCount.cancel}</small>
+                                                </span></a></li>
 		</ul>
 				<div id="listingDiv">
 				</div>
      	</section>
     </div>
-	<%@include file="../includes/footer.jsp"%>
-	</div>
 <script type="text/javascript">
 
 $(document).ready(function(){
@@ -165,7 +162,7 @@ $(document).ready(function(){
 	});
         if(${isAuction}==0)
         {    loadListPage('listingDiv',10,'tenderListForm');
-            alert("in if");}
+        }
 	else
         
             loadListPage('listingDiv',31,'tenderListForm');
@@ -184,10 +181,10 @@ function callActionItem(cthis){
 	var actionname = $(cthis).attr("actionname").toLowerCase();
 	var colIndx = getColumnIndex('Auction Id.');
 	colIndx++;
-	 if(actionname == "view"){
+	 if(actionname.toLowerCase() == "view"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child('+colIndx+')').html();
-		window.location = "${pageContext.servletContext.contextPath}/etender/bidder/viewtender/"+tenderId;
-	}else if(actionname == "dashboard"){
+		window.location = "${pageContext.servletContext.contextPath}/etender/bidder/viewtender/"+tenderId/0;
+	}else if(actionname.toLowerCase() == "dashboard"){
 		var tenderId = $(cthis).closest("tr").find('td:nth-child('+colIndx+')').html();
 		window.location = "${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/"+tenderId;
 	}
@@ -248,5 +245,4 @@ function searchForList(){
 	}
 }
 </script>
-</body>
-</html>
+<%@include file="./../includes/footer.jsp"%>

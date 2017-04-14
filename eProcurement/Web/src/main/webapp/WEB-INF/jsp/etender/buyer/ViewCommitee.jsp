@@ -1,61 +1,13 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>        
+<%@include file="../../includes/head.jsp"%>
+       <%@include file="../../includes/masterheader.jsp"%>
+       
         <spring:message code="title_tender_createcomitee" var="titlecommittee"/>
         <spring:message code="lbl_view_prebid_committee" var="lblviewprebidcommittee"/>
         <spring:message code="lbl_view_opening_committee" var="lblviewopeningcommittee"/>
         <spring:message code="lbl_view_evaluation_committee" var="lblviewevaluationcommittee"/>
-        <title>${titlecommittee}</title>    
-        <script type="text/javascript">
-//             function validate() {
-//                 var vbool = true;
-//                 if($("#MultipleUser tr:last").index() == 0) {
-//                     jAlert('<spring:message code="msg_committee_add"/>');
-//                     vbool = false;
-//                 }
-//                 return disableBtn(vbool);
-//             }
-            $(document).ready(function() {
-                        var name = $('#userName').val();
-                        $.post('${pageContext.servletContext.contextPath}/etender/buyer/officers', {
-                        }, function(responseText) {
-                                $('#ajaxGetUserServletResponse').text(responseText);
-                        });
-        	});
-            function removeRow(id)
-            {
-                $('#'+id).remove();
-            }
-            $(document).on('click', '#addOfficer', function(){
-            	var selNameVal = $('#selName').val();
-            	var name = selNameVal.split('@@')[0];
-            	var email = selNameVal.split('@@')[1];
-            	var designation = selNameVal.split('@@')[2];
-            	var department = selNameVal.split('@@')[3];
-            	var id = selNameVal.split('@@')[4];
-            	var data = '<tr id="'+id+'"><td>'+name+'</td><td>'+email+'</td><td>'+designation+'</td><td>'+department+'</td><td><a href="#" onclick="removeRow('+id+')">remove</a><input type="hidden" name="hdofficerId" value="'+id+'" /></td></tr>';
-            	if($("#" + id).length == 0) {
-            		$( "#officerLstTbl" ).append(data);
-            	} else {
-            		alert('this record already exists');
-            	}
-            });
-            
-           </script>
-</head>
-
-<body>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-                   
+       
+       
 <div class="content-wrapper">
-
 <section class="content-header">
 			<c:choose>
 				<c:when test="${committeeType eq 1}">
@@ -200,11 +152,41 @@
 				</div>
 </div>
 </section>
-
 </div>
-
-</div>  
-
-</body>
-    
-</html>
+ <script type="text/javascript">
+//             function validate() {
+//                 var vbool = true;
+//                 if($("#MultipleUser tr:last").index() == 0) {
+//                     jAlert('<spring:message code="msg_committee_add"/>');
+//                     vbool = false;
+//                 }
+//                 return disableBtn(vbool);
+//             }
+            $(document).ready(function() {
+                        var name = $('#userName').val();
+                        $.post('${pageContext.servletContext.contextPath}/etender/buyer/officers', {
+                        }, function(responseText) {
+                                $('#ajaxGetUserServletResponse').text(responseText);
+                        });
+        	});
+            function removeRow(id)
+            {
+                $('#'+id).remove();
+            }
+            $(document).on('click', '#addOfficer', function(){
+            	var selNameVal = $('#selName').val();
+            	var name = selNameVal.split('@@')[0];
+            	var email = selNameVal.split('@@')[1];
+            	var designation = selNameVal.split('@@')[2];
+            	var department = selNameVal.split('@@')[3];
+            	var id = selNameVal.split('@@')[4];
+            	var data = '<tr id="'+id+'"><td>'+name+'</td><td>'+email+'</td><td>'+designation+'</td><td>'+department+'</td><td><a href="#" onclick="removeRow('+id+')">remove</a><input type="hidden" name="hdofficerId" value="'+id+'" /></td></tr>';
+            	if($("#" + id).length == 0) {
+            		$( "#officerLstTbl" ).append(data);
+            	} else {
+            		alert('this record already exists');
+            	}
+            });
+            
+           </script>
+           <%@include file="../../includes/footer.jsp"%>

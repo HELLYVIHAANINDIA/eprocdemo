@@ -1,31 +1,14 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="./../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.custom.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/jquery.cookie.js" type="text/javascript"></script>
-		<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>        
-        <spring:message code="lbl_create_user" var="createuser"/>
-        
-        <title>${createuser}</title>
-        <spring:message code="label_select" var="label_select"/>
+<%@include file="../../includes/head.jsp"%>
+        <%@include file="../../includes/masterheader.jsp"%>
+       
+    <spring:message code="label_select" var="label_select"/>
     <spring:message code="label_timezone" var="label_timezone"/>
-          </head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="./../../includes/leftaccordion.jsp"%>
-    
-<div class="content-wrapper" style="height: auto; ">
-
+<div class="content-wrapper">
 <section class="content-header">
 </section>
+
 <section class="content">
-	<div class="row">
+<div class="row">
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 					<div class="box">
 						<div class="box-header with-border">
@@ -148,16 +131,8 @@
 						</div>
 					</div>
 				</div>
-			</div>
+		</div>
 </section>
-
 </div>
-
-</div>
-
-<script type="text/javascript">
-</script>
-
-</body>
-
-</html>
+  
+<%@include file="../../includes/footer.jsp"%>

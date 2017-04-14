@@ -5,10 +5,10 @@
 <c:choose>
                     <c:when test="${not empty linksMap}">
                         <c:forEach items="${linksMap}" var="data" varStatus="cnt">
-                        <table class="table table-striped table-responsive" style="min-height: 600px">
+                        <table class="table table-striped table-responsive">
                         	<thead>
                         		<tr>
-                        			<th colspan="3">Module:${data.key}</th>
+                        			<th colspan="3">Module:${data.key}	Check All : <input type="checkbox" checked="checked" name="chkLinkTH" class="chkLinkTH" onclick="checkSubchild(this)"></th>
                         		</tr>
                     		</thead>
                     		<tbody>
@@ -17,10 +17,10 @@
                             	<c:if test="${data.value[lnkCnt.index].linkId ne ''}">
                             		<td id="tdLink"><input type="checkbox" id="chkLinkId_${data.value[lnkCnt.index].linkId}" name="chkLinkId" value="${data.value[lnkCnt.index].linkId}" class="unique" />${data.value[lnkCnt.index].linkName}
                             	</c:if>
-								<c:if test="${data.value[lnkCnt.index+1].linkId ne ''}">
+								<c:if test="${not empty data.value[lnkCnt.index+1].linkId && data.value[lnkCnt.index+1].linkId ne ''}">
                             		<td id="tdLink"><input type="checkbox" id="chkLinkId_${data.value[lnkCnt.index+1].linkId}" name="chkLinkId" value="${data.value[lnkCnt.index+1].linkId}" class="unique" />${data.value[lnkCnt.index+1].linkName}
                             	</c:if>
-								<c:if test="${data.value[lnkCnt.index+2].linkId ne ''}">
+								<c:if test="${not empty data.value[lnkCnt.index+2].linkId && data.value[lnkCnt.index+2].linkId ne ''}">
                             		<td id="tdLink"><input type="checkbox" id="chkLinkId_${data.value[lnkCnt.index+2].linkId}" name="chkLinkId" value="${data.value[lnkCnt.index+2].linkId}" class="unique" />${data.value[lnkCnt.index+2].linkName}
                             	</c:if>
                             </tr>

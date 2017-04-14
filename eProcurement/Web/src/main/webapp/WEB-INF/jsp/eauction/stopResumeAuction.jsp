@@ -1,149 +1,98 @@
-<!DOCTYPE html>
-<html>
-<%@page import="com.eprocurement.etender.model.TblTender"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
-<jsp:useBean id="now" class="java.util.Date" />
-<%@include file="../includes/header.jsp"%>
-<script src="${pageContext.request.contextPath}/resources/js/tender/tendercreate.js"></script>
-<script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-<script src="${pageContext.servletContext.contextPath}/resources/js/blockUI.js" type="text/javascript"></script>
-<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
-</head>
 
-<body class="skin-blue sidebar-mini">
-	<div class="wrapper">
-		<%@include file="../includes/leftaccordion.jsp"%>
+<%@include file="./../includes/head.jsp"%>
+<%@include file="./../includes/masterheader.jsp"%>
 
-		<div class="content-wrapper">
+	<%@page import="com.eprocurement.etender.model.TblTender"%>
+            <section class="content-header">
+               <h1><spring:message code="lbl_stop_resume_auction_form" /> <small></small></h1>
+            </section>
 
-			<section class="content-header">
-				<a
-					href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing"
-					class="btn btn-submit"><< Go To Auction List</a>
-				<h1 style="margin-top: 10px;">
-					Stop / Resume Auction Form <small></small>
-				</h1>
-			</section>
-
-			<section class="content">
-
-				<%@include file="../etender/buyer/AuctionSummary.jsp"%>
-
-				<div class="row">
-					<div class="col-md-12">
-						<div class="box">
-
-							<div class="box-header with-border">
-								<h3 class="box-title">Stop Auction</h3>
-								<a
-									href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"
-									class="btn btn-submit" style="float: right; margin-top: 0px;"><<
-									Go Back To DashBord</a>
-							</div>
-
-							<form action="/eProcurement/eBid/Bid/stopResumeAuction"
-								method="get">
-								<div class="box-body">
-									<div class="row">
-										<div class="col-lg-12 col-md-12 col-xs-12">
-
-											<div class="row">
-												<div class="col-lg-2">
-													<div class="form_filed">Remark:</div>
-												</div>
-												<div class="col-lg-10">
-													<textArea rows="10" cols="50" class="form-control"
-														id="auctionstopremark" name="auctionstopremark"></textArea>
-												</div>
-
-											</div>
-
-											<div class="row">
-												<input type="hidden" name="tendreId" value="${tenderId}">
-												<%
-                                                    TblTender tblTender=(TblTender)request.getAttribute("tblTender");
-                                                    %>
-												<%
-                                                                String str=tblTender.getAuctionStartDate()+"";
-                                                                String[] arr=str.split("\\.");
-                                                                String[] arr2=arr[0].split(":");
-                                                                %>
-												<input type="hidden" name="auctionStartDate"
-													value="<%=arr2[0]+":"+arr2[1]%>">
-												<%
-                                                                 str=tblTender.getAuctionEndDate()+"";
-                                                                arr=str.split("\\.");
-                                                                arr2=arr[0].split(":");
-                                                                 %>
-												<input type="hidden" name="auctionEndDate"
-													value="<%=arr2[0]+":"+arr2[1]%>"> <input
-													type="hidden" name="isAuctionStop"
-													value="${tblTender.isAuctionStop}"> <br>
-												<div class="col-lg-12 text-center">
-													<c:if test="${tblTender.isAuctionStop eq 1}">
-														<div class="row">
-															<div class="col-lg-2">
-																<div class="form_filed">Auction Start Date :</div>
-															</div>
-															<div class="col-lg-4">
-																<input id="txtAuctionStartDate"
-																	name="txtAuctionStartDate" type="text" datepicker="yes"
-																	dtrequired="false" placeholder="DD/MM/YYYY HH:MM"
-																	class="dateBox pull-left form-control">
-
-															</div>
-															<div class="col-lg-2">
-																<div class="form_filed">Auction End Date :</div>
-															</div>
-															<div class="col-lg-4">
-																<input id="txtDocumentEndDate" name="txtAuctionEndDate"
-																	type="text" datepicker="yes" dtrequired="false"
-																	placeholder="DD/MM/YYYY HH:MM"
-																	class="dateBox pull-left form-control">
-
-															</div>
-														</div>
-														<button type="submit" class="btn btn-submit"
-															id="btnSubmitForm">Resume Auction</button>
-													</c:if>
-													<c:if test="${tblTender.isAuctionStop eq 0}">
-														<button type="submit" class="btn btn-submit"
-															id="btnSubmitForm">Stop Auction</button>
-													</c:if>
-
-												</div>
-
-
-											</div>
-										</div>
-									</div>
-								</div>
-							</form>
-
-						</div>
-					</div>
-				</div>
-
-			</section>
-
-		</div>
-
-		<%@include file="../includes/footer.jsp"%>
-
-	</div>
-
-	<script>
+            
+            <section class="content">
+        
+                                    <a href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing"><< <spring:message code="lbl_go_to_auction_list" /></a>
+                                    <%@include file="../etender/buyer/AuctionSummary.jsp"%>
+                                    <div class="box-header with-border box-primary">
+                                        <div class="col-md-12 " >
+                                            <h3>
+                                                <c:if test="${tblTender.isAuctionStop eq 1}">
+                                                   <spring:message code="lbl_resume_auction" />
+                                                </c:if>
+                                                    <c:if test="${tblTender.isAuctionStop ne 1}">
+                                                    <spring:message code="lbl_stop_auction" />
+                                                </c:if>
+                                                </h3>
+                                        </div>
+                                    <%--<div class="col-md-6 text-right" >
+                                                 <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" ><< Go Back To DashBord
+                                                 </a>
+                                        </div>--%>
+                                    </div>
+                                        <form action="${pageContext.servletContext.contextPath}/eBid/Bid/stopResumeAuction" method="post">
+                                            <div class="box-body">
+                                            <div class="row">
+                                                    <div class="col-lg-12 col-md-12 col-xs-12">
+                                                        <div class="row well" >
+                                                            <div class="col-lg-2">
+                                                                <div class="form_filed"><spring:message code="lbl_remark" /></div>
+                                                            </div>
+                                                            <div class="col-lg-10">
+                                                                <textArea rows="10" cols="50" class="form-control" id="auctionstopremark" name="auctionstopremark" ></textArea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <input type="hidden" name="tendreId" value="${tenderId}">
+                                                            <input type="hidden" name="auctionStartDate" value="${auctionStartDate}">
+                                                            <input type="hidden" name="auctionEndDate" value="${auctionEndDate}">
+                                                            <input type="hidden" name="isAuctionStop" value="${tblTender.isAuctionStop}">
+                                                            <div class="col-lg-12 text-center">
+                                                            <c:if test="${tblTender.isAuctionStop eq 1}">
+                                                                <div class="row well">
+                                                                    <div class="col-lg-2">
+                                                                        <div class="form_filed"><spring:message code="lbl_new_auction_start_date" /></div>
+                                                                    </div>
+                                                                    <div class="col-lg-4">
+                                                                        <input id="txtAuctionStartDate" name="txtAuctionStartDate" type="text"  
+                                                                             datepicker="yes" dtrequired="true" 
+                                                                             placeholder="${client_dateformate_hhmm}" 
+                                                                             class="dateBox pull-left form-control">
+                                                                    </div>
+                                                                    <div class="col-lg-2">
+                                                                        <div class="form_filed"><spring:message code="lbl_new_auction_end_date" /></div>
+                                                                    </div>
+                                                                    <div class="col-lg-4">
+                                                                        <input id="txtDocumentEndDate" name="txtAuctionEndDate"   type="text"  
+                                                                             datepicker="yes" dtrequired="false" 
+                                                                             placeholder="${client_dateformate_hhmm}" 
+                                                                             class="dateBox pull-left form-control">
+                                                                    </div>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-submit" id="btnSubmitForm"><spring:message code="lbl_resume_auction" /></button>
+                                                            </c:if>
+                                                            <c:if test="${tblTender.isAuctionStop eq 0}">
+                                                                <button type="submit" class="btn btn-submit" id="btnSubmitForm"><spring:message code="lbl_stop_auction" /></button>
+                                                            </c:if>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div> 
+                                    </form>
+                                
+        
+            </section>
+            
+      
+        <script>
             $(function(){
                 $(".dateBox").each(function(){
 		    $(this).datetimepicker({
-		       format:'d/m/Y H:i'
+		       format:'d-M-Y H:i'
 		    });
 		});
             });
         </script>
+<script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
+        <%@include file="../includes/footer.jsp"%>
 
-</body>
-
-</html>
+        

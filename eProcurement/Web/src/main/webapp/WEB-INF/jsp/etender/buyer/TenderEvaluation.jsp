@@ -1,16 +1,7 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
-<script type="text/javascript" src="${pageContext.servletContext.contextPath}/resources/js/print/jquery.txt"></script>
-<script type="text/javascript">
-function isEnvelopeOpened(){
-                jAlert('<spring:message code="msg_env_not_open"/>');
-                return false;
-            }
-</script>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
+
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>
 <spring:message code="col_action" var='vAction'/> 
 <spring:message code="msg_env_not_open" var="vEnvNotOpen"/>
@@ -20,19 +11,10 @@ function isEnvelopeOpened(){
 <c:if test="${isPriceBidForm eq '1' and isEncNotRequire eq '1'}">
 	<c:set var="isItemWiseLinkShow" value="1"/>
 </c:if>		
-<c:choose>
-	<c:when test="${biddingVariant eq 1}"><spring:message code="link_Itemwisebreak_report_lowest" var="linkItemwiseBreakupReport"/></c:when>
-    <c:otherwise><spring:message code="link_Itemwisebreak_report_heighest" var="linkItemwiseBreakupReport"/></c:otherwise>
-</c:choose>
-</head>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
+<spring:message code="msg_add_weightage" var="msg_add_weightage"/>
 <div class="content-wrapper">
 	<section class="content">
-		<div class="row">
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="box">
 				<c:if test="${not empty successMsg}">
@@ -41,9 +23,10 @@ function isEnvelopeOpened(){
 				<c:if test="${not empty errorMsg}">
 					<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
 				</c:if>
-				<div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a></div>
+				
 				<div class="box-header with-border">
-					<h3 class="box-title">Evaluate Bid</h3>
+				<div class="pull-right"><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a></div>
+					<h3 class="box-title">Evaluation Consent</h3>
 				</div>
 
                         
@@ -53,6 +36,7 @@ function isEnvelopeOpened(){
 				<div class="box-body pad">
 					<table  class="table table-striped table-responsive">
 						<c:set value="${sessionObject.userId}" var="currentUserId"/>
+						<c:set value="${sessionObject.timeZoneOffset}" var="timeZoneOffset"/>
 						<c:forEach items="${envList}" var="envelopeData" varStatus="srno">
 							<c:set var="bidderCounter" value="${srno.index}"/>
 							<c:set value="${envelopeData[0]}" var="envelopeid"/>
@@ -75,8 +59,6 @@ function isEnvelopeOpened(){
 							<c:set value="N" var="isEnbleBidderwiseReport"/>
 							<c:set value="0" var="committeeMember"/>
                             <c:set value="Invalid" var="isShowEncodedName"/>
-                                                
-                                                
                             <c:forEach items="${bidderFormList}" var="verifyData"><%-- VerifyData Loop --%>
                             	<c:set var="verifyEnvelopeId" value="${verifyData[0]}"/>
 								<c:set var="verifyFormId" value="${verifyData[1]}"/>
@@ -114,31 +96,22 @@ function isEnvelopeOpened(){
 											<td>${minmember}</td>
 										</tr>
 										<tr>
-											<td>Bid Opening Status</td>
+											<td>Tender Opening Status</td>
 											<td>
 												<c:choose>
-													<c:when test="${srno.index ne 0 and envelopeType eq 2 and openingdatestatus ne 1}"><spring:message code="label_date_not_specified"/></c:when>
+													<c:when test="${srno.index ne 0 and tblTender.envelopeType eq 2 and openingdatestatus ne 1}"><spring:message code="label_date_not_specified"/></c:when>
 													<c:when test="${timelapsed eq 0 and openingdatestatus eq 1}"><spring:message code="label_date_not_arrive"/></c:when>
 													<c:when test="${timelapsed eq 0}">${pending}</c:when>
 													<c:when test="${isopened eq 1}">Opened</c:when>
-<%-- 													<c:when test="${isevaluated eq 1}"> --%>
-<%-- 														<c:choose> --%>
-<%-- 															<c:when test="${evaluationStatusMap[envelopeid] ne 'Pending' and evaluationStatusMap[envelopeid] ne ''}"> --%>
-<%-- 																<c:set value="${evaluationStatusMap[envelopeid]}" var="evaluatedOn"/> --%>
-<%-- 																	Evaluated on ${evaluatedOn} --%>
-<%-- 															</c:when> --%>
-<%-- 															<c:otherwise>${evaluationStatusMap[envelopeid]}</c:otherwise>															 --%>
-<%-- 														</c:choose> --%>
-<%-- 													</c:when> --%>
 													<c:otherwise>${pending}</c:otherwise>
 												</c:choose>												
 											</td>
 										</tr>
 										<tr>
-											<td>Bid Opening Date & time</td>
+											<td>Tender Opening Date & time</td>
 											<td>
 												<c:choose>
-													<c:when test="${srno.index ne 0 and envelopeType eq 2 and openingdatestatus ne 1}">---</c:when> 
+													<c:when test="${srno.index ne 0 and tblTender.envelopeType eq 2 and openingdatestatus ne 1}">---</c:when> 
 													<c:when test="${openingdatestatus eq 1}"><fmt:formatDate pattern="${clientDateFormate}" value="${openingdate}" /></c:when> 
 												</c:choose>
 											</td>
@@ -146,6 +119,10 @@ function isEnvelopeOpened(){
 										<tr>
 										<td>
 										<table  class="table table-striped table-responsive">
+											<tr>
+												<th>Committee Member Name</th>
+												<th>Status</th>
+											</tr>
 											<c:set value="0" var="VerifiedFormsCount"/>
 											<c:set value="0" var="totalFormsCount"/>
                                             <c:set value="0" var="AllformsCount"/>
@@ -195,13 +172,13 @@ function isEnvelopeOpened(){
 	                                                            <c:otherwise><td width="50%"><a href="${urlConsent}" onclick="isEnvelopeOpened();">${officername}</</a></td></c:otherwise>
 	                                                        </c:choose>
 														</c:when>
-														<c:when test="${srno.index ne 0 and isAllFormsVerified eq 'Y' and oldEnvelopeData[10] eq 1 and envelopeType eq 2 and currentUserId eq committeemember and timelapsed eq 1 and isapproved ne 1}"><%-- If tender is Multi Envelope then second envelope's Comittee Member link enable after previous envelope is evaluated from evaluation tab--%>
+														<c:when test="${srno.index ne 0 and isAllFormsVerified eq 'Y' and oldEnvelopeData[10] eq 1 and tblTender.envelopeType eq 2 and currentUserId eq committeemember and timelapsed eq 1 and isapproved ne 1}"><%-- If tender is Multi Envelope then second envelope's Comittee Member link enable after previous envelope is evaluated from evaluation tab--%>
 	                                                        <c:choose>
 	                                                            <c:when test="${isEnvelopeOpened eq 1}"><td width="50%"><a href="${urlConsent}">${officername}</</a></td></c:when><%--consent given by tender opening committee member--%>
 	                                                            <c:otherwise><td width="50%"><a href="${urlConsent}" onclick="isEnvelopeOpened();">${officername}</</a></td></c:otherwise>
 	                                                        </c:choose>
 														</c:when>
-														<c:when test="${srno.index ne 0 and isAllFormsVerified eq 'Y' and envelopeType eq 2 and currentUserId eq committeemember and timelapsed eq 1  and isapproved ne 1}"><%-- If tender is Single Envelope then all envelope's Comittee Member link enable there is no dependancy of evaluation tab--%>
+														<c:when test="${srno.index ne 0 and isAllFormsVerified eq 'Y' and tblTender.envelopeType eq 2 and currentUserId eq committeemember and timelapsed eq 1  and isapproved ne 1}"><%-- If tender is Single Envelope then all envelope's Comittee Member link enable there is no dependancy of evaluation tab--%>
                                                         	<c:choose>
 	                                                            <c:when test="${isEnvelopeOpened eq 1}"><td width="50%"><a href="${urlConsent}">${officername}</</a></td></c:when><%--consent given by tender opening committee member--%>
 	                                                            <c:otherwise><td width="50%"><a href="${urlConsent}" onclick="isEnvelopeOpened();">${officername}</</a></td></c:otherwise>
@@ -215,7 +192,9 @@ function isEnvelopeOpened(){
 													
 													<c:choose>
 														<c:when test="${isapproved eq 1}">
-															<td>Consent given on <fmt:formatDate pattern="${clientDateFormate}" value="${approvedon}" /></td>
+															<td>Consent given on 
+												            ${approvedon}
+															</td>
 														</c:when>
 														<c:otherwise>
 															<td>${pending}</td>
@@ -227,10 +206,27 @@ function isEnvelopeOpened(){
 									</table>
 								</td>
 							</tr>
-							<tr>
-								<td>Seek Clarification</td>
-								<td><a href="${pageContext.servletContext.contextPath}/etender/buyer/bidderwiseclaficationlist/${tenderId}/${envelopeid}/0">Seek Clarification</a></td>
-							</tr>
+							<c:if test="${isevaluated eq 1}">
+								<tr>	
+									<td>Seek Clarification</td>
+									<c:choose>
+	                                       <c:when test="${envOpenStatus[envelopeid] eq true and envEvalStatus[envelopeid] eq false}">
+	                                       		<td><a href="${pageContext.servletContext.contextPath}/etender/buyer/bidderwiseclaficationlist/${tenderId}/${envelopeid}/0">Seek clarification</a></td>
+	                                       </c:when>
+	                                       <c:when test="${envOpenStatus[envelopeid] eq true and envEvalStatus[envelopeid] eq true}">
+	                                       		<td><a href="${pageContext.servletContext.contextPath}/etender/buyer/bidderwiseclaficationlist/${tenderId}/${envelopeid}/0">View seek clarification</a></td>
+	                                       </c:when>
+	                                       </c:choose>
+								</tr>
+						       <c:if test="${envOpenStatus[envelopeid] eq true and envEvalStatus[envelopeid] eq true}">
+                                <tr>	
+									<td><spring:message code="lbl_weightage_report"/></td>
+                                   	<c:if test="${tblTender.isItemwiseWinner eq 0 and tblTender.isWeightageEvaluationRequired eq 1}">
+										<td><a href="${pageContext.servletContext.contextPath}/etender/buyer/weightageReportEnv/${tenderId}/${envelopeid}"><spring:message code="lbl_weightage_report"/></a></td>
+									</c:if>
+								</tr>
+								</c:if>
+							</c:if>
 						</table>
 					</td>
 				</tr>
@@ -266,9 +262,8 @@ function isEnvelopeOpened(){
 															<spring:message code="link_customize_report" var="linkCustomize"/>
 															<spring:message code="link_individual_report"  var="linkIndiv"/>
 															<spring:message code="link_l1_report"     var="l1Report"/>
-															<spring:url value="etender/buyer/itemwiseevaluationreport/${tenderId}/${verifyFormId}/2/2" var="urlItemWiseBreakUpReport" />
-															<spring:url value="etender/buyer/customizedreport/${tenderId}/${verifyFormId}/1/2" var="urlCustomize"/>
-															<spring:url var="urlIndividual" value="/etender/buyer/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/1"/>
+															<spring:url value="/etender/buyer/customizedreport/${tenderId}/${verifyFormId}/1/2" var="urlCustomize"/>
+															<spring:url var="urlIndividual" value="/etender/buyer/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2"/>
 															<spring:url value="/etender/buyer/tendercomparativereport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/1/2" var="urlCompare"/>
 															<tr>
 																<td >${verifyFormName}<c:if test="${verifyIsMandatory eq 1}"><span class="red"> *</span></c:if></td>
@@ -278,27 +273,35 @@ function isEnvelopeOpened(){
 																	<td><span class="red" >${vFormNoBidded}</span></td>
 																	</c:when>
 																<c:otherwise>
-																	<td class="a-left">
+																	<td class="a-">
 		                                                            	<c:set var="decryptionDone" value="true"/>
 																		<c:choose>
 																			<c:when test="${verifyOpenCount eq 0}">
 		                                                                    	<c:set var="decryptionDone" value="false"/>
 																				${linkIndiv} | ${linkCompare} 
 <%-- 																				| ${linkCustomize} --%>
-		                                                                        <c:if test='${eventTypeId eq 5 and verifyIsPriceBid eq 1}'><%-- This link display only in case of Seal bid --%>
-		                                                                                ${linkItemwiseBreakupReport}
-		                                                                        </c:if>
 																			</c:when>
 																			<c:otherwise>
 		                                                                    	<c:if test="${AllformsCount ne AllVerifiedFormsCount}">
 		                                                                        	<c:set var="decryptionDone" value="false"/>
 		                                                                        </c:if>
+		                                                                        <spring:url var="urlWeightage" value="/etender/buyer/tenderindividualreport/${tenderId}/${verifyEnvelopeId}/${verifyFormId}/5/2"/><!-- Operation 5 means use for weighted  -->
+		                                                                        <spring:message var="conversionalert" code="msg_add_currency_conversion_forweightage"/>
+		                                                                        <c:if test="${verifyIsMandatory eq 1 and tblTender.isItemwiseWinner eq 0 and tblTender.isWeightageEvaluationRequired eq 1 and envOpenStatus[envelopeid] eq true and envEvalStatus[envelopeid] eq false }">
+		                                                                        <c:choose>
+		                                                                        <c:when test="${tblTender.isBidConverted eq 0 and tblTender.biddingType eq 2 and tblTender.cstatus ne 2 and tblTender.isEvaluationDone eq 1}">
+		                                                                        <a href="javascript:" onclick="alert('${conversionalert}');">Add Weightage</</a> |
+		                                                                        </c:when>
+		                                                                        <c:otherwise>
+		                                                                        <a href="${urlWeightage}">Add Weightage</</a> |
+		                                                                        </c:otherwise>
+		                                                                        </c:choose>
+		                                                                        </c:if>
 		                                                                        <a href="${urlIndividual}">${linkIndiv}</</a> |
-		                                                                        <a href="${urlCompare}">${linkCompare}</</a> |
-<%-- 		                                                                        <a href="${urlCustomize}">${linkCustomize}</</a> --%>
-																				<c:if test='${eventTypeId eq 5 and verifyIsPriceBid eq 1 and not empty multFillingCountMap[verifyFormId] and multFillingCountMap[verifyFormId] eq 0}'>
-																					| <a href="${urlItemWiseBreakUpReport}">${linkItemwiseBreakupReport}</</a>
-																				</c:if>
+		                                                                        <a href="${urlCompare}">${linkCompare}</</a>
+		                                                                        <c:if test="${isEvaluationDone eq 1}"> 
+		                                                                       | <a href="${urlCustomize}">${linkCustomize}</</a>
+		                                                                       </c:if>
 																			</c:otherwise>
 																		</c:choose>
 																	</td>
@@ -306,28 +309,68 @@ function isEnvelopeOpened(){
 															</c:choose>
 															</tr>
 														</c:if>
-														<c:if test="${verifyCnt.count eq fn:length(verifyData) and isRebateForm eq 1 and mandatoryFormsCount ne 0 and mandatoryFormsCount eq mandatoryFormVerifiedCount and not empty rebateId and (envId eq 4 or envId eq 5)}"><%-- isRebateForm =1 , all forms are verified, and pricebid or technocommercial envelope  --%>
-															<tr>
-																<td class="border-right">${tenderData.reportName}</td>
-																<td class="a-left">
-																	<c:choose>
-																		<c:when test="${tenderData.rebateCount eq 0}"><spring:url var="urlL1" value="etender/buyer/l1h1report/${tenderId}/1/2"/>
-																			<a href="${urlL1}">${l1Report}</a></c:when>
-																		<c:otherwise>${l1Report}</c:otherwise>
-																	</c:choose>	
-																</td>
-															</tr>
-														</c:if>
+														
+														<c:if test="${isEvaluationDone eq 1 and verifyCnt.count eq fn:length(bidderFormList) and mandatoryFormsCount ne 0 and mandatoryFormsCount eq mandatoryFormVerifiedCount and (envId eq 4 or envId eq 5)}"><%-- isRebateForm =1 , all forms are verified, and pricebid or technocommercial envelope  and not empty rebateId--%>
+																			<tr><th>Report name</th>
+																			<c:choose>
+																				<c:when test="${verifyOpenCount eq 0 or verifyFinalCount gt verifyOpenCount or (tblTender.isBidConverted eq 0 and tblTender.biddingType eq 2)}">
+																					<td> <c:choose>
+																           		 			<c:when test="${biddingVariant eq 1}">L1
+																           		 			</c:when>
+																           		 			<c:when test="${biddingVariant eq 2}">H1
+																           		 			</c:when>
+																           		 		</c:choose>Report</td>
+																				</c:when>
+																				<c:otherwise>
+																					<td>
+																					<spring:url var="urlL1Report" value="/etender/buyer/l1h1report/${tenderId}/1/1/${verifyFormId}"/>
+																					<a href="${urlL1Report}">
+																						<c:choose>
+																           		 			<c:when test="${biddingVariant eq 1}">L1
+																           		 			</c:when>
+																           		 			<c:when test="${biddingVariant eq 2}">H1
+																           		 			</c:when>
+																           		 		</c:choose>Report
+																					</a>
+																					
+																					<c:if test="${tblTender.isItemwiseWinner eq 0 and tblTender.isWeightageEvaluationRequired eq 1}">
+																						<spring:message code="lbl_all_env_weightage" var="lbl_all_env_weightage"/>
+																						| <a href="${pageContext.servletContext.contextPath}/etender/buyer/weightageReportEnv/${tenderId}/0">${lbl_all_env_weightage}</a>
+																						<c:choose>
+																							<c:when test="${isWeightageDataSaved eq true}">
+																						| <a href="${pageContext.servletContext.contextPath}/etender/buyer/weightageCombineReport/${tenderId}"><spring:message code="lbl_weightage_combine_l1h1"/></a>	
+																							</c:when>
+																							<c:otherwise>
+																						| <a href="javascript:" onclick="alert('First visit ${lbl_all_env_weightage}')"><spring:message code="lbl_weightage_combine_l1h1"/></a>
+																							</c:otherwise>
+																						
+																						</c:choose>
+																					
+																					</c:if>
+																					</td>
+																				</c:otherwise>	
+																			</c:choose>
+																			<c:choose>
+																				<c:when test="${verifyOpenCount eq 0 or verifyFinalCount gt verifyOpenCount or (tblTender.isBidConverted eq 0 and tblTender.biddingType eq 2)}">
+																				<tr><td ></td><td >Tender Award</td></tr>
+																				</c:when>
+																				<c:otherwise>
+																				<tr><td></td><td>
+																					<spring:url var="tenderAward" value="/etender/buyer/tenderaward/${tenderId}/1/1/${verifyFormId}"/>
+																					<a href="${tenderAward}">Tender Award</a>
+																				</td>
+																				</tr>
+																				</c:otherwise>	
+																			</c:choose>
+																			</tr>
+																		</c:if>
 													</c:forEach>
 											</c:when>
 												<c:otherwise>
 													<c:choose>
 														<c:when test="${isopened eq 0}"> 
-															<tr><td class="black">${vEnvNotOpen}</td></tr>
+															<tr><td><label>${vEnvNotOpen}</label></td></tr>
 														</c:when>
-														<c:otherwise>
-<%-- 															<tr><td><spring:message code="msg_date_eva_lapsed"/></td></tr> --%>
-														</c:otherwise>
 													</c:choose>
 												</c:otherwise>
 											</c:choose>
@@ -347,19 +390,19 @@ function isEnvelopeOpened(){
                                                     				<spring:message code="lbl_bid_eval_sts" var="status"/>
                                                     				<spring:message code="label_bidder_eligible" var="vEligible"/>
                                                     				<spring:message code="label_bidder_not_eligible" var="vNotEligible"/>
-                                                    				
 																	<c:choose>
-																		<c:when test="${isEvaluationRequired eq 1}">
+																		<c:when test="${tblTender.isEvaluationRequired eq 1}">
 																			<tr>
 																				<th>${bidderName}</th>
 																				<th>${status}</th>
-																				<c:if test="${envelopeType eq 2 and envId eq 3 and isItemWiseLinkShow eq 1}">
+																				<c:if test="${tblTender.envelopeType eq 2 and envId eq 3 and isItemWiseLinkShow eq 1}">
                                                                                 	<th>${evaluate}</th>
                                                                                 </c:if>
 <!--                                                                                 cstatus = tender status -->
-                                                                                <c:if test="${cstatus ne 2 and isevaluated eq 1 and isConsentGivenByCurrentCommitteeMember eq 1 and isEvaluationDone eq 0}">
+                                                                                <c:if test="${cstatus ne 2 and isevaluated eq 1 and isConsentGivenByCurrentCommitteeMember eq 1 and isEvaluationDone ne 1}">
                                                                                 		<th>${vAction}</th>
                                                                                 </c:if>
+                                                                                
 																			</tr>
 																		</c:when>
 																		<c:otherwise>
@@ -373,8 +416,8 @@ function isEnvelopeOpened(){
 																<c:forEach items="${bidderList}" varStatus="dataCnt" var="bidderData">
 																	<c:set var="bidderBidderId" value="${bidderData[0]}"/>
 																	<c:set var="bidderCompanyId" value="${bidderData[1]}"/>
+																	<c:set var="bidderCstatus" value="${bidderData[3]}"/>
 																	<c:set var="bidderEnvelopeId" value="${bidderData[2]}"/>
-																	<c:set var="bidderConsortiumId" value="${bidderData[3]}"/>
 																	<c:set var="bidderIsApproved" value="${bidderData[4]}"/>
 																	<c:set var="bidderEncodedName" value="${bidderData[5]}"/>
 																	<c:set var="bidderPartnerType" value="${bidderData[6]}"/>
@@ -383,8 +426,7 @@ function isEnvelopeOpened(){
 																	<c:set var="bidderCompanyName" value="${bidderData[9]}"/>
 																			<c:if test="${envelopeid eq bidderEnvelopeId}">
 																				
-																				<c:set value="${fn:replace(bidderCompanyName,'label_consort_with',conrtiumWith)}" var="companyNames"/>
-<%-- 																				<c:set value="${fn:substring(companyNames,0,fn:length(companyNames)-1)}" var="companyNames"/> --%>
+																				<c:set value="${bidderCompanyName}" var="companyNames"/>
 																				<c:if test="${isShowEncodedName eq 'Y'}"><%-- For Multi Envelope Tender encoded is yes and price bid envelope Then show encoded name--%>
 																					<c:set value="${bidderEncodedName}" var="companyNames"/>
 																				</c:if>
@@ -394,20 +436,10 @@ function isEnvelopeOpened(){
 <!-- 																					not evaluted any bidder -->
 <!-- 																					srno.index eq 0 replace condition -->
 																						<tr>
-																							<td <c:if test="${isEvaluationRequired eq 0}">colspan="2"</c:if>>
-																								<c:choose>
-																									<c:when test="${isEnbleBidderwiseReport eq 'N' or isShowEncodedName eq 'Y'}">${companyNames}</c:when>
-																									<c:when test="${isConsortiumAllowed eq 1}">
-<%-- 																										<abc:encdec isenc="true" value="${bidderConsortiumId}" var="encConsortiumId"/>Here pass encrypted consortiumId cause of security --%>
-																										<a href="etender/buyer/bidderwisereport/${tenderId}/${bidderEnvelopeId}/1/1/${bidderConsortiumId}/2">${companyNames}</a>
-																									</c:when>
-																									<c:otherwise>
-<%-- 																										<abc:encdec isenc="true" value="${bidderBidderId}" var="encBidderId"/>Here pass encrypted bidderId cause of security --%>
-																										<a href="etender/buyer/bidderwisereport/${tenderId}/${bidderEnvelopeId}/0/1/${bidderBidderId}/2">${companyNames}</a>
-																									</c:otherwise>
-																								</c:choose> 
+																							<td <c:if test="${tblTender.isEvaluationRequired eq 0}">colspan="2"</c:if>>
+																								<a target="_blank" href="${pageContext.servletContext.contextPath}/common/user/getuserstatus/${bidderBidderId}/1/0/1">${companyNames}</a>
 																							</td>
-																							<c:if test="${isEvaluationRequired eq 1}">
+																							<c:if test="${tblTender.isEvaluationRequired eq 1}">
 																								<td>
 																									<c:choose>
 			                                                                                    		<c:when test="${srno.index eq 0}">
@@ -416,7 +448,7 @@ function isEnvelopeOpened(){
 			                                                                                            <c:otherwise>
 			                                                                                            	<c:choose>
 			                                                                                                	<c:when test="${not empty rejectedBidderMap and rejectedBidderMap[bidderBidderId]}">
-			                                                                                                	<div data-toggle="tooltip" data-placement="left" title="" data-original-title="${bidderRemarks}">
+			                                                                                                	<div data-toggle="tooltip" data-placement="" title="" data-original-title="${bidderRemarks}">
 			                                                                                                		${vNotEligible}
 			                                                                                                	</div>
 			                                                                                                	</c:when>
@@ -431,48 +463,76 @@ function isEnvelopeOpened(){
 																									<c:if test="${isEvaluationDoneBidder eq 0}">
 																										<c:choose>
 																											<c:when test="${srno.index eq 0}">
-																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${envelopeType}/${sortorder}/0/false" var="evaluateUrl"/>
+																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${tblTender.envelopeType}/${sortorder}/0/false" var="evaluateUrl"/>
 																											</c:when>
 																											<c:otherwise>
-																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${envelopeType}/${sortorder}/${oldEnvelopeData[0]}/false" var="evaluateUrl"/>
+																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${tblTender.envelopeType}/${sortorder}/${oldEnvelopeData[0]}/false" var="evaluateUrl"/>
 																											</c:otherwise>
 																										</c:choose>
 			                                                                                    	<c:if test="${bidderCounter eq srno.index }">
-			                                                                                    		<td rowspan="${fn:length(bidderList)}"><a href="${evaluateUrl}">${evaluate}</a></td>
+			                                                                                    		<td rowspan="${fn:length(bidderList)}">
+			                                                                                    		<c:choose>
+			                                                                                    			<c:when test="${tblTender.isWeightageEvaluationRequired eq 1 && isEvaluationScoreDone[envelopeid] eq 0}">
+			                                                                                    				<a href="javascript:" onclick="alert('${msg_add_weightage}')">${evaluate}</a>
+			                                                                                    			</c:when>
+			                                                                                    			<c:otherwise>
+			                                                                                    				<a href="${evaluateUrl}">${evaluate}</a>
+			                                                                                    			</c:otherwise>
+			                                                                                    		</c:choose>
+			                                                                                    		</td>
 			                                                                                    		<c:set var="bidderCounter" value="-1"/>
 			                                                                                    	</c:if>
 			                                                                                    	</c:if>
 																								</c:when>
 																								<c:otherwise>
-																									<c:if test="${isItemwiseWinner eq 1}">
-																									<c:forEach var="rejectedBidder" items="${rejectedBidder}">
+																									<c:if test="${tblTender.isItemwiseWinner eq 1}">
+																									<c:if test="${empty rejectedBidder}">
+																										<td class="v-a-middle a-center border-bottom">
+																												<spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/false/${tblTender.isItemwiseWinner}/n" var="evaluateUrl"/>
+																												<a href="${evaluateUrl}">${evaluate}</</a>
+																											</td>
+																									</c:if>
+																									<c:forEach var="rejectedBidders" items="${rejectedBidder}">
 																										<c:choose>
-																										<c:when test="${rejectedBidder eq bidderBidderId}">
+																										<c:when test="${rejectedBidders eq bidderBidderId}">
 																											<c:set var="isRejectedDone" value="true"/>
 																											<td class="v-a-middle a-center border-bottom">
-																												<spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/false/${isItemwiseWinner}/y" var="evaluateUrl"/>
+																												<spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/false/${tblTender.isItemwiseWinner}/y" var="evaluateUrl"/>
 																												<a href="${evaluateUrl}">${evaluate}</</a>
 																											</td>
 																											</c:when>
 																										<c:otherwise>
 																										<td class="v-a-middle a-center border-bottom">
-																												<spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/false/${isItemwiseWinner}/n" var="evaluateUrl"/>
+																												<spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/false/${tblTender.isItemwiseWinner}/n" var="evaluateUrl"/>
 																												<a href="${evaluateUrl}">${evaluate}</</a>
 																											</td>
 																										</c:otherwise>
 																										</c:choose>
 																									</c:forEach>
+																									
 			                                                                                         </c:if>  
-			                                                                                         <c:if test="${isItemwiseWinner eq 0 and bidderCounter eq srno.index }">
+			                                                                                         <c:if test="${tblTender.isItemwiseWinner eq 0 and bidderCounter eq srno.index }">
 			                                                                                         	<c:choose>
 																											<c:when test="${srno.index eq 0}">
-																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${envelopeType}/${sortorder}/0/false" var="evaluateUrl"/>
+																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${tblTender.envelopeType}/${sortorder}/0/false" var="evaluateUrl"/>
 																											</c:when>
 																											<c:otherwise>
-																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${envelopeType}/${sortorder}/${oldEnvelopeData[0]}/false" var="evaluateUrl"/>
+																												<spring:url value="/etender/buyer/evaluatebidders/${tenderId}/${envelopeid}/1/${tblTender.envelopeType}/${sortorder}/${oldEnvelopeData[0]}/false" var="evaluateUrl"/>
 																											</c:otherwise>
 																										</c:choose>
-			                                                                                         <td rowspan="${fn:length(bidderList)}"><a href="${evaluateUrl}">${evaluate}</a></td>
+			                                                                                         <td rowspan="${fn:length(bidderList)}">
+			                                                                                         	<c:choose>
+			                                                                                         	<c:when test="${tblTender.isWeightageEvaluationRequired eq 1 && isEvaluationScoreDone[envelopeid] eq 0}">
+			                                                                                         		<a href="javascript:" onclick="alert('${msg_add_weightage}')">${evaluate}</a>
+			                                                                                         	</c:when>
+			                                                                                         	<c:otherwise>
+			                                                                                         		<a href="${evaluateUrl}">${evaluate}</a>
+			                                                                                         	</c:otherwise>
+			                                                                                         	</c:choose>
+			                                                                                         	
+			                                                                                         	
+			                                                                                         	
+			                                                                                         	</td>
 			                                                                                         <c:set var="bidderCounter" value="-1"/>
 			                                                                                         </c:if> 
 																								</c:otherwise>
@@ -483,31 +543,22 @@ function isEnvelopeOpened(){
 																					
 																					<c:otherwise>
 																						<tr>
-																							<td <c:if test="${isEvaluationRequired eq 0}">colspan="2"</c:if>>
-																								<c:choose>
-																									<c:when test="${isEnbleBidderwiseReport eq 'N' or isShowEncodedName eq 'Y'}">${companyNames}</c:when>
-																									<c:when test="${isConsortiumAllowed eq 1}">
-<%-- 																											<abc:encdec isenc="true" value="${bidderData.consortiumId}" var="encConsortiumId"/> --%>
-																										<a href="etender/buyer/bidderwisereport/${tenderId}/${bidderEnvelopeId}/1/1/${bidderConsortiumId}/2">${companyNames}</a>
-																									</c:when>
-																									<c:otherwise>
-<%-- 																											<abc:encdec isenc="true" value="${bidderData.bidderId}" var="encBidderId"/> --%>
-																										<a href="etender/buyer/bidderwisereport/${tenderId}/${bidderEnvelopeId}/0/1/${bidderBidderId}/2">${companyNames}</a>
-																									</c:otherwise>
-																								</c:choose>
+																							<td <c:if test="${tblTender.isEvaluationRequired eq 0}">colspan="2"</c:if>>
+																								<a target="_blank" href="${pageContext.servletContext.contextPath}/common/user/getuserstatus/${bidderBidderId}/1/0/1">${companyNames}</a>
 																							</td>
-																							<c:if test="${isEvaluationRequired eq 1}">
+																							<c:if test="${tblTender.isEvaluationRequired eq 1}">
 																								<c:choose>
 																									<c:when test="${bidderIsApproved eq 1}">
-																										<td><div data-toggle="tooltip" data-placement="left" title="" data-original-title="${bidderRemarks}">${vEligible}</div></td>
+																										<td><div data-toggle="tooltip" data-placement="" title="" data-original-title="${bidderRemarks}">${vEligible}</div></td>
 																									</c:when>
-																									<c:when test="${bidderIsApproved eq 0}"><td><div data-toggle="tooltip" data-placement="left" title="" data-original-title="${bidderRemarks}">${vNotEligible} </div></td></c:when>
+																									<c:when test="${bidderIsApproved eq 0}"><td><div data-toggle="tooltip" data-placement="" title="" data-original-title="${bidderRemarks}">${vNotEligible}</div></td></c:when>
 																								</c:choose>
 																							</c:if>
-                                                                                            <c:if test="${(envId eq 4 or envId eq 5) and isItemwiseWinner eq 1}">
-	                                                                                            <spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/true/${isItemwiseWinner}" var="evaluateurl"/>
+                                                                                            <c:if test="${(envId eq 4 or envId eq 5) and tblTender.isItemwiseWinner eq 1}">
+	                                                                                            <spring:url value="/etender/buyer/bidderWiseevaluation/${tenderId}/${envelopeid}/${bidderBidderId}/${bidderCompanyId}/2/true/${tblTender.isItemwiseWinner}" var="evaluateurl"/>
 																								<td>Evaluted</td>
                                                                                             </c:if>
+                                                                                            
 																						</tr>
 																					</c:otherwise>
 																				</c:choose>
@@ -526,12 +577,12 @@ function isEnvelopeOpened(){
 				</div>
 			</div>
 		</div>
-		</div>
 	</section>
-</div>
-
-</div>
-
-</body>
-
-</html>
+	</div>
+<script type="text/javascript">
+function isEnvelopeOpened(){
+      alert('<spring:message code="msg_env_not_open"/>');
+      return false;
+  }
+</script>
+<%@include file="../../includes/footer.jsp"%>

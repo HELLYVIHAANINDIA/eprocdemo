@@ -1,27 +1,7 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script> 
-<script src="${pageContext.request.contextPath}/resources/js/tender/tendercreate.js"></script>
-<script type="text/javascript" src="${pageContext.servletContext.contextPath}/resources/js/print/jquery.txt"></script>
-<script type="text/javascript">
-	function validateChng(){
-         	var vbool = valOnSubmit();
-         	if(vbool){
-           	 	$(":radio").attr('disabled',false);
-            }
-         	return disableBtn(vbool);
-	return true;
-    }
-   </script>         	
-<spring:message code="lbl_back_dashboard" var='backDashboard'/>
-</head>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
+<spring:message code="lbl_back_dashboard" var='backDashboard'/>
 
 <div class="content-wrapper">
 	<section class="content">
@@ -29,9 +9,9 @@
 		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 			<div class="box">
 				<div class="box-header with-border">
+				<div class="pull-right">
 					<div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a></div>
 				</div>
-				<div class="box-header with-border">
 					<h3 class="box-title"><spring:message code="tender_evaluation_title"></spring:message></h3>
 				</div>
 				<div class="box-body">
@@ -94,7 +74,7 @@
 		                                            ${evaluateMap.companyName}
 		                                        </td>
 		                                        <td>
-		                                        	<textarea class="form-control"  id="txtaRemarks_${count.index}" name="txtaRemarks_${count.index}" validarr="required@@length:0,10000" tovalid="true" onblur="validateTxtComp(this)" validationmsg="Allows Max. 10000 alphabets, numbers and special characters" value="${evaluateMap.remarks} title="Remarks" class="line-height" cols="10" rows="2"></textarea></td>
+		                                        	<textarea class="form-control"  id="txtaRemarks_${count.index}" name="txtaRemarks_${count.index}" validarr="required@@length:0,10000" tovalid="true" onblur="validateTextComponent(this)" validationmsg="Allows Max. 10000 alphabets, numbers and special characters" value="${evaluateMap.remarks}"    title="${evaluateMap.companyName}'s <spring:message code='lbl_remark'/>" class="line-height" cols="10" rows="2"></textarea></td>
 		                                        <td>
 		                                        	<input type="radio" name="rdBidderAprvYesNo_${count.index}" value="1" id="BidderAprv_${count.index}"  checked="checked"/>Approve
 		                                        	<input type="radio" name="rdBidderAprvYesNo_${count.index}" value="0" id="BidderRej_${count.index}" />Reject
@@ -114,12 +94,17 @@
 				</div>
 			</div>
 		</div>
-		</div>
+	</div>
 	</section>
-</div>
-
-</div>
-
-</body>
-
-</html>
+	</div>
+<script type="text/javascript">
+	function validateChng(){
+         	var vbool = valOnSubmit();
+         	if(vbool){
+           	 	$(":radio").attr('disabled',false);
+           	 $("input[name^='txtaRemarks_']").removeAttr("disabled");
+	        }
+         	return disableBtn(vbool);
+    }
+   </script>     
+   <%@include file="../../includes/footer.jsp"%>

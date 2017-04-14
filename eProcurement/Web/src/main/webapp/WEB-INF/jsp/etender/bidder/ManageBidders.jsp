@@ -1,26 +1,7 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="./../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.request.contextPath}/resources/js/commonListing.js"></script>        
+      <%@include file="../../includes/head.jsp"%>
+      <%@include file="../../includes/masterheader.jsp"%>
         <spring:message code="lbl_manage_bidder" var="lbl_manage_bidder"/>
-        <title>${lbl_manage_bidder}</title>
-        <script type="text/javascript">
-            $(document).ready(function() {
-            
-        	});
-           </script>
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="./../../includes/leftaccordion.jsp"%>
-
-<div class="content-wrapper" style="height: auto;">
-
+    <div class="content-wrapper">
 <section class="content-header">
 <h1>Administration</h1>
 </section>
@@ -42,27 +23,28 @@
 							<div class="row">
 								<div class="col-lg-12 col-md-12 col-xs-12">
 									<section class="">
+									<div class="nav-tabs-custom">
 										<ul class="nav nav-tabs">
 										  <li class="active listingTab" tabindex="8"><a href="#">Pending</a></li>
 										  <li class="listingTab" tabindex="24"><a href="#">Approved</a></li>
 										  <li class="listingTab" tabindex="28"><a href="#">Rejected</a></li>
 										  <li class="listingTab" tabindex="25"><a href="#" >Deactivated</a></li>
 										</ul>
+										</div>
 										<div id="listingDiv">
 										</div>
 								     </section>
 								</div>
+								<form id="tenderListForm" style="display: none;">
+									<input type="hidden"  name="defaultOrder" id="defaultOrder" value="6:Desc">
+								</form>
 							</div>
 						</div>
 					</div>
 				</div>
 </div>				
 </section>
-
-</div> 
-
 </div>
- 
 <script type="text/javascript">
 $(".listingTab").click(function(){
 	var tabIndex = $(this).attr("tabindex");
@@ -73,38 +55,38 @@ $(".listingTab").click(function(){
 loadListPage('listingDiv',8);
 function callActionItem(cthis){
 	var actionname = $(cthis).attr("actionname");
+	var tabId = $(".listingTab.active").attr("tabindex");
 	console.log(actionname);
 	if(actionname.toLowerCase() == "edit"){
 		var officerId  = getColumnIndex('bidderId');
 		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
-		window.location = "${pageContext.servletContext.contextPath}/common/user/geteditbidder/"+officerId+"/0";
+		window.location = "${pageContext.servletContext.contextPath}/common/user/geteditbidder/"+officerId+"/0/0";
 	}
 	if(actionname.toLowerCase() == "deactivate"){
 		var officerId  = getColumnIndex('bidderId');
 		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
-		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/3";
+		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/3/"+tabId+"/0";
 	}
 	if(actionname.toLowerCase() == "activate"){
 		var officerId  = getColumnIndex('bidderId');
 		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
-		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/1";
+		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/1/"+tabId+"/0";
 	}
 	if(actionname.toLowerCase() == "reject"){
 		var officerId  = getColumnIndex('bidderId');
 		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
-		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/2";
+		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/2/"+tabId+"/0";
 	}
 	if(actionname.toLowerCase() == "view"){
 		var officerId  = getColumnIndex('bidderId');
 		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
-		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/1";
+		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/1/"+tabId+"/1";
+	}
+	if(actionname.toLowerCase() == "approve/reject"){
+		var officerId  = getColumnIndex('bidderId');
+		officerId = $(cthis).closest("tr").find('td:nth-child('+(officerId+1)+')').html();
+		window.location = "${pageContext.servletContext.contextPath}/common/user/getuserstatus/"+officerId+"/1/"+tabId+"/0";
 	}
 }
 </script>
-  <script type="text/javascript">
-  
-</script>
-
-</body>
-
-</html>
+  <%@include file="./../../includes/footer.jsp"%>

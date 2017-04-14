@@ -1,35 +1,11 @@
-<!DOCTYPE html>
-<html>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@include file="../../includes/header.jsp"%>
-<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-<script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script> 
-<script src="${pageContext.request.contextPath}/resources/js/tender/tendercreate.js"></script>
-<script type="text/javascript" src="${pageContext.servletContext.contextPath}/resources/js/print/jquery.txt"></script>
+<%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>        
-        <script type="text/javascript">
-        $(document).ready(function(){
-    	});
-        function validateForm(){
-        	$("#txtDocDesc").removeAttr("tovalid");
-            var vbool = valOnSubmit();
-            return disableBtn(vbool);
-        }
-       
-        </script>
-         <style>
-            label.placeholder {
-		cursor: text;				
-		padding: 4px 4px 4px 0px;   
-	}
-</style>     
+     
+
 <spring:message code="label_bidder_eligible" var="vEligible"/>
 <spring:message code="label_bidder_not_eligible" var="vNotEligible"/>   
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
 
 <div class="content-wrapper">
 	<section class="content">
@@ -137,7 +113,7 @@
 																									<c:choose>
 																										<c:when test="${ rejectFlag eq 'y'}">
 																										<td class="a-left">
-																										<textarea class="form-control"  id="txtaRemarks_${allData}" name="txtaRemarks_${allData}" disabled="disabled" validarr="required@@length:0,10000" tovalid="true" onblur="validateTxtComp(this)" validationmsg="Allows Max. 10000 alphabets, numbers and special characters" title="Remarks" class="line-height" cols="10" rows="2">AutoReject</textarea>
+																										<textarea class="form-control"  id="txtaRemarks_${allData}" name="txtaRemarks_${allData}" disabled="disabled" validarr="required@@length:0,10000" tovalid="true" onblur="validateTextComponent(this)" validationmsg="Allows Max. 10000 alphabets, numbers and special characters" title="Remarks" class="line-height" cols="10" rows="2">AutoReject</textarea>
 																									</td>
 																											<td>
 															                                        	<input type="radio" name="rdBidderAprvYesNo_${allData}" value="1" id="BidderAprv_${counter.count}"  disabled="disabled" />Approve
@@ -146,7 +122,7 @@
 																										</c:when>
 																										<c:otherwise>
 																										<td class="a-left">
-																										<textarea class="form-control"  id="txtaRemarks_${allData}" name="txtaRemarks_${allData}" validarr="required@@length:0,10000" tovalid="true" onblur="validateTxtComp(this)" validationmsg="Allows Max. 10000 alphabets, numbers and special characters" value="${evaluateMap.remarks}" title="Remarks" class="line-height" cols="10" rows="2"></textarea>
+																										<textarea class="form-control"  id="txtaRemarks_${allData}" name="txtaRemarks_${allData}" validarr="required@@length:0,10000" tovalid="true" onblur="validateTextComponent(this)" validationmsg="Allows Max. 10000 alphabets, numbers and special characters" value="${evaluateMap.remarks}" title="Remarks" class="line-height" cols="10" rows="2"></textarea>
 																									</td>
 																											<td>
 															                                        	<input type="radio" name="rdBidderAprvYesNo_${allData}" value="1" id="BidderAprv_${counter.count}"   checked="checked"/>Approve
@@ -189,10 +165,19 @@
 			</div>
 			</div>
 		</section>
-	</div>
-	
-</div>
-
-</body>
-
-</html>
+		</div>
+	        <script type="text/javascript">
+        function validateForm(){
+        	$("#txtDocDesc").removeAttr("tovalid");
+            var vbool = valOnSubmit();
+            return disableBtn(vbool);
+        }
+       
+        </script>
+         <style>
+            label.placeholder {
+		cursor: text;				
+		padding: 4px 4px 4px 0px;   
+	}
+        </style>
+        <%@include file="../../includes/footer.jsp"%>

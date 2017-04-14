@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <%@include file="../../includes/header.jsp"%>
-        <%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
-        <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/commonValidate.js" type="text/javascript"></script>
-        <script src="${pageContext.servletContext.contextPath}/resources/js/jQuery/jquery.datetimepicker.js"></script>
-		<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/resources/css/jquery.datetimepicker.css">
-</head>
-
-<body class="skin-blue sidebar-mini">  
-<div class="wrapper">
-<%@include file="../../includes/leftaccordion.jsp"%>
-
+<%@include file="../../includes/head.jsp"%>
+       <%@include file="../../includes/masterheader.jsp"%>
+       
 <spring:message code="lbl_add_edit_marquee" var="lbl_add_edit_marquee"></spring:message>
-<div class="content-wrapper" style="height: auto; ">
+
 <c:if test="${not empty successMsg}">
     <div class="alert alert-success">${successMsg}</div>
 </c:if>
 <c:if test="${not empty errorMsg}">
     <div class="alert alert-error">${errorMsg}</div>
 </c:if>
+<div class="content-wrapper">
 		<section class="content-header">
 			<c:choose>
 				<c:when test="${oprType eq 1}">
@@ -39,6 +27,7 @@
         	</c:choose>
         	<h1>${priceBidOpeningDateConfiguration}</h1>
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>
+</section>
 <section class="content">
 				<div>
 					<div class="box">
@@ -100,11 +89,8 @@
 				</div>
 				</div>
 </section>
-</section>
 </div>
-
-</div>
-
+ 
 <script>
 function validate(){
 	var vbool = valOnSubmit();
@@ -116,19 +102,6 @@ $(".dateBox").each(function(){
 		});
 });
 
-/* if($("#txtPriceBidOpeningDate").val() != ""){
-	$("#txtPriceBidOpeningDate").val(convertDateToClientFormat1($("#txtPriceBidOpeningDate").val(),$("#clientDateFormate").val()))
-}
-function convertDateToClientFormat1(tdVal,toDateFormate){
-	if(tdVal != undefined && tdVal != "" && toDateFormate == "dd/MM/yyyy HH:mm"){
-		var dateTd = new Date(tdVal);
-		var hour = ('0'+dateTd.getHours()).slice(-2);
-		var mins = ('0'+dateTd.getMinutes()).slice(-2);
-		return  dateTd.getDate()+ '/' + (dateTd.getMonth() + 1) + '/' +  dateTd.getFullYear()+' '+hour+':'+mins;
-	}
-} */
 </script>
-
-</body>
-
-</html>
+<%@include file="../../includes/footer.jsp"%>
+ 

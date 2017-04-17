@@ -156,6 +156,24 @@ text-decoration: none;}
   margin-top: 20px;
   text-align: right;
 }
+
+.form_filed_ins {
+  color: #4f4f4f;
+  float: left;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.form_filed_red {
+  color: #c42b3e;
+  float: left;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 20px;
+  text-align: left;
+}
 	
 .ct_filed1 {
   float: right;

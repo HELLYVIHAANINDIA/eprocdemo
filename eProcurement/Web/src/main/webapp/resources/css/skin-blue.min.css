@@ -1,8 +1,5 @@
 .skin-blue .main-header .navbar {
-  background-color: #fff;
--webkit-box-shadow: 0 2px 3px rgba(0,0,0,.15);
--moz-box-shadow: 0 2px 3px rgba(0,0,0,.15);
-box-shadow: 0 2px 3px rgba(0,0,0,.15);
+  background-color: #c42b3e;
 }
 
 .skin-blue .main-header .navbar .nav>li>a {
@@ -46,8 +43,11 @@ box-shadow: 0 2px 3px rgba(0,0,0,.15);
 }
 
 .skin-blue .main-header .logo { 
-  color: #fff;
+  color: #c42b3e;
   border-bottom: 0 solid transparent;
+  background: #ffffff;
+  font-family: "Poppins",sans-serif;
+  font-weight: 400;
 }
 
 .skin-blue .main-header .logo:hover {
@@ -63,7 +63,7 @@ box-shadow: 0 2px 3px rgba(0,0,0,.15);
 }
 
 .skin-blue .wrapper,.skin-blue .main-sidebar,.skin-blue .left-side {
-  background-color: #133146;
+  background-color: #175295;
 }
 
 .skin-blue .user-panel>.info,.skin-blue .user-panel>.info>a {
@@ -80,9 +80,9 @@ box-shadow: 0 2px 3px rgba(0,0,0,.15);
 }
 
 .skin-blue .sidebar-menu>li:hover>a,.skin-blue .sidebar-menu>li.active>a {
-  color: #fff;
-  background: #1d4a69;
-  border-left-color: #3c8dbc;
+ 	background: #002e71;
+    border-left-color: #dd2531;
+    color: #fff;
 }
 
 .skin-blue .sidebar-menu>li>.treeview-menu {
@@ -91,7 +91,7 @@ box-shadow: 0 2px 3px rgba(0,0,0,.15);
 }
 
 .skin-blue .sidebar a {
-  color: #b8c7ce;
+  color: #ffffff;
 }
 
 .skin-blue .sidebar a:hover {
@@ -205,7 +205,7 @@ border: 1px solid transparent;
     padding-top: 9px;
 }
 .navbar-custom-menu .navbar-nav{
-    margin-top: 26px;
+    margin-top: 0px;
 }
 .bg-white{background: #fff}
 small.label{
@@ -213,13 +213,14 @@ small.label{
 	-webkit-border-radius: 10px/10px 10px 11px 11px;
 	-moz-border-radius: 10px/10px 10px 11px 11px;
 	border-radius: 10px/10px 10px 11px 11px;
-	background-color: #de3c3c;
+	background-color: #1d4a69 !important;
         line-height: 21px;
         padding: 0px 10px;
+        color:#ffffff;
 }
 .menu-title{font-size: 18px;color: #f4811f;padding: 20px 0 0 10px !important;font-family: calibri}
 .bg-light-white{background: #e5eaee !important;}
-.active .bg-light-white{background: #1d4a69 !important;}
+.active .bg-light-white{background: #C42B3E !important;}
 .txt-light-blue{color: #1d4a69}
 .active .txt-light-blue{color: #fff}
 .mar-right-5{margin-right: 5px !important}

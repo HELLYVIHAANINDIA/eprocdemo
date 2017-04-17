@@ -53,12 +53,12 @@
 	<section class="content-header">
 <c:choose>
 	<c:when test="${isAuction eq 1}">
-		<h1 class="pull-left"><spring:message code="lbl_auction_dashboard" /></h1>
-		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing" class="pull-right"><< <spring:message code="lbl_go_to_auction_list" /></a>
+		<h1 class="inline"><spring:message code="lbl_auction_dashboard" /></h1>
+		<a href="${pageContext.servletContext.contextPath}/eBid/Bid/auctionListing" class="g g-back"><< <spring:message code="lbl_go_to_auction_list" /></a>
 	</c:when>
 	<c:when test="${isAuction eq 0}">
-		<h1 class="pull-left">Tender Dashboard</h1>
-		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="pull-right"> << <spring:message code="lbl_back_tenderlist"/></a>
+		<h1 class="inline">Tender Dashboard</h1>
+		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="g g-back"> << <spring:message code="lbl_back_tenderlist"/></a>
 	</c:when>
 </c:choose>
 		
@@ -67,6 +67,7 @@
 	<div class="clearfix"></div>
 	<c:if test="${isAuction eq 0}">    
 		<section class="content">
+		
 			<c:if test="${not empty successMsg}">
 				<c:choose>
 					<c:when test="${fn:contains(successMsg, '_')}">
@@ -107,7 +108,7 @@
 			<div class="row">
 				<div class="col-md-12">      
       <div id="collapse1" class="panel-collapse">
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3"><spring:message code="field_notice"/></div>
 					<div class="col-md-9">
 						<c:choose>
@@ -135,7 +136,7 @@
 					</div>
 				</div>
 				
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3"><spring:message code="field_documents"/>
 					</div>
 					<div class="col-md-9">
@@ -151,7 +152,7 @@
 					</div>
 				</div>
 				<c:if test="${tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)}">
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3">Terms & Condition
 					</div>
 					<div class="col-md-9">
@@ -160,7 +161,7 @@
 				</div>
 				</c:if>
 				<c:if test="${tblTender.cstatus eq 1}">
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3">Cancel tender
 					</div>
 					<div class="col-md-9">
@@ -189,7 +190,7 @@
 				      <div id="corrigendum" class="panel-collapse">
      		<c:choose>
      		<c:when test="${not empty currentCorrigendum}">
-					<div class="col-md-12">
+					<div class="row">
 					<div class="col-md-3"><spring:message code="label_corrigendum"/></div>
 					<div class="col-md-9">
 						<c:if test="${isAnyConsentReceived ne true && isCurrentWorkflowStart ne true}">
@@ -212,7 +213,7 @@
 				</div>
 			</c:when>
 			<c:when test="${empty currentCorrigendum}">
-			<div class="col-md-12">
+			<div class="row">
 					<div class="col-md-3"><spring:message code="label_corrigendum"/></div>
 					<div class="col-md-9">
 					<c:if test="${isAnyConsentReceived ne true }">
@@ -229,14 +230,14 @@
 			<c:if test="${not empty tblCorrigendum }">
 				<c:forEach items="${tblCorrigendum}" var="items" varStatus="indx">
 					<c:if test="${items.cstatus ne '0'}">
-						<div class="col-md-12 border">
+						<div class="row border">
 							<div class="col-md-3">
 								<spring:message code="lbl_create_corrigendum_text"/> ${indx.count}
 							</div>
 							<div class="col-md-3">${items.corrigendumText}</div>
 						</div>
 						<c:if test="${documentEndDateOver ne true}">
-						<div class="col-md-12 border">
+						<div class="row border">
 							<div class="col-md-3">
 								<spring:message code="corrigendum_view_doc"/>
 							</div>
@@ -265,11 +266,12 @@
 		</div>
 		<div class="box-body">
 			<div class="row">
+			<div class="col-md-12">
 				                <%int envId=0;
                 int cnt=0;
                     %>
       	<div id="Bid" class="panel-collapse">
-	    	<div class="col-md-12 border">
+	    	<div class="row border">
 	    	<c:if test="${(tblTender.cstatus ne 1 && tblTender.cstatus ne 2 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
 	    		<div class="col-md-3"><spring:message code="var_page_title_biddingForm" /></div>
 	            <div class="col-md-9">
@@ -309,11 +311,11 @@
                                                  <c:choose>
 							<c:when test="${items.tblTenderEnvelope.envelopeId ne envId}">
                                                            <%cnt=1;%>
-                                                            <div class="col-md-12 border">
-                                                                <div class="row text-bold text-primary"><h3>  ${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h3> </div>
+                                                            <div class="row border">
+                                                                <div class="col-lg-12"><h5>  ${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h5> </div>
                                                            
                                                                  <c:if test="${items.formId  ne -1}">
-                                                                     <div class="col-md-3"><%=cnt++%> )&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+                                                                     <div class="col-md-3"><%=cnt++%> ) <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
                                                                     <c:if test="${items.isMandatory eq 1}">*</c:if>
                                                                     
                                                                     <br><h6>${fromStatus}</h6></div>
@@ -415,7 +417,7 @@
                                                         </c:when>
 							<c:otherwise>
                                                             <c:if test="${items.formId  ne -1}">
-                                                            <div class="col-md-12 border">
+                                                            <div class="row border">
                                                                 <div class="col-md-3"><%=cnt++%>)&nbsp;<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
                                                                  <c:if test="${items.isMandatory eq 1}">*</c:if>
                                                                    
@@ -520,6 +522,7 @@
 	             </div>
 			</div>
 		</div>
+		</div>
 			</div>
 		</div>
 	</div>
@@ -556,7 +559,7 @@
 			<div class="box-body">
 				<div class="row">
 					<div id="preBid" class="panel-collapse">
-				    	<div class="col-md-12 border">
+				    	<div class="row border">
 				    		<div class="col-md-3"><spring:message code="var_page_title" /></div>
 				            <div class="col-md-9">
 				            	<c:choose>
@@ -609,7 +612,13 @@
 	<div class="col-md-12">
 		<div class="box">
 			<div class="box-header with-border">
-				<div class="col-md-3"><h3 class="box-title"><a>Tender Opening Committee</a></h3></div>
+				<h3 class="box-title">Tender Opening Committee</h3>
+			</div>
+			<div class="box-body">
+				<div class="row">
+					<div class="col-md-12">
+						<div class="row">
+							<div class="col-md-3">Tender Opening Committee</div>
 				<div class="col-md-9">
 					<c:choose>
 		            	<c:when test="${isSingleEnvelopeOpened eq false}">
@@ -631,6 +640,9 @@
 						</c:when>
 					</c:choose>
 	          	</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -640,7 +652,13 @@
 	<div class="col-md-12">
 		<div class="box">
 			<div class="box-header with-border">
-				<div class="col-md-3"><h3 class="box-title"><a><spring:message code="tab_tender_evaluatebid"/> Committee</a></h3></div>
+				<h3 class="box-title"><a><spring:message code="tab_tender_evaluatebid"/> Committee</a></h3>
+			</div>
+			<div class="box-body">
+				<div class="row">
+				<div class="col-md-12">
+					<div class="row">
+						<div class="col-md-3"><spring:message code="tab_tender_evaluatebid"/> Committee</div>
 				<div class="col-md-9">
 		            <c:choose>
 		            	<c:when test="${isSingleEnvelopeIsEvaluated eq false}">
@@ -665,6 +683,9 @@
 						</c:when>
 					</c:choose>
 	             </div>
+					</div>
+				</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -681,7 +702,7 @@
 			<div class="box-body">
 				<div class="row">
 							<div id="workFlow" class="panel-collapse">
-			<div class="col-md-12 border">
+			<div class="row border">
 				<div class="col-md-3"><spring:message code="label_notice_workflow" /></div>
 				<div class="col-md-9">
 				<c:choose>
@@ -699,7 +720,7 @@
 			</div>
 			<c:if test="${tblTender.cstatus eq 1 && not empty tblCorrigendum && not empty corrigendumWorkflowList}">
 			<c:forEach items="${corrigendumWorkflowList}" var="corrigendumWorkflow" varStatus="indx">
-			<div class="col-md-12 border">
+			<div class="row border">
 				<div class="col-md-3">Workflow Corrigendum  ${indx.count}</div>
 				<div class="col-md-9">
 				<c:choose>
@@ -777,7 +798,7 @@
 			<div class="box-body">
 				<div class="row">
 							<div id="purchaseOrder" class="panel-collapse">
-			<div class="col-md-12 border">
+			<div class="row border">
 				<div class="col-md-3">Purchase order</div>
 				<div class="col-md-9">
 					<c:choose>
@@ -819,7 +840,7 @@
 					<div class="row">
 						<div class="col-md-12">
 							      <div id="collapse1" class="panel-collapse">
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3"><spring:message code="lbl_auction_notice" /></div>
 					<div class="col-md-9">
 						<c:choose>
@@ -846,7 +867,7 @@
 					</div>
 				</div>
                                 <c:if test="${tblTender.cstatus ne 2}">
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3"><spring:message code="lbl_auction_document" />
 					</div>
 					<div class="col-md-9">
@@ -866,7 +887,7 @@
       {
       %>
        <c:if test="${tblTender.cstatus eq 1}">
-				<div class="col-md-12">
+				<div class="row">
 					<div class="col-md-3"><spring:message code="lbl_cancel_auction" />
 					</div>
 					<div class="col-md-9">
@@ -898,7 +919,7 @@
 					<div class="row">
 						<div class="col-md-12">
 							      	<div id="Bid" class="panel-collapse">
-	    	<div class="col-md-12 border">
+	    	<div class="row border">
 	    		<div class="col-md-3"><spring:message code="var_page_title_biddingForm" /></div>
 	            <div class="col-md-9">
                         <c:set var="formcount" value="0"/>
@@ -935,7 +956,7 @@
                                     
 				<c:forEach items="${biddingForm}" var="item">
                                    <c:if test="${item.formId != -1}">
-                                    <div class="col-md-12">
+                                    <div class="row">
                                         <div class="col-md-1">${item.formId}</div>
                                         <div class="col-md-2">${item.formName}</div>
                                         <div class="col-md-9">
@@ -995,7 +1016,7 @@
 			<div class="box">
 				<div class="box-header with-border" data-toggle="collapse" href="#bidOpening">
 					<h3 class="box-title">
-						<h4 class="panel-title"><a><spring:message code="lbl_map_bidders" />	</a></h4>
+						<h4 class="panel-title"><a><spring:message code="lbl_map_bidders" /></a></h4>
 					</h3>
 				</div>
 				<div class="box-body">
@@ -1003,7 +1024,7 @@
 						<div class="col-md-12">
 									<div id="bidOpening" class="panel-collapse">
 			
-				<div class="col-md-12 border">
+				<div class="row border">
 					<div class="col-md-3"><spring:message code="field_bidder"/>
 					</div>
 					<div class="col-md-9">
@@ -1036,7 +1057,7 @@
 			<div class="box-body">
 				<div class="row">
 							<div id="workFlow" class="panel-collapse">
-			<div class="col-md-12 border">
+			<div class="row border">
 				<div class="col-md-3"><spring:message code="label_notice_workflow" /></div>
 				<div class="col-md-9">
 				<c:choose>
@@ -1076,7 +1097,7 @@
 						<div class="col-md-12">
 									<div id="bidOpening" class="panel-collapse">
 			
-				<div class="col-md-12 border">
+				<div class="row border">
 					<div class="col-md-3"><spring:message code="tab_tender_reports" />	
 					</div>
 					<div class="col-md-9">

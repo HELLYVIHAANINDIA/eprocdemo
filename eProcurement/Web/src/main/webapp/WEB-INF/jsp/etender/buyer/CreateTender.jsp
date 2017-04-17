@@ -15,7 +15,7 @@
 	<spring:message code="lbl_weight_evaluation_require" var="lbl_weight_evaluation_require"/>
 <div class="content-wrapper">
 	<section class="content-header">
-	<h1 class="pull-left">
+	<h1 class="inline">
 		<c:choose>
 			<c:when test="${not empty tenderDtBean}">
 			<spring:message code="lbl_edit_tender"/>
@@ -25,9 +25,9 @@
 			</c:otherwise>
 		</c:choose>
 	</h1>
-	<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="pull-right"><< <spring:message code="lbl_back_tenderlist"/></a>
+	<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="g g-back"><< <spring:message code="lbl_back_tenderlist"/></a>
 	<c:if test="${not empty tenderDtBean}">
-	 <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="pull-right"><< <spring:message code="lbl_back_dashboard"/></a>
+	 <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back" style="margin-right:7px;"><< <spring:message code="lbl_back_dashboard"/></a>
 	</c:if>
 </section>
 
@@ -41,7 +41,7 @@
 			<div class="box">
 				<div class="box-header with-border">
 					<h3 class="box-title">Organization Details</h3>
-					<font size="1" class="pull-right mandatory m-top2" style="font-size: 15px; float: right;"><spring:message code="msg_mandatoryFields"/></font>
+					<font size="1" class="pull-right mandatory m-top2" style="font-size: 12px; font-weight:400; float: right;"><spring:message code="msg_mandatoryFields"/></font>
                     <input type="hidden" id="hdIsDateValidationAllow" name="hdIsDateValidationAllow" value="2">
 					<input type="hidden" name="isPastEvent" value="0">
                     <input type="hidden" name="selDecimalValueUpto" value="">

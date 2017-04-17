@@ -12,18 +12,16 @@
 <c:set var="var_total_member" value="0" />
 
 <section class="content-header">
+<h1 class="inline">RFX</h1>
+<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"><< Go To Tender Dashboard</a>
 </section>
+
 <section class="content">
 	<div class="row">
 				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 				
 					<div class="box">
-					<div class="pull-right">
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a>
-					</div>
 						<div class="box-header with-border">
-							
-<%-- 									<h4 class="box-title">${message}</h3> --%>
 									<c:choose>
 										<c:when test="${operType eq 'Edit'}">
 											<h3 class="box-title">${lbleditprebidcommittee}</h3>	

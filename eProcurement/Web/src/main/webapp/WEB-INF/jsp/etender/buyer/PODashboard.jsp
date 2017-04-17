@@ -40,7 +40,7 @@
 					 
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Purchase order dashboard</h3>
+							<h3 class="box-title">PO dashboard</h3>
 						</div>
 						<div class="box-body">
 							<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go back to dashboard</a>

@@ -15,7 +15,7 @@
 					 
 					<div class="box">
 						<div class="box-header with-border">
-							<h3 class="box-title">Purchase order dashboard</h3>
+							<h3 class="box-title">PO dashboard</h3>
 						</div>
 						<div class="box-body">
 							<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"><< GO to tender dashboard </a>
@@ -26,7 +26,7 @@
 									<section class="">
 									<div class="nav-tabs-custom">
 										<ul class="nav nav-tabs">
-										  <li class="active listingTab" tabindex="47"><a href="#">Purchase order</a></li>
+										  <li class="active listingTab" tabindex="47"><a href="#">PO</a></li>
 										</ul>
 										</div>
 										<div id="listingDiv">

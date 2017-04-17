@@ -6,7 +6,8 @@
 <div class="content-wrapper">
 
 <section class="content-header">
-<h1>Terms and conditions</h1>
+<h1 class="inline">Terms and conditions</h1>
+<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"> << Go To Tender Dashboard </a> 
 </section>
 
 <section class="content">
@@ -17,7 +18,7 @@
 	               						<h3 class="box-title">Terms and conditions</h3>											
 						</div>
 						<div class="box-body">
-						<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"> << Go To Tender Dashboard </a> 
+						
 							<div class="row">
 		               					<spring:url value="/etender/buyer/addtermandconditions" var="submitTandC"/>
 								<div class="col-lg-12 col-md-12 col-xs-12">

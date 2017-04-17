@@ -37,19 +37,19 @@
 		</c:if>
 		<c:choose>
 			<c:when test="${1 ne fromPublishTender && 2 ne fromPublishTender}">
-         		<h1 class="pull-left"><spring:message code="label_tender_view"/></h1>
+         		<h1 class="inline"><spring:message code="label_tender_view"/></h1>
          		<c:choose>
          			<c:when test="${sessionUserTypeId eq 2}">
-         				<a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/0" class="pull-right noExport"><< Go To Tender Listing</a>
+         				<a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/0" class="g g-back"><< Go To Tender Listing</a>
          			</c:when>
          			<c:otherwise>
-         				<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="pull-right noExport"><< Go To Tender Listing</a>
+         				<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="g g-back"><< Go To Tender Listing</a>
          			</c:otherwise>
          		</c:choose>
 			</c:when>
 			<c:when test="${2 eq fromPublishTender}">
          		<h1 class="pull-left"><spring:message code="label_tender_view"/></h1>
-				<a href="${pageContext.servletContext.contextPath}/login" class="goBack pull-right noExport"><< Go Back To Login</a>
+				<a href="${pageContext.servletContext.contextPath}/login" class="g g-back"><< Go Back To Login</a>
 			</c:when>
 			<c:otherwise>
 		         <h1 class="pull-left"><spring:message code="link_tender_publish"/></h1>
@@ -60,12 +60,12 @@
 					 		
 					 		</c:when>
 					 		<c:otherwise>
-					 			<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"  class="goBack pull-right noExport"><< <spring:message code="lbl_back_dashboard"/></a>
+					 			<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"  class="g g-back"><< <spring:message code="lbl_back_dashboard"/></a>
 					 		</c:otherwise>
 					 	</c:choose>
 					</c:when>
 					<c:when test="${2 eq fromPublishTender}">
-					 <a href="${pageContext.servletContext.contextPath}/login" class="goBack pull-right"><< Go Back To Login</a>
+					 <a href="${pageContext.servletContext.contextPath}/login" class="g g-back"><< Go Back To Login</a>
 					</c:when>
 				</c:choose>
 			</c:otherwise>

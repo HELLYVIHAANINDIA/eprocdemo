@@ -44,7 +44,7 @@
 									<form action="${submitDept}" onsubmit="return validate();" name="frmdepartment" method="post" >
 									<div class="row">
 										<div class="col-lg-2">
-											<div class="form_filed">Purchase order No.<span style="color: red">*</span>:</div>
+											<div class="form_filed">PO No.<span style="color: red">*</span>:</div>
 										</div>
 										<div class="col-lg-5">
 											<c:choose>
@@ -145,7 +145,7 @@
 									
 									<div class="row">
 										<div class="col-lg-2">
-											<div class="form_filed">Brief detail of purchase order<span style="color: red">*</span>:</div>
+											<div class="form_filed">Brief detail of PO<span style="color: red">*</span>:</div>
 										</div>
 										<div class="col-lg-5">
 											<c:choose>
@@ -318,7 +318,7 @@
 									
 									<div class="row">
 										<div class="col-lg-2">
-											<div class="form_filed">Purchase order terms and condition:</div>
+											<div class="form_filed">PO terms and condition:</div>
 										</div>
 										<div class="col-lg-5">
 											<c:choose>

@@ -77,8 +77,8 @@
 														<div class="fr-grp">
 														<input type="hidden" name="marqueeId" id="marqueeId" value="${empty tblMarquee.marqueeId ? 0 : tblMarquee.marqueeId }">
 														<input type="submit" class="btn  btn-submit" value="Save"> 
-														<input type="button" class="btn  btn-cancel" value="Clear"  onclick="clearDetail()"> 
-														<input type="button" class="btn  btn-cancel" value="Delete" onclick="deleteDetail()">
+														<input type="button" class="btn  btn-cn" value="Clear"  onclick="clearDetail()"> 
+														<input type="button" class="btn  btn-dl" value="Delete" onclick="deleteDetail()">
 														</div>
 													
 												</div>	

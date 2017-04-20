@@ -204,7 +204,7 @@
 						<!-- hideCorrigendumPublish : if workflow enable then only this will be true-->
 						<c:choose>
 						<c:when test="${hideCorrigendumPublish ne true && isCorrigendumWorkflowStarted ne true && isAnyConsentReceived ne true && ((tblTender.isWorkflowRequired eq 0) or (tblTender.isWorkflowRequired eq 1 && corrigendumWorkflowDone eq true && corrigendumWorkflowToInitiator eq true))}">
-								| <a href="${pageContext.servletContext.contextPath}/etender/buyer/showpublishcorrigendum/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}"><spring:message code="label_publish"/></a>	
+								| <a href="${pageContext.servletContext.contextPath}/etender/buyer/showpublishcorrigendum/${tblTender.tenderId}/${currentCorrigendum.corrigendumId}" onclick="return validatePublishTender(${tblTender.tenderId})"><spring:message code="label_publish"/></a>	
 						</c:when>
 						
 						</c:choose>
@@ -272,7 +272,9 @@
                     %>
       	<div id="Bid" class="panel-collapse">
 	    	<div class="row border">
-	    	<c:if test="${(tblTender.cstatus ne 1 && tblTender.cstatus ne 2 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
+	    	<%-- <c:if test="${(tblTender.cstatus ne 1 && tblTender.cstatus ne 2 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}"> --%>
+	    	<!-- tender not published or if published then corrigendum should started -->
+	    	<c:if test="${(tblTender.cstatus eq 1 && not empty currentCorrigendum or tblTender.cstatus eq 0) &&  (empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
 	    		<div class="col-md-3"><spring:message code="var_page_title_biddingForm" /></div>
 	            <div class="col-md-9">
                        	<a href="${pageContext.servletContext.contextPath}/eBid/Bid/createForm/${tenderId}">${createlink}</a>
@@ -282,7 +284,7 @@
                        </c:if>
      			</div>
 			</c:if>
-                                        <div class="col-md-12">       
+                                        <div class="">       
                                         <c:if test="${not empty biddingForm }">
 				<c:forEach items="${biddingForm}" var="items">
                                     
@@ -311,16 +313,39 @@
                                                  <c:choose>
 							<c:when test="${items.tblTenderEnvelope.envelopeId ne envId}">
                                                            <%cnt=1;%>
-                                                            <div class="row border">
-                                                                <div class="col-lg-12"><h5>  ${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h5> </div>
+
+                                                                <div class="col-lg-12">
+                                                                <div class="text-bold text-primary">
+                                                                <h5>${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h5>
+                                                                </div>
+                                                                </div>
+
+
+                                                           	<c:set var="isFormModificationAllow" value="${((tblTender.cstatus eq 1 and items.cstatus eq 0) or tblTender.cstatus eq 0)}"/>
+                                                            <div class="">
+                                                            	
+                                                            	<div class="col-md-3">
+                                                                <div class="text-bold text-primary">
+                                                                <h5>${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h5>
+                                                                </div>
+                                                                </div>
+
                                                            
                                                                  <c:if test="${items.formId  ne -1}">
-                                                                     <div class="col-md-3"><%=cnt++%> ) <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+
+                                                                     <div class="col-md-3">
+                                                                     <%=cnt++%> ) <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+                                                                     &nbsp;&nbsp;
+                                                                     <%=cnt++%> )&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName } <font color="red"> ${items.isCanceled eq 1 ? 'Cancelled' :''}</font></a>
+
+
+                                                                     <div class="col-md-3">
+
                                                                     <c:if test="${items.isMandatory eq 1}">*</c:if>
                                                                     
                                                                     <br><h6>${fromStatus}</h6></div>
                                                                 <div class="col-md-9">
-                                                                     <c:if test="${(tblTender.cstatus eq 0 and empty corrigendumWorkflowList and isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
+                                                                     <c:if test="${isFormModificationAllow and (tblTender.cstatus eq 0 and empty corrigendumWorkflowList and isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
 	                                                                    <c:choose>
 					                                                		<c:when test="${items.isEncryptionReq ne 0  and items.isPriceBid eq 1}">
 					                                                			<a href="javascript:"  onclick="alert('${msg_alert_delete_formula}')"><spring:message code="label_edit"/></a> |
@@ -389,18 +414,26 @@
                                                                                  </c:if>
                                                                                     </a>
                                                                          </c:if>
-                                                                        
                                                                         <c:if test="${items.isDocumentReq eq 1 && items.isPriceBid eq 0 && tblTender.cstatus eq 0}">
                                                                          |
 
                                                                         <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createFormDocument/${tblTender.tenderId}/${items.formId}" > <spring:message code="label_Document_upload"/></a>   
                                                                          </c:if>
-                                                                                                                              |  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${items.formId}/0" ><spring:message code="lbl_test" /></a>   
-                                                                           
-                                                                                                                              
+                                                                                |  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${items.formId}/0" ><spring:message code="lbl_test" /></a>   
                                                                            <c:if test="${tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)}">                                               
-                                                                                                                              |   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}" onclick="return confirm('Are you sure you want to delete form?')" ><spring:message code="link_delete_corrigendum" /></a>
-                                                                           </c:if> 
+                                                                                | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}" onclick="return confirm('Are you sure you want to delete form?')" ><spring:message code="link_delete_corrigendum" /></a>
+                                                                           </c:if>
+                                                                           <!-- if form is published and not cancel then cancel link will not occure again, if tender is published and form is new created then delete link will occure -->
+                                                                           <c:if test="${tblTender.cstatus eq 1 && not empty currentCorrigendum}">
+                                                                            <c:choose>
+	                                                                            <c:when test="${items.isCanceled ne 1 && items.cstatus eq 1 && ((tblTender.cstatus eq 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true)  or (workflowToInitiator eq true and tblTender.cstatus eq 1)) && workflowDone ne true}">
+	                                                                            |   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/CancelForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure you want to cancel ?')" ><spring:message code="lbl_form_cancel" /></a>
+	                                                                            </c:when> 
+	                                                                            <c:when test="${items.isCanceled ne 1 && tblTender.cstatus eq 1}">
+	                                                                            | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure you want to delete ?')" ><spring:message code="link_delete_corrigendum" /></a>
+	                                                                            </c:when>
+                                                                            </c:choose> 
+                                                                            </c:if>
                                                        
                                                                 </div>
                                                               </c:if>
@@ -417,13 +450,20 @@
                                                         </c:when>
 							<c:otherwise>
                                                             <c:if test="${items.formId  ne -1}">
+<<<<<<< .mine
                                                             <div class="row border">
-                                                                <div class="col-md-3"><%=cnt++%>)&nbsp;<a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+||||||| .r1349
+=======
+                                                            <c:set var="isFormModificationAllow" value="${((tblTender.cstatus eq 1 and items.cstatus eq 0) or tblTender.cstatus eq 0)}"/>
+                                                            <div class="col-md-12 border">
+>>>>>>> .r1354
+                                                                <div class="col-md-3"><%=cnt++%>)&nbsp;
+                                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName } <font color="red"> ${items.isCanceled eq 1 ? 'Cancelled' :''}</font></a>
                                                                  <c:if test="${items.isMandatory eq 1}">*</c:if>
                                                                    
                                                                 <br><h6>${fromStatus}</h6></div>
                                                                 <div class="col-md-9">
-                                                                       <c:if test="${(tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">
+                                                                       <c:if test="${isFormModificationAllow and (empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true)) && workflowDone ne true}">
                                                                        
                                                                   	<c:choose>
                                                                   		<c:when test="${items.isEncryptionReq ne 0  and items.isPriceBid eq 1}">
@@ -434,11 +474,12 @@
                                                                   		</c:otherwise>
                                                                   	</c:choose>
                                                                         
+
                                                                     </c:if>
                                                                      <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${viewlink}</a>
 
                                                                     
-                                                                        <c:if test="${items.isPriceBid eq 1 && items.loadNoOfItems ne 0 && tblTender.cstatus ne 1 }">
+                                                                        <c:if test="${items.isPriceBid eq 1 && items.loadNoOfItems ne 0 && isFormModificationAllow}">
 
                                                                          |
                                                                          <c:if test ="${ items.isEncryptionReq eq 0}">
@@ -472,7 +513,7 @@
                                                                          </c:if>   
                                                                            
 
-                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner ne 1 && items.isMandatory eq 1 &&  empty openingDateOver}"> <!-- form should be mand one more cond-->      
+                                                                         <c:if test="${items.isPriceBid eq 1 && tblTender.isItemwiseWinner ne 1 && items.isMandatory eq 1}"> <!-- form should be mand one more cond-->      
 
                                                                       
                                                                               | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getPriceSumaryColumn/${tblTender.tenderId}/${items.formId}" >
@@ -497,12 +538,21 @@
 
                                                                         <a href="${pageContext.servletContext.contextPath}/eBid/Bid/createFormDocument/${tblTender.tenderId}/${items.formId}" > <spring:message code="label_Document_upload"/></a>   
                                                                         </c:if>
-                                                                       
                                                                             |  <a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${items.formId}/0"  ><spring:message code="lbl_test" /></a> 
                                                                              <c:if test="${(tblTender.cstatus ne 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0)) && workflowDone ne true}">                                               
-                                                                               
-                                                                            |   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure You Want to delete')" ><spring:message code="link_delete_corrigendum" /></a>
+                                                                            | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}"onclick="return2 confirm('Are you sure you want to delete ?')" ><spring:message code="link_delete_corrigendum" /></a>
                                                                             </c:if>
+                                                                            <!-- if form is published and not cancel then cancel link will not occure again, if tender is published and form is new created then delete link will occure -->
+                                                                            <c:if test="${tblTender.cstatus eq 1 && not empty currentCorrigendum}"> 
+                                                                            <c:choose>
+	                                                                            <c:when test="${items.isCanceled ne 1 && items.cstatus eq 1 && ((tblTender.cstatus eq 1 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true)  or (workflowToInitiator eq true and tblTender.cstatus eq 1)) && workflowDone ne true}">
+	                                                                            |   <a href="${pageContext.servletContext.contextPath}/eBid/Bid/CancelForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure you want to cancel ?')" ><spring:message code="lbl_form_cancel" /></a>
+	                                                                            </c:when>
+	                                                                            <c:when test="${items.isCanceled ne 1}">
+	                                                                            | <a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${items.formId}"onclick="return confirm('Are you sure you want to delete ?')" ><spring:message code="link_delete_corrigendum" /></a>
+	                                                                            </c:when>
+                                                                            </c:choose>
+                                                                            </c:if> 
                                                                 </div>
                                                             </div>
 
@@ -960,8 +1010,7 @@
                                         <div class="col-md-1">${item.formId}</div>
                                         <div class="col-md-2">${item.formName}</div>
                                         <div class="col-md-9">
-                                        <c:if test="${tblTender.cstatus eq 0}">
-                                            <c:if test="${tblTender.isWorkflowRequired eq 0 or isTenderWorkflowStarted ne true or (workflowToInitiator eq true and workflowDone ne true)}">
+                                            <c:if test="${((tblTender.cstatus eq 1 and items.cstatus eq 0) or tblTender.cstatus eq 0) and (tblTender.isWorkflowRequired eq 0 or isTenderWorkflowStarted ne true or (workflowToInitiator eq true and workflowDone ne true))}">
                                         		<c:choose>
                                                 		<c:when test="${items.isEncryptionReq ne 0  and items.isPriceBid eq 1}">
                                                 			<a href="javascript:"  onclick="alert('${msg_alert_delete_formula}')">33333333<spring:message code="label_edit"/></a> |
@@ -970,11 +1019,10 @@
                                                 			<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfo/${tblTender.tenderId}/${item.formId}"><spring:message code="label_edit"/></a> |   
                                                 		</c:otherwise>
                                                 	</c:choose>
-                                        	</c:if>
-                                        </c:if>
-                                       <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${item.formId}/0/false">${viewlink}</a>
+                                            </c:if>
+                                        <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${item.formId}/0/false">${viewlink}</a>
                                         
-                                        |<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${item.formId}/0">Test Form</a>
+                                        |<a href="${pageContext.servletContext.contextPath}/eBid/Bid/GetFormInfoForTest/${tblTender.tenderId}/${item.formId}/0"><spring:message code="lbl_test" /></a>
                                         <c:if test="${tblTender.isWorkflowRequired eq 0 or isTenderWorkflowStarted ne true or (workflowToInitiator eq true and workflowDone ne true)}">
                                          <c:if test="${tblTender.cstatus eq 0}">
                                                    <c:if test ="${ item.isEncryptionReq eq 0}">
@@ -987,7 +1035,7 @@
                                          </c:if>
                                         
                                         <c:if test="${item.cstatus ne 2 && workflowDone ne true && (tblTender.cstatus eq 0 && empty corrigendumWorkflowList && isTenderWorkflowStarted ne true  or (workflowToInitiator eq true and tblTender.cstatus eq 0))}">
-                                            |<a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${item.formId}" onclick="return confirm('Are you sure you want to delete form?')"><spring:message code="link_delete_corrigendum" /></a>
+                                            |	<a href="${pageContext.servletContext.contextPath}/eBid/Bid/DeleteForm/${tblTender.tenderId}/${item.formId}" onclick="return confirm('Are you sure you want to delete form?')"><spring:message code="link_delete_corrigendum" /></a>
                                         </c:if>
                                         </c:if>
                                         </div>
@@ -1057,7 +1105,8 @@
 			<div class="box-body">
 				<div class="row">
 							<div id="workFlow" class="panel-collapse">
-			<div class="row border">
+			<div class="col-lg-12">
+			<div class="row">
 				<div class="col-md-3"><spring:message code="label_notice_workflow" /></div>
 				<div class="col-md-9">
 				<c:choose>
@@ -1072,6 +1121,7 @@
         		</c:when>
 	            </c:choose>
 	          	</div>
+			</div>
 			</div>
 		</div>
 				</div>

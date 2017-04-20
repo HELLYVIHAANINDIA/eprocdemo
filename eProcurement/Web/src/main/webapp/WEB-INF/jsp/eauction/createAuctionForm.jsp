@@ -3,48 +3,44 @@
 <%@page import="com.eprocurement.etender.model.TblTender"%>	
 
 
-	<spring:message code="client_dateformate_hhmm" var="client_dateformate_hhmm"/>
+<spring:message code="client_dateformate_hhmm" var="client_dateformate_hhmm"/>
 	 
 <spring:message code="label_select" var="label_select"></spring:message>
+
 <div class="content-wrapper">
+
     <section class="content-header">
-        <h1><c:if test="${empty Operation}"><spring:message code="lbl_create_auction" /></c:if>
-                                    <c:if test="${not empty Operation}"><spring:message code="lbl_edit_auction1"/></c:if><small></small></h1>
+        <h1 class="inline"><c:if test="${empty Operation}"><spring:message code="lbl_create_auction" /></c:if>
+        <c:if test="${not empty Operation}"><spring:message code="lbl_edit_auction1"/></c:if><small></small></h1>
+        <c:if test="${tenderId ne 0}">
+          <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" ><< <spring:message code="lbl_go_back_to_auction_dashboard" class="g g-back"/></a>
+        </c:if>
     </section>
+    
     <section class="content">
         <form id="tenderDtBean" name="tenderDtBean" action="${pageContext.servletContext.contextPath}/eBid/Bid/addAuction" method="post" onsubmit="if(valOnSubmit()){return validateAuction();}else {return false;}">
             <div class="row">
                 <div class="col-lg-12 col-md-12">
                     <div class="box">
-                        <div class="box-header with-border">
-                            <div class="col-md-6" >
-                                
-                            </div>
-                            <div class="col-md-6 text-right" >
-                                <c:if test="${tenderId ne 0}">
-                                    <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" ><< <spring:message code="lbl_go_back_to_auction_dashboard" />
-                                    </a>
-                                </c:if>
-                            </div>
-                        </div>
                         <div class="box-body">
                             <div class="row">
                                 <div class="col-lg-12 col-md-12 col-xs-12">
                                      <div class="row">
-                                         <div class="col-lg-2"><div class="form_filed"><spring:message code="lbl_Organization" /> </div></div>
-                                         <div class="col-lg-2"><div class="form_filed"><div id="organization" class="lbl-2"></div></div><input type="hidden" name="organization" value="${grandParentDeptId}" /> </div>
+                                     
+                                         <div class="col-lg-2"><div class="lbl-3"><spring:message code="lbl_Organization" /> </div></div>
+                                         <div class="col-lg-2"><div class="lbl-2"><div id="organization" class="lbl-2"></div></div><input type="hidden" name="organization" value="${grandParentDeptId}" /> </div>
                                         <div class="col-lg-2"></div>
                                          <div class="col-lg-2">
-                                            <div class="form_filed"><spring:message code="lbl_department" /></div>
+                                            <div class="lbl-3"><spring:message code="lbl_department" /></div>
                                         </div>
                                         <div class="col-lg-2">
                                            
                                                 <c:choose>
 	                                            <c:when test="${parentDeptId gt 0}">
-                                                        <div class="form_filed"><div id="parentDeptName" class="lbl-2"></div></div>
+                                                        <div class="lbl-2"><div id="parentDeptName" class="lbl-2"></div></div>
 	                                            </c:when>
                                                     <c:otherwise>
-                                                        <div><div class="form_filed">-</div></div>    
+                                                        <div><div class="lbl-2">-</div></div>    
                                                         <select style="display: none;" class="form-control" id="selDepartment" name="selDepartment"  onblur="javascript:{if(true){getSubDepartments();getOfficerList();}}" title="department">
                                                             <option value="${parentDeptId}">${label_select}</option>
                                                         </select>	
@@ -59,15 +55,15 @@
                                        
                                         
                                         <div class="col-lg-2">
-                                            <div class="form_filed"><spring:message code="lbl_sub_department" /></div>
+                                            <div class="lbl-3"><spring:message code="lbl_sub_department" /></div>
                                         </div>
                                         <div class="col-lg-2">
                                             <c:choose>
 	                                        <c:when test="${subDeptId gt 0}">
-                                                    <div class="form_filed"><div id="subDeptName" class="lbl-2"></div></div>
+                                                    <div class="lbl-2"><div id="subDeptName" class="lbl-2"></div></div>
 	                                        </c:when>
     	                                        <c:otherwise>
-                                                <div><div class="form_filed">-</div></div>
+                                                <div><div class="lbl-2">-</div></div>
     	                                        </c:otherwise>
                                             </c:choose>
                                             <select style="display: none;" class="form-control" id="subDept" name="subDept"  onblur="javascript:{if(true){getOfficerList();}}" title="sub department">
@@ -77,10 +73,10 @@
                                         </div>
                                             <div class="col-lg-2"></div>
                                         <div class="col-lg-2">
-                                            <div class="form_filed"><spring:message code="lbl_user_name" /></div>
+                                            <div class="lbl-3"><spring:message code="lbl_user_name" /></div>
                                         </div>
                                         <div class="col-lg-2">
-                                            <div class="form_filed"><div id="officerName" class="lbl-2"></div></div>
+                                            <div class="lbl-2"><div id="officerName" class="lbl-2"></div></div>
                                                     <select class="form-control" style="display: none" id="selName" name="selDeptOfficial"  onblur="javascript:{if(true){}}" title="Department Officer">
 							<option value="${officerId}">${label_select}</option>
 						    </select>
@@ -88,6 +84,7 @@
                                        
                                         
                                         </div>
+                                        
                                         <div class="row">
                                             <div class="col-lg-2">
                                                 <div class="form_filed"><spring:message code="lbl_auction_no" /><span class="red">*</span></div>

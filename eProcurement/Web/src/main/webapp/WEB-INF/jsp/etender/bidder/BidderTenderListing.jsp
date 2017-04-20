@@ -17,12 +17,13 @@
 			<c:when test="${isAuction eq 0}">
 				<h1>
 					<a onclick="showHideSearch()">
-					<spring:message code="lbl_advance_tender_search" /></a>
+					<spring:message
+							code="lbl_advance_tender_search" /></a>
 				</h1>
 			</c:when>
 			<c:otherwise>
 				<h1>
-					Auction <a onclick="showHideSearch()"><spring:message
+					<a onclick="showHideSearch()"><spring:message
 							code="lbl_advance_auction_search" /></a>
 				</h1>
 			</c:otherwise>

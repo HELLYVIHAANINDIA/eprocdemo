@@ -42,7 +42,11 @@
 <spring:message code="btn_submit" var="btn_submit" />
            
      
-       
+       <style type="text/css">
+       .table.hover th {
+    color: #fff;
+}
+       </style>
 
        <c:if test="${not empty successMsg}">
       <div class="alert alert-success">  ${successMsg}</div>
@@ -53,14 +57,14 @@
 	<section class="content-header">
 	<c:choose>
 	<c:when test="${tblTender.isAuction eq 0}">
-	<h1 class="pull-left">View Tender Workflow</h1>
+	<h1 class="inline">View Tender Workflow</h1>
 	</c:when>
 	<c:when test="${tblTender.isAuction eq 1}">
-	<h1 class="pull-left">View Auction Workflow</h1>
+	<h1 class="inline">View Auction Workflow</h1>
 	</c:when></c:choose>
 	
-		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="pull-right"><< <spring:message code="lbl_back_dashboard"/></a>
-		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="pull-right"><< <spring:message code="lbl_back_tenderlist"/></a> 
+		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back" style="margin-left:10px;"><< <spring:message code="lbl_back_dashboard"/></a>
+		<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderListing" class="g g-back"><< <spring:message code="lbl_back_tenderlist"/></a> 
 	</section>
 	
 	<section class="content">

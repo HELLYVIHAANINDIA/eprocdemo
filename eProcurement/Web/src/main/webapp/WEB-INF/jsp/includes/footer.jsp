@@ -1,9 +1,11 @@
 <footer class="main-footer">
 	<div class="copy clearfix">
 		<div class="container_25 p-top-none">
-			<div class="pull-left "><a href="#">Terms and Conditions</a> | <a href="#">Privacy Policy</a></div>
+			<div class="pull-left "><a href="#">Terms and Conditions</a> | <a href="#">Privacy Policy</a><br />
+			This site is best viewed at a minimum screen resolution of 1366 X 768
+			</div>
 			<div class="grid_15 pull-right a-right">
-				All rights reserved. CTPL © 2017. Designed Develop &amp; Maintained By 
+				Powered by :
 				<a target="_blank" href="http://cahoot-technologies.com/">
 					<span style="color:#c42b3e;">Cahoot</span> 
 					<span style="color:#175295;">Technologies</span></a>.

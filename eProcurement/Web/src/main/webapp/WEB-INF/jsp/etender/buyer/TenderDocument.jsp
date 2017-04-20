@@ -7,14 +7,10 @@
         <spring:message code="lbl_view_evaluation_committee" var="lblviewevaluationcommittee"/>
         
 <div class="content-wrapper">
-<section class="content">
-<div class="row">
-<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 
-<div class="box">
-						
-<div class="box-header with-border">
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="btn btn-submit pull-right">
+<section class="content-header">
+<h1 class="inline">RFX</h1>
+<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back">
                                                     <c:if test="${isAuction eq 1}">
                                                          << Go To Auction Dashboard
                                                     </c:if>
@@ -22,7 +18,15 @@
                                                          << Go To Tender Dashboard
                                                     </c:if>
                                                 </a>
+</section>
 
+<section class="content">
+<div class="row">
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
+<div class="box">
+						
+<div class="box-header with-border">
 <h3 class="box-title">
     <c:if test="${isAuction eq 1}">
         Auction Documents

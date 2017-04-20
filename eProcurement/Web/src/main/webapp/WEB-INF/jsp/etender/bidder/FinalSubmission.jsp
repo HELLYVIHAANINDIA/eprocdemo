@@ -12,12 +12,9 @@
 <spring:message code='fields_address' var="varAddress"/>
 
 <div class="content-wrapper">
-	<section class="content" id="viewFinalSubmissionId">
-        <div class="row">  
-		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-			<div class="box">
-				<div class="box-header with-border noExport">
-					<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"><< 
+
+	<section class="content-header">
+						<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}" class="g g-back"><< 
                                             <c:if test="${isAuction eq 0}">
                                                ${backDashboard} 
                                             </c:if>
@@ -25,7 +22,12 @@
                                                 Go To Auction DashBoard
                                             </c:if>
                                             </a>
-				</div>
+	</section>
+
+	<section class="content" id="viewFinalSubmissionId">
+        <div class="row">  
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+			<div class="box">
 				<c:if test="${not empty successMsg}">
 					<div><span class="alert alert-success"><spring:message code="${successMsg}"/></span></div>
 				</c:if>
@@ -335,12 +337,16 @@
                             </c:otherwise>
                         </c:choose>
 						</div>
+						
+						<div class="col-md-12 col-sm-12">
+							<input type="button" class="pt-pdf" onclick="exportContent('viewFinalSubmissionId','FinalSubmission${tenderId}',0)" value="PDF">
+							<input type="button" class="pt-print" onclick="exportContent('viewFinalSubmissionId','FinalSubmission${tenderId}',5)" value="Print">
+						</div> 
+						
 					</div>
-					<div class="box-header with-border"></div>
-						<div>
-							<input type="button" class="btn noExport" onclick="exportContent('viewFinalSubmissionId','FinalSubmission${tenderId}',0)" value="PDF">
-							<input type="button" class="btn noExport" onclick="exportContent('viewFinalSubmissionId','FinalSubmission${tenderId}',5)" value="Print">
-						</div>  
+					
+
+						 
 				</div>
 			</div>
 		</div>

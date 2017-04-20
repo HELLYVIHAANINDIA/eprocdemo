@@ -5,7 +5,7 @@
 <section class="content-header">
 <a onclick="showHideSearch()" style="text-decoration:none;">
 <h1><spring:message code="lbl_search_more"/></h1>
-</a><%-- hide listing because it is not require here  --%>
+</a>
 </section>
 
 <section class="content">
@@ -54,7 +54,7 @@
 						</div>
 					</div>
 					
-					<div class="row">
+					<div class="row" id="eventAdvance">
 						<form id="tenderListForm" style="display: none;">
 							<div class="col-md-12">
 								<div class="row">
@@ -180,7 +180,7 @@
 
 						</form>
 					</div>
-					<div class="row">
+					<div class="row" id="eventDtl">
 						<div class="col-md-12">
 							<div class="nav-tabs-custom">
 								<ul class="nav nav-tabs">
@@ -277,6 +277,9 @@ $(document).ready(function(){
 		$(".sectionDiv").hide();
 		var sectionId = $(this).attr("section");
 		$("#section"+sectionId).show();
+		$("#eventDtl").hide();
+		$("#eventAdvance").hide();
+		$(".content-header").hide();
 	});
 });
 function showHideSearch(){

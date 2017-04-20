@@ -15,7 +15,7 @@
 			<div class="box-body">
 
 				<div class="row">
-					<div class="col-md-3"><div class="ct_filed1"><spring:message code="lbl_auction_id" /></div></div>
+					<div class="col-md-3"><div class=""><spring:message code="lbl_auction_id" /></div></div>
 					<div class="col-md-3">${tblTender.tenderId}</div>
 					<div class="col-md-3"><spring:message code="lbl_auction_no" /></div>
 					<div class="col-md-3">${tblTender.tenderNo}</div>

@@ -1,8 +1,7 @@
-
+<%@include file=".../../includes/head.jsp"%>
 <jsp:useBean id="now" class="java.util.Date" />
 <%@include file="./includes/headerWithoutLogin.jsp"%>
-<%@include file=".../../includes/head.jsp"%>
-<%@include file="./includes/masterheader.jsp"%>
+<%-- <%@include file="./includes/masterheader.jsp"%> --%>
 
  <spring:message code="lbl_important_message" var="lbl_important_message"/>
  

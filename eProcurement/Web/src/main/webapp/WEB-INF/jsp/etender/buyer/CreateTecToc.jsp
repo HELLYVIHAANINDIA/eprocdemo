@@ -8,15 +8,15 @@
 <c:set var="var_total_member" value="0" />
 
 <section class="content-header">
+<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"><< Go To Tender Dashboard</a>
 </section>
 
 <section class="content">
 <div class="row">
-				<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-					<div class="box">
-						<div class="box-header with-border">
-						<div><a class="pull-right" href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< Go To Tender Dashboard</a></div>
-						<div>
+<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+<div class="box">
+					
+						<div class="box-header with-border">												
 							<c:choose>
 								<c:when test="${committeeType eq 1}">
 									<c:choose>
@@ -38,108 +38,81 @@
 										</c:otherwise>
 									</c:choose>
 								</c:otherwise>
-							</c:choose>
-							</div>
+							</c:choose>							
 						</div>
-						<div>
-											<c:if test="${not empty successMsg}">
-                                        			<span class="label label-success"><spring:message code="${successMsg}"/></span>
-                                    		</c:if>
-                                    		<c:if test="${not empty errorMsg}">
-                                        			<span class="label label-danger"><spring:message code="${errorMsg}"/></span>
-                                    		</c:if>
-                                 </div>
+						                              
 						<div class="box-body">
 							<div class="row">
 								<div class="col-lg-12 col-md-12 col-xs-12">
+								
 									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Search By</div>
+										
+										<div class="col-lg-12">
+											<c:if test="${not empty successMsg}">
+                                        		<span class="label label-success"><spring:message code="${successMsg}"/></span>
+                                    		</c:if>
+                                    		<c:if test="${not empty errorMsg}">
+                                        		<span class="label label-danger"><spring:message code="${errorMsg}"/></span>
+                                    		</c:if>
 										</div>
-										<div class="col-lg-5">
-											<select class="form-control" id="selSearch" onchange="javascript:showHideDiv();">
-												<option value="email">Email</option>
-  												<option value="name">Name</option>
-  												<option value="Hirarchy">Hirarchy</option>
-											</select>
+										
+										<div class="col-md-6">
+										
+										<div class="fr-grp">
+										<label class="lblfr-fields">Search By</label>
+										<select class="form-control fr-cntrl" id="selSearch" onchange="javascript:showHideDiv();">
+											<option value="email">Email</option>
+  											<option value="name">Name</option>
+  											<option value="Hirarchy">Hirarchy</option>
+										</select>
 										</div>
-									</div>	
-									<div class="row" id="nonHirarchy">
-										<div class="col-lg-2">
-											<div class="form_filed">Search</div>
+										
+										<div class="fr-grp" id="nonHirarchy">
+										<label class="lblfr-fields">Search</label>
+										<input type="text" class="form-control fr-cntrl" id="searchValue"  title="Search value"  validarr="required@@length:0,100" tovalid="true" onblur="javascript:{validateTextComponent(this)}">
+										<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
 										</div>
-										<div class="col-lg-5">
-											<input type="text" class="form-control" id="searchValue"  title="Search value"  validarr="required@@length:0,100" tovalid="true" onblur="javascript:{validateTextComponent(this)}" >
-										</div>
-										<div>
-											<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
-										</div>
-									</div>
-									
-									<div id="Hirarchy" style="display: none">
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Organization</div>
-										</div>
-										<div class="col-lg-5">
+										
+										<div class="fr-grp" id="Hirarchy" style="display: none">
+										<label class="lblfr-fields">Organization</label>
 										<div id="grandParentDeptIdDiv">
-														<input type="hidden" id="grandParentDeptId" value="${grandParentDeptId}" />	
-													</div>
-<!-- 											<select class="form-control" id="grandParentDeptId" name="grandParentDeptId" onblur="javascript:{if(validateCombo(this)){getParentDepartmentsByGrandparentDept();getSubDepartments();getDesignations()}}" title="organization"> -->
-<!-- 														<option value="-1">Please Select</option> -->
-<!-- 													</select> -->
+											<input type="hidden" id="grandParentDeptId" value="${grandParentDeptId}" />	
 										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Location/Department</div>
 										</div>
-										<div class="col-lg-5">
-											<select class="form-control" id="selDepartment" name="selDepartment" onblur="javascript:{if(true){getSubDepartments();getDesignations()}}" title="department">
-														<option value="-1">Please Select</option>
-													</select>
+										
+										<div class="fr-grp">
+										<label class="lblfr-fields">Location/Department</label>
+										<select class="form-control fr-cntrl" id="selDepartment" name="selDepartment" onblur="javascript:{if(true){getSubDepartments();getDesignations()}}" title="department">
+											<option value="-1">Please Select</option>
+										</select>
 										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Sub Department</div>
+										
+										<div class="fr-grp">
+										<label class="lblfr-fields">Sub Department</label>
+										<select class="form-control fr-cntrl" name="subDeptId"  id="subDept"  onblur="javascript:{getDesignations()}" title="Sub department name" >
+											<option value="-1">Please select</option>
+										</select>
 										</div>
-										<div class="col-lg-5">
-											<select class="form-control" name="subDeptId"  id="subDept"  onblur="javascript:{getDesignations()}" title="Sub department name" >
-															<option value="-1">Please select</option>
-											</select>
+										
+										<div class="fr-grp">
+										<label class="lblfr-fields">Designation</label>
+										<select class="form-control fr-cntrl" id="selDesignation" name="selDesignation" onblur="validateCombo(this)" title="designation">
+											<option value="-1">Please Select</option>
+										</select>
+										<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
 										</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Designation</div>
+										
+										<div class="fr-grp">
+										<label class="lblfr-fields">Officer name</label>
+										<select class="form-control fr-cntrl" id="selName">
+											<option value="--please select--">--Please Select--</option>
+										</select>
+										<button type="button" id="addOfficer" class="btn btn-submit">Add</button>
 										</div>
-										<div class="col-lg-5">
-											<select class="form-control" id="selDesignation" name="selDesignation" onblur="validateCombo(this)" title="designation">
-															<option value="-1">Please Select</option>
-													</select>
+										
 										</div>
-										<div>
-											<button type="button" class="btn btn-submit" onclick="searchAjax();">Search</button>
-										</div>
-									</div>
-									</div>
-									<div class="row">
-										<div class="col-lg-2">
-											<div class="form_filed">Officer name</div>
-										</div>
-										<div class="col-lg-5">
-											<select class="form-control" id="selName">
-												<option value="--please select--">--Please Select--</option>
-											</select>
-										</div>
-										<div>
-											<button type="button" id="addOfficer" class="btn btn-submit">Add</button>
-										</div>
-									</div>
-					<div class="box-body">
-							<div class="row">
-								<div class="col-lg-12 col-md-12 col-xs-12">
+										
+																		<div class="col-lg-12 col-md-12 col-xs-12">
 								<c:choose>
 	               					<c:when test="${operType eq 'Edit'}">
 	               						<spring:url value="/etender/buyer/posteditcommittee" var="submitcommittee"/>											
@@ -315,14 +288,22 @@
 										</div>
 									</form:form>
 								</div>
-							</div>
-						</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-		</div>
+										
+									</div>	
+
+									
+									</div>
+									
+									</div>
+									
+									</div>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </section>
 </div>
 <script type="text/javascript">
@@ -754,4 +735,5 @@
                 }	
             	
            </script>
-           <%@include file="../../includes/footer.jsp"%>
+           
+<%@include file="../../includes/footer.jsp"%>

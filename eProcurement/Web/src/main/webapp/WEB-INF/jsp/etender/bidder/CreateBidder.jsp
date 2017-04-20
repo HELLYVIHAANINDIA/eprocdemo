@@ -729,7 +729,7 @@
 													</div>
 													<div class="row">
 														<div class="col-lg-12">
-															<a href="#tab_2" data-toggle="tab" title="Next" class="pull-right nxt">Next</a>
+															<a href="#tab_2" data-toggle="tab" title="Next" class="pull-right rgtr">Next</a>
 														</div>
 													</div>
 												</div>
@@ -1202,21 +1202,112 @@
 															<spring:message code="fields_docName" />
 														</h4>
 														<%@include file="../buyer/UploadDocuments.jsp"%>
-														<div class="row">															
-															<div class="col-lg-12">
-																<input type="checkbox" name="igree" id="iagree"
-																	style="margin-right: 5px; float: left; margin-top: 5px;" />
-																I agree to the terms & conditions and privacy policy of
-																this website. <a href="javascript:" id="viewPrivacy"
-																	onclick="javascript:showTargetDiv();">View privacy
-																	policy</a>
-																<div id="targetDiv" style="display: none">Here by
-																	you agree all privacy policies and terms and conditions
-																	of Cahoot technologies LTD</div>
-																<div id="iAgreeError" style="color: red"></div>
+												<div class="row">
+													<div class="col-lg-12">
+														<input type="checkbox" name="igree" id="iagree"
+															style="margin-right: 5px; float: left; margin-top: 5px;" />
+														I agree to the <a href="#" data-toggle="modal"
+															data-target="#termsconditions">terms & conditions</a> and
+														privacy policy of this website.
+
+														<!-- Modal -->
+														<div id="termsconditions" class="modal fade" role="dialog">
+															<div class="modal-dialog modal-lg">
+
+																<!-- Modal content-->
+																<div class="modal-content">
+																	<div class="modal-header">
+																		<button type="button" class="close"
+																			data-dismiss="modal">&times;</button>
+																		<h4 class="modal-title">Terms & Conditions</h4>
+																	</div>
+																	<div class="modal-body">
+																		<p>Lorem Ipsum is simply dummy text of the
+																			printing and typesetting industry. Lorem Ipsum has
+																			been the industry's standard dummy text ever since
+																			the 1500s, when an unknown printer took a galley of
+																			type and scrambled it to make a type specimen book.
+																			It has survived not only five centuries, but also the
+																			leap into electronic typesetting, remaining
+																			essentially unchanged. It was popularised in the
+																			1960s with the release of Letraset sheets containing
+																			Lorem Ipsum passages, and more recently with desktop
+																			publishing software like Aldus PageMaker including
+																			versions of Lorem Ipsum.</p>
+																		<p>Lorem Ipsum is simply dummy text of the
+																			printing and typesetting industry. Lorem Ipsum has
+																			been the industry's standard dummy text ever since
+																			the 1500s, when an unknown printer took a galley of
+																			type and scrambled it to make a type specimen book.
+																			It has survived not only five centuries, but also the
+																			leap into electronic typesetting, remaining
+																			essentially unchanged. It was popularised in the
+																			1960s with the release of Letraset sheets containing
+																			Lorem Ipsum passages, and more recently with desktop
+																			publishing software like Aldus PageMaker including
+																			versions of Lorem Ipsum.</p>
+																		<p>Lorem Ipsum is simply dummy text of the
+																			printing and typesetting industry. Lorem Ipsum has
+																			been the industry's standard dummy text ever since
+																			the 1500s, when an unknown printer took a galley of
+																			type and scrambled it to make a type specimen book.
+																			It has survived not only five centuries, but also the
+																			leap into electronic typesetting, remaining
+																			essentially unchanged. It was popularised in the
+																			1960s with the release of Letraset sheets containing
+																			Lorem Ipsum passages, and more recently with desktop
+																			publishing software like Aldus PageMaker including
+																			versions of Lorem Ipsum.</p>
+																		<p>Lorem Ipsum is simply dummy text of the
+																			printing and typesetting industry. Lorem Ipsum has
+																			been the industry's standard dummy text ever since
+																			the 1500s, when an unknown printer took a galley of
+																			type and scrambled it to make a type specimen book.
+																			It has survived not only five centuries, but also the
+																			leap into electronic typesetting, remaining
+																			essentially unchanged. It was popularised in the
+																			1960s with the release of Letraset sheets containing
+																			Lorem Ipsum passages, and more recently with desktop
+																			publishing software like Aldus PageMaker including
+																			versions of Lorem Ipsum.</p>
+																		<p>Lorem Ipsum is simply dummy text of the
+																			printing and typesetting industry. Lorem Ipsum has
+																			been the industry's standard dummy text ever since
+																			the 1500s, when an unknown printer took a galley of
+																			type and scrambled it to make a type specimen book.
+																			It has survived not only five centuries, but also the
+																			leap into electronic typesetting, remaining
+																			essentially unchanged. It was popularised in the
+																			1960s with the release of Letraset sheets containing
+																			Lorem Ipsum passages, and more recently with desktop
+																			publishing software like Aldus PageMaker including
+																			versions of Lorem Ipsum.</p>
+																		<p>Lorem Ipsum is simply dummy text of the
+																			printing and typesetting industry. Lorem Ipsum has
+																			been the industry's standard dummy text ever since
+																			the 1500s, when an unknown printer took a galley of
+																			type and scrambled it to make a type specimen book.
+																			It has survived not only five centuries, but also the
+																			leap into electronic typesetting, remaining
+																			essentially unchanged. It was popularised in the
+																			1960s with the release of Letraset sheets containing
+																			Lorem Ipsum passages, and more recently with desktop
+																			publishing software like Aldus PageMaker including
+																			versions of Lorem Ipsum.</p>
+																	</div>
+																	<div class="modal-footer">
+																		<button type="button" class="btn btn-default"
+																			data-dismiss="modal">Close</button>
+																	</div>
+																</div>
+
 															</div>
 														</div>
-														<div class="row">															
+														<!-- Modal -->
+
+													</div>
+												</div>
+												<div class="row">															
 															<div class="col-lg-12">
 																<div class="g-recaptcha"
 																	data-sitekey="6Ld1eBIUAAAAAAH43IoWk1nmD-MMvcWaDYEQIO9o"
@@ -1237,8 +1328,7 @@
 													<div class="row">		
 															<div class="col-lg-12">
 															<!-- Dont use 'next' as class here, else after validation it will always redirect to second page -->
-																<input type="submit" class="pull-right btn btn-primary" value="Edit" onclick="return bidderValidate();">
-																<a href="" data-toggle="tab" class="pull-right nxt">Back</a>
+																<input type="submit" class="pull-right rgtr" value="Edit" onclick="return bidderValidate();" style="margin-right:15px; margin-left:10px; border:none;">
 															</div>
 														</div>
 													</c:if>

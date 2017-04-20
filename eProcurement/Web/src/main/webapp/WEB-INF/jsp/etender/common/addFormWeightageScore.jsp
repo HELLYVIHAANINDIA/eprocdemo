@@ -34,9 +34,7 @@
                         <c:set value="${obForm.isPriceBid}" var="isPriceBid"></c:set>
                         <div class="page-title prefix_1 o-hidden border-top">
                             <h2 class="pull-left">${obForm.formName}</h2>
-                            <c:if test="${tblTender.isWeightageEvaluationRequired eq 1}">
                             	<h3 class="pull-right">Weight : ${obForm.formWeight}</h3>
-                            </c:if>
                          </div>
                           
                        <div class="clearfix border-bottom-none o-auto" id="scrolldata">
@@ -79,10 +77,8 @@
                                                                 </c:otherwise>
                                                             </c:choose>
                                                          <!--</h2>-->
-                                                        <c:if test="${tblTender.isWeightageEvaluationRequired eq 1}">
- 	                                                        <div class="pull-right">Score(Out off 10) <input type="text" isBidderRejected="${isBidderRejected[obCompany[1]]}" bidderId="${obCompany[1]}" name="formBidWeight" id="formBidWeight${srno.count}" maxlength="4" class="formBidWeight form-control"  validarr="required@@length:0,5" tovalid="true" onblur="if(validateTextComponent(this)){maxWeightValue(this)}" title="Bidder bid weightage"> </div>
-                                                        </c:if>
-														</h3></div>
+                                                            <div class="pull-right">Score(Out off 10) <input type="text" isBidderRejected="${isBidderRejected[obCompany[1]]}" bidderId="${obCompany[1]}" name="formBidWeight" id="formBidWeight${srno.count}" maxlength="4" class="formBidWeight form-control"  validarr="required@@length:0,5" tovalid="true" onblur="if(validateTextComponent(this)){maxWeightValue(this)}" title="Bidder bid weightage"> </div>
+                                                        </h3></div>
                                                     </td>
                                                 </tr>
                                             </table>
@@ -90,9 +86,7 @@
                                         </div>
                                         <c:set var="bidCnt" value="0"/>
                                             <c:forEach items="${lstFormBid}" var="obFormCompBid">
-                                            <c:if test="${tblTender.isWeightageEvaluationRequired eq 1}">
                                             	<input type="hidden" id="bidder_${obFormCompBid[5]}" value="${obFormCompBid[7]}">
-                                            </c:if>
                                                 <c:if test="${obForm.formId eq obFormCompBid[3] && obCompany[0] eq obFormCompBid[4]}">
                                                     <c:set var="bidCnt" value="${bidCnt + 1}"/>
                                                      <div class="clearfix">

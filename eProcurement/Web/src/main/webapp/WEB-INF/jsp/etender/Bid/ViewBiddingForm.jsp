@@ -1,6 +1,7 @@
 <%@include file="../../includes/head.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
 
-       <%@include file="../../includes/masterheader.jsp"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@page import="java.util.TimeZone"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.concurrent.TimeUnit"%>
@@ -81,21 +82,21 @@
             
         %>
 <div class="content-wrapper">
-            <section class="content-header">
-                 <div class="col-md-6 pull-left">
+
+<section class="content-header">
+                 
                     <c:choose>
                         <c:when test="${sessionUserTypeId eq 2}">
-                            <h4>
+                            <h1 class="inline">
                                 <c:if test="${isAuction eq 1}"><spring:message code="lbl_bidding_hall" /></c:if>
                             <c:if test="${isAuction eq 0}"><spring:message code="lbl_fill_form" /></c:if>
-                            </h4>
+                            </h1>
                         </c:when>  
                         <c:when test="${sessionUserTypeId eq 1}">
-                            <h4><spring:message code="lbl_view_bidding_form" /> </h4>
+                            <h1 class="inline"><spring:message code="lbl_view_bidding_form" /> </h1>
                         </c:when>
                     </c:choose> 
                 </div>
-                
                 <div class="col-md-6 text-right">
                     <spring:message code="lbl_back_dashboard" var='backDashboard'/>
              
@@ -103,9 +104,8 @@
                         <c:when test="${sessionUserTypeId eq 2}">
                             
                             
-                                <c:if test="${isAuction eq 1}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"
-					class="pull-right"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a></c:if>
-                                 <c:if test="${isAuction eq 0}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tenderId}/5"><< ${backDashboard}</a></c:if>
+                                <c:if test="${isAuction eq 1}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}" class="g g-back"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a></c:if>
+                                 <c:if test="${isAuction eq 0}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tenderId}/5" class="g g-back"><< ${backDashboard}</a></c:if>
                                 
                         </c:when>
                         <c:otherwise>
@@ -114,29 +114,23 @@
                   
                                                               
                         <c:if test="${not empty isFormLibrary}">
-                                                <a
-					href="${pageContext.servletContext.contextPath}/eBid/Bid/getFormLibrary/${FormLibrarytenderId}"
-					class="pull-right">
+                                                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/getFormLibrary/${FormLibrarytenderId}" class="g g-back">
                                                 << <spring:message code="lbl_go_to_gorm_library" /></a>
                                             </c:if>
                                             <c:if test="${empty isFormLibrary}">
-                                                 <a
-					href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"
-					class="pull-right">
+                                                 <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back">
                                                << <spring:message code="lbl_go_back_to_auction_dashboard" />
                                                </a>
                                             </c:if>
                     </c:if>
                     <c:if test="${isAuction eq 0}">
                         
-                            <div><a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a></div>                                                
+                            <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"><< ${backDashboard}</a>                                             
                          </c:if>
                         </c:otherwise>
                     </c:choose>
-                       
-                    
-                </div>
-            </section>
+</section>
+
                    <div class="row">
                        <div class="col-md-12">
                         <c:if test="${not empty successMsg}">
@@ -176,16 +170,15 @@
                                 <div class="row">
                                     <div class='col-md-12'>
                                         <div class='col-sm-3 col-md-3'>
-                                            <div class='form_filed text-black text-right'><spring:message code="lbl_current_time" /> :</div>
+                                            <div class='lbl-2'><spring:message code="lbl_current_time" /> :</div>
                                         </div>
                                         <div class='col-sm-3 col-md-3'>
-                                            <div class='form_filed text-black text-right' id="divServerCurrentTime">
-                                                
+                                            <div class='lbl-3' id="divServerCurrentTime">                                              
                                             </div>
                                         </div>
                                         
                                         <div class='col-sm-6 col-md-6'>
-                                            <div class='form_filed text-black text-right' id="countdown">
+                                            <div class='lbl-2' id="countdown">
                                                 
                                             </div>
                                         </div>
@@ -255,22 +248,22 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="col-sm-2 col-md-2">
-                                            <div class="form_filed text-black text-right"><spring:message code="lbl_form_id" /></div>
+                                            <div class="lbl-3"><spring:message code="lbl_form_id" /></div>
                                         </div>
                                         <div class="col-sm-2 col-md-2">
-                                            <div class="form_filed pull-left">${formId}</div>
+                                            <div class="lbl-2">${formId}</div>
                                         </div>
                                         <div class="col-sm-2 col-md-2">
-                                            <div class="form_filed text-black text-right" ><spring:message code="field_formName" /></div>
+                                            <div class="lbl-3"><spring:message code="field_formName" /></div>
                                         </div>
                                         <div class="col-sm-2 col-md-2">
-                                            <div class="form_filed pull-left">${FormBean.FormName}</div>
+                                            <div class="lbl-2">${FormBean.FormName}</div>
                                         </div>
                                         <div class="col-sm-2 col-md-2">
-                                            <div class="form_filed text-black text-right"><spring:message code="lbl_createdon" /></div>
+                                            <div class="lbl-3"><spring:message code="lbl_createdon" /></div>
                                         </div>
                                         <div class="col-sm-2 col-md-2">
-                                             <div class="form_filed pull-left">${FormBean.CreatedOn}</div>
+                                            <div class="lbl-2">${FormBean.CreatedOn}</div>
                                         </div>
                                     </div>
                                     <c:set var="DocReqVal" value="No"/>
@@ -301,7 +294,6 @@
                                             <div class="form_filed  text-right text-black"><spring:message code="lbl_is_mandatory" /></div>
                                         </div>
                                         <div class="col-sm-2 col-md-2">
-
                                             <div class="form_filed  pull-left">${IsMandatory}</div>
                                         </div>
                                         <c:set var="IsPriceBid" value="No"/>
@@ -344,17 +336,35 @@
                 <c:if test="${operation eq 'edit'}">
                           <div class="row">
                               <form id="tenderDtBean" name="tenderDtBean" action="${pageContext.servletContext.contextPath}/eBid/Bid/updateBiddingFormValueForEdit" method="post" onsubmit="if(valOnSubmit()){return createJson();} else {return false ;}" novalidate >
-                  
+                              <c:if test="${sessionUserTypeId eq 2}">
+				                  <div class="col-lg-12 col-md-12" id="divdownloadupload">
+				                        <div class="box">
+						                            <div class="col-md-12">
+						                                <h3 class="box-title"> 
+						                                	<div>
+											                  <input class="pull-left" type="file" id="uploadFormData" name="uploadFormData" class="upload" onchange="checkFile(this)"/>
+											                  <input type="text" id="fileToUploadName" name="fileToUploadName" class="form-control" value="" readonly>
+											                  <button type="button" onclick="$.blockUI({onBlock: function() {fillFormByExcel();$.unblockUI();}});" class="btn btn-submit">
+																<spring:message code="lbl_upload" />
+															</button>
+											                  <a class="pull-right" href="${pageContext.servletContext.contextPath}/etender/bidder/downloadform/${tenderId}/${formId}" >Download <%=tblTenderForm.getFormName()%>  as excel </a>
+										                  </div>
+										                 </h3>
+										                 
+										             </div>
+										        </div>
+								   </div>
+							   </c:if>
                     <div class="col-lg-12 col-md-12">
                         <div class="box">
                             <div class="col-md-12">
-                                <h3 class="box-title">  <%=tblTenderForm.getFormName()%> </h3>
+                                <h4 class="box-title">  <%=tblTenderForm.getFormName()%> </h4>
                             </div>
 
                             <div class="box-body" style="overflow: scroll;">
                                 <div class="row">
                                     <div class="col-md-12">
-                                        <h3 style="padding-top:0px;margin-top:0px;"><%=tblTenderForm.getFormHeader()%></h3>
+                                        <h4 style="padding-top:0px;margin-top:0px;"><%=tblTenderForm.getFormHeader()%></h4>
                                     </div>
                                     <%
                                         int count1 = 0;
@@ -368,7 +378,7 @@
                                             <c:if test="${isAuction eq 0}">
                                                 <div class="box-header with-border">
                                                 
-                                                <h3 class="box-title"><b><%=tblTenderTable.getTableName()%></b></h3>
+                                                <h4 class="box-title"><b><%=tblTenderTable.getTableName()%></b></h4>
                                                         <%
                                                             String val = "";
                                                             if (tblTenderTable.getIsMandatory() == 0) {
@@ -382,7 +392,7 @@
                                           
                                             
                                             <div class="box-header with-border">
-                                                <h3 class="box-title"><%=tblTenderTable.getTableHeader()%></h3>
+                                                <h4 class="box-title"><%=tblTenderTable.getTableHeader()%></h4>
                                             </div>
 						  </c:if>
 						<div class="box-body">
@@ -793,7 +803,7 @@
 						</div>
                                               <c:if test="${isAuction eq 0}">
                                                   <div class="box-header with-border">
-							<h3 class="box-title"><%=tblTenderTable.getTableFooter()%></h3>
+							<h4 class="box-title"><%=tblTenderTable.getTableFooter()%></h4>
 						</div>
 
                                               </c:if>
@@ -805,7 +815,7 @@
                                             %>
                                             
                                             <div class="col-lg-12">
-                                                <h3><%=tblTenderForm.getFormFooter()%></h3>
+                                                <h4><%=tblTenderForm.getFormFooter()%></h4>
                                             </div>
                                               <%
                                                   if( lstColumnFormula!=null && lstColumnFormula.size() > 0)
@@ -882,7 +892,7 @@
                     <div class="col-lg-12 col-md-12">
                         <div class="box">
                             <div class="col-md-6">
-                                <h3 class="box-title">  <%=tblTenderForm.getFormName()%> </h3>
+                                <h4 class="box-title">  <%=tblTenderForm.getFormName()%> </h4>
                             </div>
                             <div class="col-md-6 text-right" >
                                         
@@ -890,7 +900,7 @@
                             <div class="box-body">
                                 <div class="row">
                                         <div class="col-md-12">
-                                            <h3 style="padding-top:0px;margin-top:0px;"><%=tblTenderForm.getFormHeader()%></h3>
+                                            <h4 style="padding-top:0px;margin-top:0px;"><%=tblTenderForm.getFormHeader()%></h4>
                                         </div>
                                         <%
                                             int count=0;
@@ -904,7 +914,7 @@
                                         	<div class="box">
                                                     <c:if test="${isAuction eq 0}">
                                                         <div class="box-header with-border">
-							<h3 class="box-title"><b><%=tblTenderTable.getTableName()%></b></h3>
+							<h4 class="box-title"><b><%=tblTenderTable.getTableName()%></b></h4>
                                                          <%
                                                         String val="";
                                                         if(tblTenderTable.getIsMandatory()==0)
@@ -919,7 +929,7 @@
                                                            <h4 class="box-title pull-right" ><b> Is Table Mandatory:</b>&nbsp;<%=val%></h4>
 						</div>
                                                 <div class="box-header with-border">
-							<h3 class="box-title"><%=tblTenderTable.getTableHeader()%></h3>
+							<h4 class="box-title"><%=tblTenderTable.getTableHeader()%></h4>
 						</div>
                                                     </c:if>
 						
@@ -1103,7 +1113,7 @@
                                                 
                                                 <c:if test="${isAuction eq 0}">
                                                 <div class="box-header with-border">
-							<h3 class="box-title"><%=tblTenderTable.getTableFooter()%></h3>
+							<h4 class="box-title"><%=tblTenderTable.getTableFooter()%></h4>
 						</div>  
                                                 </c:if>
                                                                                                 
@@ -1115,7 +1125,7 @@
                                             %>
                                             
                                             <div class="col-lg-12">
-                                                <h3><%=tblTenderForm.getFormFooter()%></h3>
+                                                <h4><%=tblTenderForm.getFormFooter()%></h4>
                                             </div>
                                             <%
                                                          if( lstColumnFormula!=null && lstColumnFormula.size() > 0)
@@ -1123,7 +1133,6 @@
                                                          %>
                                                 <div class="row">
                                                     <div class="col-lg-12 ">
-                                                       
                                                         
                                                             <div class="table-responsive  box-body " >
                                                                 <table id="example1" class="table table-bordered table-striped">
@@ -1173,7 +1182,7 @@
                      
             </section>
         </div>
-
+<script src="${pageContext.servletContext.contextPath}/resources/js/ajaxfileupload.js" type="text/javascript"></script>
 <script>
     var isAuction='${isAuction}';
     var exchangeRate='${ExchangeRate}';
@@ -1193,6 +1202,7 @@ $('#btndraftForm').click(function(){
         var tenderId='${tenderId}';
         if(parseInt(isAuction)===1)
         {
+        	$("#divdownloadupload").hide();
             $.ajaxSetup({ cache: false }); 
             interval=setInterval(function() {$("#divCurrentTime").load(url); }, 1000);
             var urlValid='${pageContext.servletContext.contextPath}/eBid/Bid/bidSubmissionValidationForAuction/${tenderId}';
@@ -1691,6 +1701,60 @@ function calculateFormula(formula,rowid,cmd,tableId)
     return true;
     }
     
+  //upload
+    function fillFormByExcel() {
+    	var fileName=$('input[type=file]').val().split('\\').pop();
+    	alert(fileName);
+//     	var fbool = fileValidate();
+		var flag = true;
+	    var excelDataArr = new Array();
+        $.ajaxFileUpload({
+            url: '${pageContext.servletContext.contextPath}/etender/bidder/uploadform?hdFormId=${formId}&hdTenderId=${tenderId}',
+            secureuri: true,
+            fileElementId: 'uploadFormData',
+            dataType: "text",
+            success: function(data) {
+                data = data.toString().replace('<pre>', '').replace('</pre>', '');
+                if (data.toString().indexOf('ERROR::') == -1) {                                                                
+                        excelDataArr = data.split('@@@');
+                       	flag =  setJsonData(excelDataArr);
+                } else {
+                    jAlert(data.toString().replace('ERROR::', ''), "Alert", function(RetVal) {});
+                }
+            }
+        });
+    }
+    
+    function fileValidate(){
+      	$(".successMsg").hide();
+		$('.err').remove();
+  	    $('#fileError').html("");
+        var valid = true;
+        var count = 0;
+        var browserName="";
+        jQuery.each(jQuery.browser, function(i, val) {
+               browserName+=i;
+        });
+           
+        $(":input[type='file']").each(function(){
+        	if(this.value == ''){
+            	$('#fileError').parent().append("<div class='err validationMsg' style='color:red; '><span style='display:inline-block;'><spring:message code='msg_tender_filetoupload_empty' /></span></div>");
+                count++;
+        	}
+        });
+        if(count > 0){
+             valid = false;
+        }
+        return valid;
+	}
+    
+    function checkFile(obj){
+    	if($(obj).val()!=""){
+    		$(".err").remove();	
+    		$("#fileError").html("");
+    		$("#fileToUploadName").val($(obj).val());
+    	}
+    }
 </script>
 <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
 <%@include file="../../includes/footer.jsp"%>

@@ -1,14 +1,13 @@
 <%@include file="../../includes/head.jsp"%>
-       <%@include file="../../includes/masterheader.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
                 
-        <spring:message code="title_tender_createcomitee" var="titlecommittee"/>
-        <spring:message code="lbl_create_prebid_committee" var="lblcreateprebidcommittee"/>
-        <spring:message code="lbl_edit_prebid_committee" var="lbleditprebidcommittee"/>
-        <spring:message code="lbl_view_prebid_committee" var="lblviewprebidcommittee"/>
+<spring:message code="title_tender_createcomitee" var="titlecommittee"/>
+<spring:message code="lbl_create_prebid_committee" var="lblcreateprebidcommittee"/>
+<spring:message code="lbl_edit_prebid_committee" var="lbleditprebidcommittee"/>
+<spring:message code="lbl_view_prebid_committee" var="lblviewprebidcommittee"/>
         
-     <div class="content-wrapper">   
+<div class="content-wrapper">   
        
-    
 <c:set var="var_total_member" value="0" />
 
 <section class="content-header">
@@ -169,8 +168,10 @@
 				</div>
 			</div>
 </section>
+
 </div>
- <script type="text/javascript">
+
+<script type="text/javascript">
         var VALIDATE_MSG_REQUIRED = 'Please enter';
         var VALIDATE_MSG_SELECT = 'Please select';
         var grandParentDeptJson = '${grandParentDeptJson}';
@@ -430,4 +431,4 @@
             });
             
            </script>
-           <%@include file="../../includes/footer.jsp"%>
+<%@include file="../../includes/footer.jsp"%>

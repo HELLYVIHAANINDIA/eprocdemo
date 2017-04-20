@@ -56,12 +56,12 @@
                                              
                                              	 
                                              	 	<div class="row">
-                                             	 		<div class="col-xs-3"><label class="lbl-1"><spring:message code="lbl_Organization"/></label></div>
+                                             	 		<div class="col-xs-3"><label class="lbl-3"><spring:message code="lbl_Organization"/></label></div>
                                              	 		<div class="col-xs-9"><div id="organization" class="lbl-2"></div><input type="hidden" name="organization" value="${grandParentDeptId}" /> </div>
                                              	 	</div>
                                              	 	
                                              	 	<div class="row">
-                                             	 		<div class="col-xs-3"><label class="lbl-1"><spring:message code="lbl_department"/></label></div>
+                                             	 		<div class="col-xs-3"><label class="lbl-3"><spring:message code="lbl_department"/></label></div>
                                              	 		<div class="col-xs-9">
                                              	 		<c:choose>
 	                                             	 		<c:when test="${parentDeptId gt 0}">
@@ -82,7 +82,7 @@
                                                  
                                                  <div class="col-xs-6" id="tdDeptOfficer"> 
                                                  <div class="row">
-                                                 <div class="col-xs-3"><label class="lbl-1"><spring:message code="lbl_username"/></label></div>
+                                                 <div class="col-xs-3"><label class="lbl-3"><spring:message code="lbl_username"/></label></div>
                                                  <div class="col-xs-9">
                                                  <div id="officerName" class="lbl-2">></div>
                                                      <select class="form-control" style="display: none" id="selName" name="selDeptOfficial"  onblur="javascript:{if(true){}}" title="Department Officer">
@@ -91,7 +91,7 @@
                                                  </div>
                                                  </div>
                                                  <div class="row">
-                                             	 		<div class="col-xs-3"><label class="lbl-1"><spring:message code="lbl_subdepartment"/></label></div>
+                                             	 		<div class="col-xs-3"><label class="lbl-3"><spring:message code="lbl_subdepartment"/></label></div>
                                              	 		<div class="col-xs-9">
                                              	 		<c:choose>
 	                                             	 		<c:when test="${subDeptId gt 0}">

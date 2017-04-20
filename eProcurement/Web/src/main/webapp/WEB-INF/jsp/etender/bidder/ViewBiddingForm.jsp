@@ -20,7 +20,7 @@
 <div class="content-wrapper">
 	<section class="content-header">
 
-		<h1 class="pull-left">
+		<h1 class="inline">
 			<c:choose>
 				<c:when test="${!fromView}">
                                     <c:if test="${sessionUserTypeId eq 2}">
@@ -49,16 +49,16 @@
 			<c:when test="${sessionUserTypeId eq 2}">
                            
 				 <c:if test="${isAuction eq 0}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingtenderdashboardcontent/${tenderId}/5"
-					class="pull-right"><< ${backDashboard}</a></c:if>
+					class="g g-back"><< ${backDashboard}</a></c:if>
 					<c:if test="${isAuction eq 1}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"
-					class="pull-right"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a></c:if> 
+					class="g g-back"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a></c:if> 
 			</c:when>
 			<c:otherwise>
                            
 				<c:if test="${isAuction eq 0}">
                                     <a
 					href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"
-					class="pull-right">
+					class="g g-back">
                                     << ${backDashboard}
                                     </a>
                                 </c:if>
@@ -67,13 +67,13 @@
                                             <c:if test="${not empty isFormLibrary}">
                                                 <a
 					href="${pageContext.servletContext.contextPath}/etender/buyer/getFormLibrary/${FormLibrarytenderId}"
-					class="pull-right">
+					class="g g-back">
                                                 << <spring:message code="lbl_go_to_gorm_library" /></a>
                                             </c:if>
                                             <c:if test="${empty isFormLibrary}">
                                                  <a
 					href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"
-					class="pull-right">
+					class="g g-back">
                                                << <spring:message code="lbl_go_back_to_auction_dashboard" />
                                                </a>
                                             </c:if>
@@ -293,12 +293,13 @@
                 <div class="row">
                     <div class="col-lg-12 col-md-12">
                         <form:form id="bidForm" action="${pageContext.servletContext.contextPath}/eBid/Bid/updateBiddingFormValueForEdit" method="POST">
-                        <div class="box"  style="overflow: scroll;">
-                            <div class="col-md-6">
-                                <h3 class="box-title"> ${formStructure['form'].formName} </h3>
-                            </div>
-							<div class="box-body">
+			<div class="box-body" style="overflow: scroll;">
                                 <div class="row">
+                                
+                                		<div class="col-md-6">
+                                		<h4 class="box-title"> ${formStructure['form'].formName} </h4>
+                            			</div>
+                                
                                         <div class="col-md-12">
                                             <h3 style="padding-top:0px;margin-top:0px;">${formStructure['form'].formHeader}</h3>
                                         </div>
@@ -656,6 +657,7 @@
             </section>
             </div>
 <script src="${pageContext.request.contextPath}/resources/js/tender/ConvertToWord.js"></script>
+
 <script type="text/javascript">
     
     var url = '${pageContext.servletContext.contextPath}/eBid/Bid/CurrentTimeAjax/${tenderId}';
@@ -1162,6 +1164,7 @@ function calculateFormula(formula,rowid,cmd,tableId)
  			return false;			
  		}
     }
+    
 </script>
  <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
 <%@include file="../../includes/footer.jsp"%>

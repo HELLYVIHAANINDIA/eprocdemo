@@ -93,72 +93,62 @@
 
 <div class="navbar-custom-menu">
         <ul class="nav navbar-nav">
-            <c:choose>
-            	<c:when test="${sessionScope.userId gt 0}">
+            	<c:if test="${sessionScope.userId gt 0}">
+            	<c:choose>
+            	<c:when test="${sessionObject.userTypeId eq 2 or sessionObject.userTypeId eq 1}">
             	
-            	
-            	<c:if test="${sessionObject.userTypeId eq 2}">
-            	
-            	<li class="messages-menu">
-            	<a href=""><spring:message code="lbl_last_login"/> : ${sessionObject.lastLoginDateTime}</a>
-            	</li>
-            	
-            	<li class="messages-menu">
-            	<a href="${pageContext.servletContext.contextPath}/common/user/geteditbidder/${sessionObject.bidderId}/1" style="color: white;" ><span>Welcome,</span>${sessionObject.fullName}</a>
-            	</li>
-            	
-            	<li class="messages-menu">
-            	<a href="${pageContext.servletContext.contextPath}/user/getpasswordchange/${sessionScope.userId}/${sessionObject.userTypeId}" style="color: white" >Change password</a>
-            	</li>
-            	
-            	<li class="dropdown user user-menu">
-            	<a href="${pageContext.servletContext.contextPath}/submitlogout" style="color: white"><i class="fa fa-sign-in"></i> Logout</a>
-            	</li>
-            	</c:if>
-            	
-            	<li class="messages-menu">
-            	<a href="">Last login : ${sessionObject.lastLoginDateTime}</a>
-            	</li>
-            	
-            	<li class="messages-menu">
-            	<c:if test="${sessionObject.userTypeId eq 1}">
-            	<a href="${pageContext.servletContext.contextPath}/common/user/viewuser/${sessionObject.officerId}/1" style="color: white"><span>Welcome</span> ${sessionObject.fullName} ,</a>
-            	</c:if>
-            	</li>
-            	           	
-            	<li class="dropdown user user-menu">
-            	<a href="${pageContext.servletContext.contextPath}/submitlogout" style="color: white"><i class="fa fa-sign-in"></i>Logout</a>         	
-				</li>
+	            	<li class="messages-menu">
+	            	<a href=""><spring:message code="lbl_last_login"/> : ${sessionObject.lastLoginDateTime}</a>
+	            	</li>
+	            	
+	            	<li class="dropdown notifications-menu">
+	            	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+	            	<span>Welcome</span>&nbsp;${sessionObject.fullName}, &nbsp;<i class="fa fa-angle-down" aria-hidden="true"></i>
+	            	</a>
+	            	
+	            	<ul class="dropdown-menu">
+	            	<li>
+	            	<ul class="menu">
+                  	<li><a href="${pageContext.servletContext.contextPath}/common/user/geteditbidder/${sessionObject.bidderId}/1"><i class="fa fa-user" aria-hidden="true"></i> Profile</a></li>
+                  	<li><a href="${pageContext.servletContext.contextPath}/user/getpasswordchange/${sessionScope.userId}/${sessionObject.userTypeId}"><i class="fa fa-cog" aria-hidden="true"></i> Change password</a></li>
+	            	</ul>         	
+	            	</li>
+	            	</ul>
+	            	</li>
+	            	
+	            	<li class="dropdown user user-menu">
+	            	<a href="${pageContext.servletContext.contextPath}/submitlogout" style="color: white"><i class="fa fa-sign-in"></i> Logout</a>
+	            	</li>
 				
 				<form name="formLogout" id="formLogout" action="" method="POST" >
 				</form>
 				          		
-            	</c:when>
+               </c:when>
             	<c:otherwise>
-            		<li class="messages-menu"><a href="${pageContext.servletContext.contextPath}/common/user/register"><i class="fa fa-book"></i> &nbsp;New Bidder Registration</a></li>
-          			<li class="dropdown user user-menu">
-          				<input type="hidden" id="currentTime"/>
-            			<a href="#"  class="dropdown-toggle" data-toggle="dropdown">
-              			<i class="fa fa-sign-in"></i>&nbsp; Login
-            		</a>
-            		<ul class="dropdown-menu">
-			              <!-- User image -->
-			              <li class="user-header">
-			              	<form name="formLogin" action="submitLogin" onsubmit="javascript:{loginValidate()}" method="POST">
-			              	<input type='text' name='j_username'  validarr="required@@email" tovalid="true" onblur="javascript:{validateTxtComp(this)}" title="Email id"  class="form-control" placeholder="Email ID :"/>
-			              	<input type='password' name='j_password' class="form-control" placeholder="Password :" />
-			                <div class="pull-left">
-			                <input name="submit" value="Login" type="submit" />
-			                </div>
-			                <div class="pull-right"><a href="${pageContext.servletContext.contextPath}/getforgotpassword" style="color: white;" >Fogot Password ? </a></div>
-			                </form>
-			              </li>
-			              <!-- Menu Body -->
-			              <!-- Menu Footer-->
-            		</ul>
+<%--             		<li class="messages-menu"><a href="${pageContext.servletContext.contextPath}/common/user/register"><i class="fa fa-book"></i> &nbsp;New Bidder Registration</a></li> --%>
+<!--           			<li class="dropdown user user-menu"> -->
+<!--           				<input type="hidden" id="currentTime"/> -->
+<!--             			<a href="#"  class="dropdown-toggle" data-toggle="dropdown"> -->
+<!--               			<i class="fa fa-sign-in"></i>&nbsp; Login -->
+<!--             		</a> -->
+<!--             		<ul class="dropdown-menu"> -->
+<!-- 			              User image -->
+<!-- 			              <li class="user-header"> -->
+<!-- 			              	<form name="formLogin" action="submitLogin" onsubmit="javascript:{loginValidate()}" method="POST"> -->
+<!-- 			              	<input type='text' name='j_username'  validarr="required@@email" tovalid="true" onblur="javascript:{validateTxtComp(this)}" title="Email id"  class="form-control" placeholder="Email ID :"/> -->
+<!-- 			              	<input type='password' name='j_password' class="form-control" placeholder="Password :" /> -->
+<!-- 			                <div class="pull-left"> -->
+<!-- 			                <input name="submit" value="Login" type="submit" /> -->
+<!-- 			                </div> -->
+<%-- 			                <div class="pull-right"><a href="${pageContext.servletContext.contextPath}/getforgotpassword" style="color: white;" >Forgot Password ? </a></div> --%>
+<!-- 			                </form> -->
+<!-- 			              </li> -->
+<!-- 			              Menu Body -->
+<!-- 			              Menu Footer -->
+<!--             		</ul> -->
             	</c:otherwise>
-            </c:choose>
-            
+                </c:choose>
+            </c:if>
           	
         </ul>
       </div>
@@ -172,22 +162,7 @@
 	<section class="sidebar">
 
 		<ul class="sidebar-menu" style="height: 800px">
-			<li class="active"><a href="#"> <i class="fa fa-envelope"></i>
-					<span>Message Box</span> <span class="pull-right-container">
-						<small class="label pull-right bg-red">15+</small>
-				</span>
-			</a></li>
-			<li><a href="#"> <i class="epro icon-tender"> </i> <span>Tender</span>
-					<span class="pull-right-container"> <small
-						class="label pull-right bg-green">10</small>
-				</span>
-			</a></li>
-			<li><a href="#"> <i class="epro icon-create-tender"> </i> <span>Create
-						Tender</span>
-			</a></li>
-			
-			<li class="header">OUR PRODUCTS</li>
-
+			<li class="treeview">
 			<c:if test="${sessionObject.userTypeId eq 1}">
 				<li class="treeview"><a
 					href="${pageContext.request.contextPath}/common/user/notificationTab/${sessionObject.userId}/0">
@@ -195,6 +170,8 @@
 							class="fa fa-bell"></i> (<span id="notificationCount"></span>)
 					</span>
 				</a></li>
+			
+			<li class="header">FEATURES</li>
 
 				<li class="treeview"><a href="#"> <i
 						class="epro icon-admin"></i> <span>Administration</span> <span
@@ -206,8 +183,12 @@
 							<li class="active"><a
 								href="${pageContext.request.contextPath}/common/user/manageorganization"><i
 									class="fa fa-circle-o"></i>
-								<spring:message code="lbl_tender_authority" /></a></li>
+								<spring:message code="lbl_create_org" /></a></li>
 						</c:if>
+						<li class="active"><a
+							href="${pageContext.request.contextPath}/common/user/getmanagebidder"><i
+								class="fa fa-circle-o"></i>
+							<spring:message code="lbl_manage_bidder" /></a></li>
 						<c:if test="${sessionObject.isOrgenizationUser eq 1}">
 							<c:if test="${sessionObject.deptId ne 0}">
 								<li class="active"><a
@@ -248,10 +229,6 @@
 							href="${pageContext.request.contextPath}/common/user/getmanageuser"><i
 								class="fa fa-circle-o"></i>
 							<spring:message code="lbl_manage_user" /></a></li>
-						<li class="active"><a
-							href="${pageContext.request.contextPath}/common/user/getmanagebidder"><i
-								class="fa fa-circle-o"></i>
-							<spring:message code="lbl_manage_bidder" /></a></li>
 
 						<c:if test="${sessionObject.isCTPLUser eq 1}">
 							<li><a
@@ -280,12 +257,7 @@
 			</c:if>
 
 			<c:if test="${sessionObject.userTypeId eq 2}">
-				<li class="treeview"><a
-					href="${pageContext.request.contextPath}/common/user/notificationTab/${sessionObject.userId}/0">
-						<i class="fa fa-envelope"></i><span> Notification <i
-							class="fa fa-bell"></i> (<span id="notificationCount"></span>)
-					</span>
-				</a></li>
+			
 				<li class="treeview"><a href="#"> <i
 						class="epro icon-bidder"></i> <span>Bidder</span> <span
 						class="pull-right-container"><i

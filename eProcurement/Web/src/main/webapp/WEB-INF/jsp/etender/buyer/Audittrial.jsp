@@ -1,11 +1,11 @@
 <%@include file="../../includes/head.jsp"%>
-       <%@include file="../../includes/masterheader.jsp"%>
+<%@include file="../../includes/masterheader.jsp"%>
+
 <div class="content-wrapper">
-		<section class="content-header">
-			<h1>
-				Audit Trail Report
-			</h1>
-		</section>
+
+<section class="content-header">
+<h1 class="inline">Audit Trail Report</h1>
+</section>
 			
 <section class="content">
 <div class="row">
@@ -13,34 +13,44 @@
 	<div class="box">
 
 	<form id="tenderListForm">
-			<div class="row">
-				<div class="col-md-3">
-					Email Id
-				</div> 
-				<div class="col-md-3">
-					<input type="text" class="searchLike form-control" columnname="ENTITY_NAME">
+	
+			<div class="box-body">
+	
+			<div class="row">	
+				
+				<div class="col-md-6">
+								
+				<div class="fr-grp">
+				<label class="lblfr-fields">Email Id</label>
+				<input type="text" class="searchLike form-control fr-cntrl" columnname="ENTITY_NAME">
 				</div>
-				<div class="col-md-3">
-					Link
+				
+				<div class="fr-grp">
+				<label class="lblfr-fields">Link</label>
+				<input type="text" class="searchLike form-control fr-cntrl" columnname="PAGE_URL">
 				</div>
-				<div class="col-md-3">
-					<input type="text" class="searchLike form-control" columnname="PAGE_URL">
+				
+				<div class="fr-grp">
+				<input type="hidden" name="jsonSearchCriteria" id="jsonSearchCriteria"> 
+				<input type="button" onclick="searchForList()" class="btn  btn-submit" value="Search">
+				<input type="hidden" name="defaultOrder" id="defaultOrder" value="1:desc">
+				<input type="reset" class="btn  btn-dl" value="Clear" onclick="location.reload();">
 				</div>
+					
+				</div>
+				 
 			</div>
-			<div class="row">
-				<div class="col-md-3">
-					<input type="hidden" name="jsonSearchCriteria" id="jsonSearchCriteria"> <input type="button" onclick="searchForList()" class="btn-sm form-control" value="Search">
-					<input type="hidden" name="defaultOrder" id="defaultOrder" value="1:desc">
-				</div>
-				<div class="col-md-3">
-					<input type="reset" class="btn-sm form-control" value="Clear" onclick="location.reload();">
-				</div>
+			
 			</div>
+			
 			<input type="hidden"  name="defaultOrder" id="defaultOrder" value="1:Desc">
-		</form>
+			
+	</form>
+	
 </div>
 </div>
 </div>
+
 <div class="row">
 				<div class="col-lg-129 col-md-12 col-sm-12 col-xs-12">
 					<div class="box">

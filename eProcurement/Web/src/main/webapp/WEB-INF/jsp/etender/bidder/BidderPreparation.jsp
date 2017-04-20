@@ -19,86 +19,108 @@
 <spring:message code="lbl_bidder_upload_doc" var="bidderUploadDoc"/>
 <spring:message code="msg_tender_delete_bid" var="var_msg_delbid"/>
 <spring:message code="col_rebate" var="varRebate"/>
+
 <div class="content-wrapper">
-	<section class="content-header">
-					<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}">
-                     	<c:if test="${tblTender.isAuction eq 0}"><< ${backDashboard}</c:if>
-                     	<c:if test="${tblTender.isAuction eq 1}"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></c:if>
-                     </a>
-	</section>
+
+<section class="content-header">
+<h1 class="inline">Bidding Tender Dashboard</h1>
+<a href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}" class="g g-back">
+   <c:if test="${tblTender.isAuction eq 0}"><< ${backDashboard}</c:if>
+   <c:if test="${tblTender.isAuction eq 1}"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></c:if>
+</a>
+</section>
 <div class="clearfix"></div>
 <section class="content">
-				<c:if test="${not empty successMsg}">
-					<div class="alert alert-success"><spring:message code="${successMsg}" /></div>
-				</c:if>
-				<c:if test="${not empty errorMsg}">
-					<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
-				</c:if>
-				<c:if test="${tblTender.isAuction eq 0}">
-				<div>
-					<%@include file="../buyer/TenderSummary.jsp"%>
-				</div>
-				</c:if>
 				
-<div class="box-body">
 <div class="row">
-	<div class="col-lg-12 col-md-12 col-xs-12" >
-		<div id="countdown" class="col-md-6 pullleft red"></div>
+	<div class="col-lg-12 col-md-12 col-xs-12">
+	<div class="box">
+		<div class="box-header with-border">
+		<div id="countdown" class="box-title" style="color:red; display: inline;"></div>
+		<c:if test="${tblTender.isAuction eq 1 and tblTender.isAuctionStop eq 1}">
+            <div style="display: inline; margin-left: 10px; background: #DFDFDF; color: #484848; padding: 1px 10px; border: 1px solid #bbbbbb;">
+            	<spring:message code="lbl_auction_currently_stop" />
+            </div>
+        </c:if>
+        <c:if test="${allowFinalSubmission ne 'Success' and allowFinalSubmission eq 'msg_tender_fs_finalsubmission_done'}">
+			<div style="display: inline; margin-left: 10px; background: #DFDFDF; color: #484848; padding: 1px 10px; border: 1px solid #bbbbbb;">
+			   <spring:message code="${allowFinalSubmission}" arguments="${msgArgumentOne};${msgArgumentTwo}" argumentSeparator=";"/>
+			</div>
+		</c:if>
+		</div>
 	</div>
 </div>
+</div>
+
+<c:if test="${not empty successMsg}">
+	<div class="alert alert-success"><spring:message code="${successMsg}" /></div>
+</c:if>
+<c:if test="${not empty errorMsg}">
+	<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
+</c:if>
+<c:if test="${tblTender.isAuction eq 0}">
+<div>
+<%@include file="../buyer/TenderSummary.jsp"%>
+</div>
+</c:if>
+
 <div class="row">
-		<div class="col-md-12">
+	<div class="col-md-12">
 			<div class="box">
+			
 				<div class="box-header with-border">
 					<h3 class="box-title"><label class="">${lblPrepare}</label></h3>
 				</div>
-                 <c:if test="${tblTender.isAuction eq 1 and tblTender.isAuctionStop eq 1}">
-                 	<div  class="alert alert-danger"><spring:message code="lbl_auction_currently_stop" /></div>
-                 </c:if>
-                 <c:if test="${allowFinalSubmission ne 'Success' and allowFinalSubmission eq 'msg_tender_fs_finalsubmission_done'}">
-			                <div class="alert alert-success">
-			                	<spring:message code="${allowFinalSubmission}" arguments="${msgArgumentOne};${msgArgumentTwo}" argumentSeparator=";"/>
-			                </div>
-			    </c:if>
+
 			    <c:if test="${!submissionEndDtLapse and !isFinalSubmission}">
 			    <div class="box-header with-border">
 			    	<h3 class="box-title"><b><spring:message code="msg_bid_information" /></b></h3>
 			    </div>
 			    </c:if>
             </div>
-           </div>
-          </div>  
-	<div class="row">
-		<div class="col-lg-12 col-md-12 col-xs-12">
-			    <table class="table table-striped table-responsive">
-    			<tr class="border-top-none">
-    				<td>
-                                    
-					    <c:if test = "${!isEncCertVerified}">
-<%-- 					     <div class="errorMsg t_space"><spring:message code="enc_notverified_certificate"/></div> --%>
-					    </c:if>    
-					        <c:choose>
-					            <c:when test="${not empty tenderFormLst and isCompanyMapped}">
+    </div>
+</div>  
+
+<div class="row">
+<div class="col-lg-12 col-md-12 col-xs-12">
+<div class="box">
+<div class="box-body">
+
+<c:if test = "${!isEncCertVerified}"></c:if>    
+
+<c:choose>
+
+<c:when test="${not empty tenderFormLst and isCompanyMapped}">
                                                         
 					                <c:set var="count" value="0"/>
                                                     
 					                <c:forEach items="${tenderEnvelopeLst}" var="envData">
+		
+			    <table class="table table-striped table-responsive">
+    			<tr class="border-top-none">
+    				<td>
+                                    
+					    
                                                            
 					                <div class="row">
+					                
 					                    <div class="col-lg-12 col-md-12 col-xs-12">
 						                    <spring:message code="min_form_required_bidder" var="minFormRequiredForFS"/>
-						                    <h3>${envData[1]}  (${minFormRequiredForFS} ${envData[3]})
+						                    <h3 style="font-size: 22px;">${envData[1]}  <span style="font-size: 14px;">(${minFormRequiredForFS} ${envData[3]})</span></h3>
+						                    
 							               		<c:if test="${!submissionEndDtLapse and !isFinalSubmission and tblTender.isItemSelectionPageRequired eq 1 and (tblTender.isItemwiseWinner ne 0) and (envData[2] eq 4 or envData[2] eq 5) and !isSecondaryPartner}">
-													<font class="pull-right prefix1_10" size="3">
+													<font class="pull-right prefix1_10" style="font-size: 10px;">
 														<spring:url value="/etender/bidder/formitemselection/${tenderId}/${envData[0]}/0/0" var="urlSelectItem"/>
 													<a href="${urlSelectItem}"></a>
 													</font>
-							                    </c:if>
-					                    	</h3>
+							                    </c:if>					                    	
 					                    </div>
+					                    
 					                    <div class="col-lg-12 col-md-12 col-xs-12 ">
 											<font size="1" class="pull-right mandatory m-top1"><spring:message code="msg_mandatoryFields"></spring:message></font>
 									    </div>
+									    
+									    <div class="col-lg-12 col-md-12 col-xs-12 ">
 					                    <table class="table table-striped table-responsive">
                                                                 
 					                    <c:choose>
@@ -533,21 +555,25 @@
                                </c:otherwise>
                            </c:choose>
                             </table>
+                            </div>
                     <c:set var="count" value="0"/>
                     </div>
                 </c:forEach>
             </c:when>
             <c:otherwise>
-                        <c:if test="${isCompanyMapped}">
-                            <div class="page-title prefix_1 o-hidden border-left border-right border-top">
-                            <spring:message code="msg_tender_biddingforms_notpublished"/></div>
-                        </c:if>
+            
+<c:if test="${isCompanyMapped}">
+<div class="page-title prefix_1 o-hidden border-left border-right border-top">
+<spring:message code="msg_tender_biddingforms_notpublished"/></div>
+</c:if>
 
-            </c:otherwise>
-        </c:choose>
-        <c:if test="${(!submissionEndDtLapse and !isFinalSubmission) and tblTender.isRebateApplicable eq 1 and not empty tblRebateGTBidded}">
+</c:otherwise>
+
+</c:choose>
+
+<c:if test="${(!submissionEndDtLapse and !isFinalSubmission) and tblTender.isRebateApplicable eq 1 and not empty tblRebateGTBidded}">
         <div class="cleafix">
-               <table class="table">
+               <table>
                <tr class="gradi">
                	<td>Rebate</td>
                	<c:choose>
@@ -567,26 +593,30 @@
                			</td>
                		</c:otherwise>
                	</c:choose>
-               	
+               	<td></td>
                </tr>
                </table>
 		</div>
-        </c:if>
-        <c:if test="${isFinalSubmission and tblTender.isRebateApplicable eq 1 and not empty tblRebateGTBidded}">
+</c:if>
+
+<c:if test="${isFinalSubmission and tblTender.isRebateApplicable eq 1 and not empty tblRebateGTBidded}">
         	<div class="cleafix">
-        		<table class="table">
+        		<table class="" style="width: 100%;">
             	<tr class="gradi">
-               		<td>Rebate</td>
-               		<td><spring:url value="/etender/bidder/crteditrebate/${tenderId}/${tblBidder.tblCompany.companyid}/3" var="urlViewRebate"/>
+               		<td style="width: 38.5%; height: 40px;">&nbsp;&nbsp;Rebate</td>
+               		<td style="width: 40%; height: 40px;"><spring:url value="/etender/bidder/crteditrebate/${tenderId}/${tblBidder.tblCompany.companyid}/3" var="urlViewRebate"/>
 								<a href="${urlViewRebate}">View</a>	
 					</td>
+					<td></td>
                	</tr>
                	</table>
         	</div>
-        </c:if>
+</c:if>
                                                     	
         <c:if test="${not empty rebateList}"> 
+        
             <c:choose>
+            
                 <c:when test="${isRebateForm eq 1}">
                     <div class="page-title prefix_1 o-hidden border-left border-right border-top m-top1 form-hd-ft-clr"><h2><spring:message code="lbl_rebate_form"/></h2></div>
                     <table class="table">
@@ -639,6 +669,7 @@
                             </c:forEach>
                         </table>
                 </c:when>
+                
                 <c:otherwise>
                 <div class="noprint">
                     <div class="page-title prefix_1 o-hidden border-left border-right border-top m-top1 form-hd-ft-clr"><h2><spring:message code="lbl_price_bid_form"/></h2></div>
@@ -668,12 +699,16 @@
                     </table>
                   </div>
                 </c:otherwise>
+                
             </c:choose> 
+            
         </c:if> 
+        
         </td>
     </tr>
  </table>
  <c:choose>
+  
 <c:when test="${allowFinalSubmission eq 'Success'}">
 	<c:choose>
     	<c:when test="${isDocUploaded}">
@@ -737,6 +772,7 @@
           </c:otherwise>
       </c:choose>
 </c:when>
+
 <c:when test="${allowFinalSubmission ne 'Success' and allowFinalSubmission ne 'msg_tender_fs_finalsubmission_done' and allowFinalSubmission ne 'msg_tender_fs_submissionenddt_lapse'}">
 	<div class="row">
 		<div class="col-md-12">
@@ -748,12 +784,21 @@
 		</div>
 	</div>
 </c:when>
+
 </c:choose>
-			</div>
-		</div>
-	</div>
-	</section>
-</div>	
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+	
 <script>
 var endDate;
 
@@ -793,5 +838,3 @@ function confirmFinalsubmission(){
 }
 </script>
 <script src="${pageContext.servletContext.contextPath}/resources/js/jquery-ui.min.js"></script>
-
-<%@include file="../../includes/footer.jsp"%>

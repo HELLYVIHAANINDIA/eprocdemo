@@ -31,7 +31,6 @@
 					<c:set var="className" value="navbar-nav" />
 				</c:when>
 			</c:choose>
-
 			<ul class="nav navbar-nav">
 				<li><spring:message code="lbl_date_time" /><div id="dispalyDateTime"></div> ${sessionObject.timeZoneOffset}</li>	
 				<c:choose>
@@ -125,7 +124,7 @@
 			<li><a href="#"> <i class="epro icon-create-tender"> </i> <span>Create
 						Tender</span>
 			</a></li>
-			<li class="menu-title">OUR PRODUCTS</li>
+			<li class="menu-title">OUR FEATURES</li>
 
 			<c:if test="${sessionObject.userTypeId eq 1}">
 				<li class="treeview"><a

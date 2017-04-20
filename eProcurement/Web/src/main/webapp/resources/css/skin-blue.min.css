@@ -54,7 +54,7 @@
 }
 
 .skin-blue .main-header li.user-header {
-  background-color: #3c8dbc;
+  background-color: #175295;
 }
 
 .skin-blue .content-header {
@@ -70,7 +70,7 @@
 }
 
 .skin-blue .sidebar-menu>li.header {
-  color: #4b646f;
+  color: #ffffff;
   background: #1a2226;
 }
 
@@ -232,7 +232,6 @@ small.label{
     font-family: calibri;
     font-size: 16px;
     font-weight: 500;
-    background: transparent !important;
 }
 .table-hover > tbody > tr:hover {
     background: #ecf0f5 !important;

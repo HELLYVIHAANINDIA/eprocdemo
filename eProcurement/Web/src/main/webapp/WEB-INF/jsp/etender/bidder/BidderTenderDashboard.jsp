@@ -39,13 +39,13 @@
 <div class="content-wrapper">	
 	<section class="content-header">
 
-		<h1>
-                    <c:if test="${tblTender.isAuction eq 1}">Bidding Auction Dashboard</c:if>
-                    <c:if test="${tblTender.isAuction eq 0}">Bidding Tender Dashboard</c:if>
+		<h1 class="inline">
+                    <c:if test="${tblTender.isAuction eq 1}">Auction Dashboard</c:if>
+                    <c:if test="${tblTender.isAuction eq 0}">Tender Dashboard</c:if>
                     </h1>
-		 	 <c:if test="${tblTender.isAuction eq 1}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/1" class="pull-right">
+		 	 <c:if test="${tblTender.isAuction eq 1}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/1" class="g g-back">
                         << Go To Auction Listing</a></c:if>
-                    <c:if test="${tblTender.isAuction eq 0}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/0" class="pull-right">
+                    <c:if test="${tblTender.isAuction eq 0}"><a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/0" class="g g-back">
                         << <spring:message code="lbl_go_to_tender_listing" /></a></c:if>
                         
                         
@@ -59,20 +59,27 @@
 	</section>
 	
 	<section class="content">
+	
 		<div class="row">
 			<div class="col-md-12">
 				<div class="box">
-<!-- 					<div class="box-header with-border"> -->
-<%-- 						<h3 class="box-title" href="#c"><spring:message code="lbl_view_summary" /></h3> --%>
-<!-- 					</div> -->
-					
+					<div class="box-header with-border">
+						<div id="countdown" class="box-title" style="color:red;"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<div class="row">
+			<div class="col-md-12">
+				<div class="box">
+				<div class="box-header with-border">
+					<h3 class="box-title"><spring:message code="lbl_view_summary" /></h3>
+				</div>				
 					<div class="box-body">
 						<div class="row">
 							<div class="col-md-12">
-										<div class="row"></div>
-  		<div class="panel-heading" href="#c" style="background:lightgreen;border:1px solid #374850;">
-			<spring:message code="lbl_view_summary" />
-		</div>
+										<div class="row"></div>  		
 		<div class="row" style="border-bottom: 1px solid #f4f4f4; line-height:40px;">
 			<div class="col-md-2">
                             <c:if test="${tblTender.isAuction eq 0}">
@@ -93,9 +100,22 @@
                             </c:if>
 			
 			</div>
-			<div class="col-md-2">
+			<div class="col-md-3">
 				${tblTender.tenderNo}
 			</div>
+			
+			<div class="col-md-2">
+			
+			<c:if test="${tblTender.isAuction eq 0}">
+				<a href="${pageContext.servletContext.contextPath}/etender/bidder/viewtender/${tblTender.tenderId}/0" style="float: right; font-weight: 400;"><spring:message code="label_tender_view"/></a>
+            </c:if>
+			
+			<c:if test="${tblTender.isAuction eq 1}">
+                <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0" style="float: right; font-weight: 400;"><spring:message	code="label_auction_view" /></a>
+            </c:if>
+            
+			</div>
+			
 		</div>
 		<div class="row" style="border-bottom: 1px solid #f4f4f4; line-height:40px;">
 			<div class="col-md-2">
@@ -120,34 +140,14 @@
 				
 			</div>
 			<div class="col-md-10">${tblTender.tenderDetail}</div>
-		</div>
-		<div class="row">
-		
-                    <c:if test="${tblTender.isAuction eq 0}">
-			<div class="col-md-3 pullright" style="float: right;"><a href="${pageContext.servletContext.contextPath}/etender/bidder/viewtender/${tblTender.tenderId}/0"><spring:message code="label_tender_view"/></a></div>
-                            </c:if>
-				 <c:if test="${tblTender.isAuction eq 1}">
-                 <div class="col-md-3 pullright red" style="float: right;"><a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewAuction/${tblTender.tenderId}/0"><spring:message	code="label_auction_view" /></a></div>
-                            </c:if>
-			
-		</div>
+		</div>	
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-		
-		<div class="row" >
-			<div class="col-md-12">
-				<div class="box">
-					<div class="box-header with-border">
-						<div id="countdown" class="col-md-6 pullleft red"></div>
-					</div>
-				</div>
-			</div>
-		</div>
-		
+				
 		<div class="row"  style="display: none;">
 			<div class="col-md-12">
 				<div class="box">
@@ -171,8 +171,14 @@
 		<div class="col-md-12">
 			<div class="box">
 		  		<div class="box-header with-border">
-			  		<div class="col-md-3">
-						<h3 class="box-title"><a><spring:message code="lbl_declaration/Consent" /></a></h3>
+			  		<h3 class="box-title"></h3>
+				</div>
+				<div class="box-body">
+					<div class="row">
+						<div class="col-md-12">
+							<div class="row">
+								<div class="col-md-2">
+						<spring:message code="lbl_declaration/Consent" /></h3>
 					</div>
 					<div class="col-md-9">
 						
@@ -185,6 +191,9 @@
 						</c:when>
 						</c:choose>
 						
+					</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>

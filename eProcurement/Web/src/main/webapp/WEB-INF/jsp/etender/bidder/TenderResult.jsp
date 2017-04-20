@@ -9,21 +9,14 @@
 <c:set value="${sessionObject.userId}" var="currentUserId"/>
 <spring:message code="msg_env_not_open" var="vEnvNotOpen"/>
 <spring:message code="lbl_back_dashboard" var='backDashboard'/>
+
 <div class="content-wrapper">
-	<section class="content">
-		<div class="row">
-		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-			<div class="box">
-				<c:if test="${not empty successMsg}">
-					<div><span class="alert alert-success"><spring:message code="${successMsg}"/></span></div>
-				</c:if>
-				<c:if test="${not empty errorMsg}">
-					<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
-				</c:if>
-				<div>
-					<c:choose>
+
+	<section class="content-header">
+	<h1 class="inline">Tender Result</h1>
+						<c:choose>
 						<c:when test="${sessionUserTypeId eq 2 }">
-							<a  href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}"><< 
+							<a  href="${pageContext.servletContext.contextPath}/etender/bidder/biddingTenderDashboard/${tenderId}" class="g g-back"><< 
                                             <c:if test="${tblTender.isAuction eq 0}">
                                                ${backDashboard} 
                                             </c:if>
@@ -34,11 +27,15 @@
                                             </a>
 						</c:when>
 						<c:otherwise>
-								<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}"><< ${backDashboard}</a>
+								<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"><< ${backDashboard}</a>
 						</c:otherwise>
 					</c:choose>
-					
-				</div>
+	</section>
+
+	<section class="content">
+		<div class="row">
+		<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+			<div class="box">
 				<div class="box-header with-border">
 					<h2 class="box-title">Result</h2>
 				</div>
@@ -46,8 +43,17 @@
                 <div class="box-body">
 		<div class="row">
 			<div class="col-lg-12 col-md-12 col-xs-12">
-				<div class="box-body pad">                           
-                                        <c:if test="${tblTender.isAuction eq 0}">
+			
+				<c:if test="${not empty successMsg}">
+					<div><span class="alert alert-success"><spring:message code="${successMsg}"/></span></div>
+				</c:if>
+				<c:if test="${not empty errorMsg}">
+					<div><span class="alert alert-danger"><spring:message code="${errorMsg}"/></span></div>
+				</c:if>
+			
+				<div class="">                           
+
+<c:if test="${tblTender.isAuction eq 0}">
                                          
 <table  class="table table-striped table-responsive">	
 	<tr>
@@ -119,11 +125,12 @@
 						</c:forEach>
 					</c:if>
                                     <div class="m-bottom3 box-shadow o-hidden">
+                                    
                                         <div class="page-title prefix_1 o-hidden border-left border-top border-right border-bottom-none">
                                         	<span class="${timelapsed eq 1 and isopened ne 0 ? 'open-envelope-icn m-top2' : 'close-envelope-icn'} pull-left "></span>
-                                        	<h3 style="float:left;">${envelopename}</h3>
+                                        	<h4 style="float:left;">${envelopename}</h4>
                                         	<c:if test="${!fromOfficer}">
-											<h3 style="float:right;" class="pull-right prefix1_20">
+											<h4 style="float:right;" class="pull-right prefix1_20">
 											<spring:message code="lbl_bid_time"/>:
 												<c:choose>
 													<c:when test="${srno.index ne 0 and tenderData.envelopeType eq 2 and openingdatestatus ne 1}">---</c:when> 
@@ -131,9 +138,10 @@
 														<fmt:formatDate pattern="${clientDateFormate}" value="${openingdate}" />
 													</c:when> 
 												</c:choose>
-											</h3>
+											</h4>
 											</c:if>
                                         </div>
+                                        
                                         <table class="table">
                                                 <c:choose>
                                                 <c:when test="${tenderData.autoResultSharing eq '0' or (tenderData.autoResultSharing eq '1' and isResultShareDone)}">

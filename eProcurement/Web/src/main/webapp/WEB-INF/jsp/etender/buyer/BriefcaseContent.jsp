@@ -20,12 +20,10 @@ $('#selDocCheckList').append($('<option>',
 	}));
  });
 </script>
-<input type="hidden" id="txtChildId" name="txtChildId"
-	value="${childId}" />
-<input type="hidden" id="txtSubChildId" name="txtSubChildId"
-	value="${subChildId}" />
-<%--Upload documents tab starts--%>
-<!--<div class="successMsg t_space b_space clearfix" id="successDiv" style="display: none;"> </div>-->
+
+<input type="hidden" id="txtChildId" name="txtChildId" value="${childId}" />
+<input type="hidden" id="txtSubChildId" name="txtSubChildId" value="${subChildId}" />
+
 <div id="uploadBriefcaseDoc">
 	<spring:message code="fields_selfiletoupload" var="selFileToUpload" />
 	<spring:message code="fields_docbrief" var="docBrief" />
@@ -36,13 +34,6 @@ $('#selDocCheckList').append($('<option>',
 		<spring:message code="label_pleaseselect" var="var_pleaseSelect" />
 		
 		<div class="row">
-<!-- 			<div class="col-lg-2 col-md-2 col-sm-12 col-xs-12"> -->
-<!-- 				<div class="form_filed"> -->
-<%-- 							${docBrief} --%>
-<!-- 					<span style="color: red">*</span> -->
-<!-- 				</div> -->
-<!-- 			</div> -->
-<!-- 			<div class="col-lg-5 col-md-5 col-sm-12 col-xs-12"> -->
 			<div class="col-lg-6">
 				<div class="form-group">
 					<div class="input-group">
@@ -59,11 +50,6 @@ $('#selDocCheckList').append($('<option>',
 		
 
 			<div class="col-lg-6">
-<!-- 				<div class="form_filed"> -->
-<%-- 					${selFileToUpload} <span style="color: red">*</span> --%>
-<!-- 				</div> -->
-<!-- 			</div> -->
-<!-- 			<div class="col-lg-5 col-md-5 col-sm-12 col-xs-12"> -->
 				<div class="one">
 					<div class="input-group">
 						<label class="input-group-btn"> <span class="btn btn-primary"> <i class="fa fa-folder-open"></i>
@@ -100,7 +86,7 @@ $('#selDocCheckList').append($('<option>',
 		<div class="row">
 			<div class="col-lg-12">
 				<div class="">
-					<button type="button" onclick="return ajaxFileUpload();" class="btn btn-submit" style="float:right;">
+					<button type="button" onclick="return ajaxFileUpload();" class="rgtr" style="float:right; margin-top:10px;">
 						<spring:message code="lbl_upload"/>
 					</button>
 				</div>

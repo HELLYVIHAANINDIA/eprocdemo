@@ -1,7 +1,5 @@
 
-<script
-	src="${pageContext.servletContext.contextPath}/resources/js/ajaxfileupload.js"
-	type="text/javascript"></script>
+<script src="${pageContext.servletContext.contextPath}/resources/js/ajaxfileupload.js" type="text/javascript"></script>
 <script type="text/javascript">
         var registerDocObjId = 0;
         	var tenderId= '${tenderId}';

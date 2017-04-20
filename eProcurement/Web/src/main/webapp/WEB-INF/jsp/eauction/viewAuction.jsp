@@ -19,22 +19,24 @@
 	 --%>
 	
 	<div class="content-wrapper">
+	
             <section class="content-header">
-               <h1><spring:message code="lbl_view_auction"/> <small></small></h1>
+               <h1 class="inline"><spring:message code="lbl_view_auction"/> <small></small></h1>
                <c:if test="${fromPublishTender ne 2}">
                    <c:if test="${sessionUserTypeId eq 2}">
-                  <a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/1" class="goBack pull-right"><< <spring:message code="lbl_go_to_auction_listing" /></a>
+                  <a href="${pageContext.servletContext.contextPath}/etender/bidder/bidderTenderListing/1" class="g g-back"><< <spring:message code="lbl_go_to_auction_listing" /></a>
                </c:if>
                </c:if>
                
                <c:if test="${sessionUserTypeId ne 2}">
-                  <a onclick="window.history.back();" style="cursor: pointer" class="goBack pull-right"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a>
+                  <a onclick="window.history.back();" style="cursor: pointer" class="g g-back"><< <spring:message code="lbl_go_back_to_auction_dashboard" /></a>
                </c:if>
                   <c:if test="${fromPublishTender eq 2}">
          		
-				<a href="${pageContext.servletContext.contextPath}/login" class="goBack pull-right noExport"><< <spring:message code="lbl_go_to_login" /></a>
+				<a href="${pageContext.servletContext.contextPath}/login" class="g g-back"><< <spring:message code="lbl_go_to_login" /></a>
 			</c:if>
             </section>
+            
             <section class="content">
             
             	<div class="row">

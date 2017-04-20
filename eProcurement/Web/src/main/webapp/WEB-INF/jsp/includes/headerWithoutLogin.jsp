@@ -63,7 +63,6 @@
  </script>
 
  <script src="${pageContext.servletContext.contextPath}/resources/js/headerscript.js"></script>
- 
  <div class="wrapper">
  
  <header class="main-header">
@@ -96,7 +95,7 @@
 					</li>            		
             	</c:when>
             	<c:otherwise>
-            		<li class="messages-menu"><a href="${pageContext.servletContext.contextPath}/common/user/register"><i class="fa fa-book"></i> &nbsp;New Bidder Registration</a></li>
+            		<li class="messages-menu"><a href="${pageContext.servletContext.contextPath}/common/user/register"><i class="fa fa-book"></i> &nbsp;e-Tender Registration</a></li>
           			<li class="dropdown user user-menu">
           				<input type="hidden" id="currentTime"/>
             			<a href="#"  class="dropdown-toggle" data-toggle="dropdown">
@@ -142,22 +141,10 @@
 						<a><i class="fa fa-user"></i><span>${lbl_fq}</span></a>
 					</li>
 					
-					<li class="mouseHand leftMenuSection" section="3">
-						<a><i class="fa fa-file-text"></i><span>${lbl_privacy_police}</span></a>
-					</li>
-					
-					<li class="mouseHand leftMenuSection" section="4">
-						<a><i class="fa fa-file-text"></i><span>${lbl_disclaimer}</span></a>
-					</li>
-					
 					<li class="mouseHand leftMenuSection" section="5">
 						<a><i class="fa fa-download"></i><span>${lbl_download_software}</span></a>
 					</li>
 					
-					<li class="mouseHand leftMenuSection" section="6">
-						<a><i class="fa fa-globe"></i><span>${lbl_browsersupport}</span></a>
-					</li>
-				
 				</ul>
 
 			</section>

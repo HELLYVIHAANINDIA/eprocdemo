@@ -2,7 +2,7 @@
 <%@include file="../../includes/masterheader.jsp"%>
 <div class="content-wrapper">
             <section class="content-header">
-                <h1>
+                <h1 class="inline">
                      <spring:message code="lbl_edit_bidding_form" /> <small></small>
                 </h1>
             </section>

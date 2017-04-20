@@ -803,7 +803,7 @@ color:#ccc
 	background-color: #eee
 }
 .navbar-nav>.notifications-menu>.dropdown-menu, .navbar-nav>.messages-menu>.dropdown-menu, .navbar-nav>.tasks-menu>.dropdown-menu {
-	width: 280px;
+	width: 208px;
 	padding: 0 0 0 0;
 	margin: 0;
 	top: 100%
@@ -861,7 +861,7 @@ color:#ccc
 	text-decoration: none
 }
 .navbar-nav>.notifications-menu>.dropdown-menu>li .menu>li>a {
-	color: #444444;
+	color: #444444 !important;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	padding: 10px
@@ -1084,7 +1084,6 @@ opacity:1
 	box-shadow: none;
 	border-color: #c5d0d4;
 	height:45px;
-	margin-top:10px;
 }
 
 .form-control2 {
@@ -2415,7 +2414,7 @@ opacity:1
 }
 .table > thead > tr > th {
   border-bottom: 2px solid #f4f4f4;
-  background:#016db6;
+  background:#218dd6;
   font-weight: 500;
   color: #fff;
 }
@@ -4959,7 +4958,7 @@ input[type="search"] {
 .sl-section {
 	width: 100%;
 	height: auto;
-	margin-top: 30px;
+	margin-top: 0px;
 }
 
 .sl-title-box {
@@ -4979,4 +4978,46 @@ input[type="search"] {
   font-size: 14px;
   line-height: 22px;
   margin: 10px 0px;
+}
+
+.lbl-3 {
+  font-family: "Poppins",sans-serif;
+  font-size: 14px;
+  font-weight: 500 !important;
+  text-align: left;
+  margin-top:20px;
+  margin-bottom:0px;
+}
+
+.lbl-4 {
+  font-family: "Poppins",sans-serif;
+  font-size: 14px;
+  font-weight: 500 !important;
+  text-align: left;
+  margin-top:20px;
+  margin-bottom:0px;
+}
+
+.rd {
+	color: red;
+}
+
+.pt-print {
+	width: auto;
+	height: auto;
+	padding: 5px 15px;
+	background: #175295;
+	color:#ffffff;
+	text-align: center;
+	border: none;
+}
+
+.pt-pdf {
+	width: auto;
+	height: auto;
+	padding: 5px 15px;
+	background: #c42b3e;
+	color:#ffffff;
+	text-align: center;
+	border: none;
 }

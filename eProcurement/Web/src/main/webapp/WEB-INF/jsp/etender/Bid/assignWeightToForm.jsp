@@ -42,19 +42,24 @@
 											<tr>
 												<th><spring:message code="th_srno"/></th>
 												<th><spring:message code="lbl_envelopname"/></th>
-												<th><spring:message code="field_formName"/></th>
-												<th>${lbl_weightage}</th>
+												<th><spring:message code="field_formName"/> </th>
+												<th>${lbl_weightage}
+												<input type="hidden" name="tenderStatus" value="${tblTender.cstatus}">
+												</th>
 											</tr>
 										</thead>
 										<tbody>
 										<c:forEach items="${formList}" var="forms" varStatus="indx">                                  	
 											<tr>
 											<td>${(indx.index+1)}</td>
-											<td>${forms[4]}</td>
+											<td>${forms[4]}<font color="red"> ${forms[7] eq 1 ? 'Canceled':''}</font></td>
 											<td>${forms[1]}</td>
 											<td>
 											<input type="hidden" name="formId" value="${forms[0]}">
-                                    		<input type="text" maxlength="5" class="txtWeightage" size="5" value="${forms[5]}" name="txtWeightage" id="txtWeightage${indx.index}" validarr="required@@length:0,5@@numanduptodecimal:1@@nonzero" tovalid="true" onblur="if(validateTextComponent(this)){doTotalForBox()}" title='${lbl_weightage}' /></td>
+											<c:set var="isWeightageAllow" value="${tblTender.cstatus eq 0 or forms[8] eq 0}" />
+											<c:set var="weightage" value="${tblTender.cstatus eq 1 ? forms[9]: forms[5]}" />
+											<!-- If call after tender publish then data will be fatched from corrigendum else data are from formWeight-->
+                                    		<input type="text" maxlength="5" isCanceled="${forms[7]}" class="txtWeightage" size="5" value="${weightage}" name="txtWeightage" id="txtWeightage${indx.index}" validarr="required@@length:0,5@@numanduptodecimal:1@@nonzero" tovalid="true" onblur="if(validateTextComponent(this)){doTotalForBox()}" title='${lbl_weightage}' /></td>
 											</tr>
 										</c:forEach>
 											<tr>
@@ -93,9 +98,11 @@
 	function doTotalForBox(){
 		var total = 0;
 		$(".txtWeightage").each(function(){
-			var val = $(this).val();
-			if(val != "" && val > 0){
-				total +=parseFloat(val);
+			if($(this).attr("isCanceled") != 1){
+				var val = $(this).val();
+				if(val != "" && val > 0){
+					total +=parseFloat(val);
+				}
 			}
 		});
 		if(total > 100){

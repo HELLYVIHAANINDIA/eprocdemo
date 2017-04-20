@@ -23,15 +23,16 @@
 
 
  <div class="content-wrapper">
+ 
 <section class="content-header">
-<h1><spring:message code="lbl_create_edit_bidding_form" /> <small></small>
+<h1 class="inline"><spring:message code="lbl_create_edit_bidding_form" /><small></small>
 </h1>
+<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"><< <spring:message code="lbl_go_back_to_dashboard" /></a>
 </section>
-   <c:if test="${not empty operation}">
-                    <c:set var="saveAction" value="${pageContext.servletContext.contextPath}/eBid/Bid/editForm" />
 
-                
-                </c:if>
+   <c:if test="${not empty operation}">
+       <c:set var="saveAction" value="${pageContext.servletContext.contextPath}/eBid/Bid/editForm" />               
+   </c:if>
                 
                 <c:if test="${ empty operation}">
                 	<c:set var="saveAction" value="${pageContext.servletContext.contextPath}/eBid/Bid/saveForm" />
@@ -44,14 +45,8 @@
 <div class="row">
 <div class="col-lg-12 col-md-12">
 <div class="box">
-
 <div class="box-header with-border">
-<div class="col-md-6" >
 <h3 class="box-title"><spring:message code="lbl_create_bidding_form" /></h3>
-</div>
-<div class="col-md-6 text-right" >
-<a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="btn btn-submit" style="margin-top:0px;"><< <spring:message code="lbl_go_back_to_dashboard" /></a>
-</div>
 </div>
                           
 <div id="error"></div>
@@ -61,7 +56,7 @@
 <div class="col-lg-12 col-md-12 col-xs-12" id="FormTable">
 
 <c:if test="${not empty errorMsg}">
-<div class="alert alert-danger" id="err">${errorMsg}</div>
+<div class="alert alert-danger" id="err"><spring:message code="${errorMsg}"/></div>
 </c:if>	
                                         <div class="row" id="divFormType">
                                             <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">

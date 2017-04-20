@@ -81,8 +81,9 @@
 					</div>
 					<div class="box-body">
 						<div class="row">
-							<div class="col-xs-3">Organization :</div>
+							<div class="col-xs-3"><label class="lbl-3">Organization :</label></div>
 							<div class="col-xs-3">
+							<label class="lbl-2">
 								<c:choose>
 									<c:when test="${not empty organization}">
 										${organization}
@@ -91,15 +92,17 @@
 										-
 									</c:otherwise>
 								</c:choose>
+							</label>
 							</div>
-							<div class="col-xs-3"><spring:message code="fields_tender_departmentofficial"/> :</div>
-							<div class="col-xs-3">${officerName}</div>
+							<div class="col-xs-3"><label class="lbl-3"><spring:message code="fields_tender_departmentofficial"/> :</label></div>
+							<div class="col-xs-3"><label class="lbl-2">${officerName}</label></div>
 						</div>
 						<div class="row">
-							<div class="col-xs-3"><spring:message code="label_tender_department"/> :</div>
-							<div class="col-xs-3">${departmentName}</div>
-							<div class="col-xs-3">Sub Department :</div>
+							<div class="col-xs-3"><label class="lbl-3"><spring:message code="label_tender_department"/> :</label></div>
+							<div class="col-xs-3"><label class="lbl-2">${departmentName}</label></div>
+							<div class="col-xs-3"><label class="lbl-3">Sub Department :</label></div>
 							<div class="col-xs-3">
+							<label class="lbl-2">
 								<c:choose>
 									<c:when test="${not empty subDeptName }">
 										${subDeptName}
@@ -108,6 +111,7 @@
 										-
 									</c:otherwise>
 								</c:choose>
+							</label>
 							</div>
 						</div>
 					</div>

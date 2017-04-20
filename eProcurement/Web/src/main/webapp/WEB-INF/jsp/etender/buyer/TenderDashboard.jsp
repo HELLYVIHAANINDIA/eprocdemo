@@ -314,31 +314,32 @@
 							<c:when test="${items.tblTenderEnvelope.envelopeId ne envId}">
                                                            <%cnt=1;%>
 
-                                                                <div class="col-lg-12">
+                                                               <%--  <div class="col-lg-12">
                                                                 <div class="text-bold text-primary">
                                                                 <h5>${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h5>
                                                                 </div>
-                                                                </div>
+                                                                </div> --%>
 
 
                                                            	<c:set var="isFormModificationAllow" value="${((tblTender.cstatus eq 1 and items.cstatus eq 0) or tblTender.cstatus eq 0)}"/>
                                                             <div class="">
                                                             	
-                                                            	<div class="col-md-3">
+                                                            	<div class="col-lg-12">
                                                                 <div class="text-bold text-primary">
                                                                 <h5>${items.tblTenderEnvelope.envelopeName } <spring:message code="lbl_envelop" /></h5>
                                                                 </div>
-                                                                </div>
+                                                                
 
                                                            
                                                                  <c:if test="${items.formId  ne -1}">
 
                                                                      <div class="col-md-3">
-                                                                     <%=cnt++%> ) <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName }</a>
+                                                                 
                                                                      &nbsp;&nbsp;
-                                                                     <%=cnt++%> )&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName } <font color="red"> ${items.isCanceled eq 1 ? 'Cancelled' :''}</font></a>
+                                                                     <%=cnt++%> )&nbsp; <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName } 
+                                                                     <font color="red"> ${items.isCanceled eq 1 ? 'Cancelled' :''}</font></a>
 
-
+																		</div>
                                                                      <div class="col-md-3">
 
                                                                     <c:if test="${items.isMandatory eq 1}">*</c:if>
@@ -437,6 +438,7 @@
                                                        
                                                                 </div>
                                                               </c:if>
+                                                              </div>
                                                                  <c:if test="${items.formId  eq -1}">
                                                                      <div class="col-md-9"><spring:message code="lbl_no_forms_mapped_wih_this_envelop" /> </div>
                                                                  </c:if>  
@@ -450,13 +452,10 @@
                                                         </c:when>
 							<c:otherwise>
                                                             <c:if test="${items.formId  ne -1}">
-<<<<<<< .mine
-                                                            <div class="row border">
-||||||| .r1349
-=======
+                                                         <div class="row border">
                                                             <c:set var="isFormModificationAllow" value="${((tblTender.cstatus eq 1 and items.cstatus eq 0) or tblTender.cstatus eq 0)}"/>
                                                             <div class="col-md-12 border">
->>>>>>> .r1354
+
                                                                 <div class="col-md-3"><%=cnt++%>)&nbsp;
                                                                 <a href="${pageContext.servletContext.contextPath}/eBid/Bid/viewForm/${tblTender.tenderId}/${items.formId}/0/false">${items.formName } <font color="red"> ${items.isCanceled eq 1 ? 'Cancelled' :''}</font></a>
                                                                  <c:if test="${items.isMandatory eq 1}">*</c:if>
@@ -555,7 +554,7 @@
                                                                             </c:if> 
                                                                 </div>
                                                             </div>
-
+</div>
                                                             </c:if>
                                                                     <c:set value="${items.tblTenderEnvelope.envelopeId}" var="envId"/>
                                                          

@@ -84,7 +84,7 @@
 <div class="content-wrapper">
 
 <section class="content-header">
-                 
+    <div class="col-md-6 pull-left">              
                     <c:choose>
                         <c:when test="${sessionUserTypeId eq 2}">
                             <h1 class="inline">

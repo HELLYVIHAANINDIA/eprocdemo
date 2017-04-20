@@ -24,6 +24,7 @@ import org.springframework.core.style.ToStringCreator;
 @Table(name="tbl_tenderform")
 public class TblTenderForm  implements java.io.Serializable {
 		private   Integer cancelledBy;
+		private   Integer isCanceled;
 	    private   Date cancelledOn;
         private   int createdBy;
         private   Date createdOn;
@@ -53,17 +54,18 @@ public class TblTenderForm  implements java.io.Serializable {
         private   int minTablesReqForBidding;
         private   int parentFormId;
         private   double formWeight=0.0;
-     //   private int isPriceSummryDone;
+        private   double corrigendumFormWeight=0.0;
 
-//    public int getIsPriceSummryDone() {
-//        return isPriceSummryDone;
-//    }
-//
-//    public void setIsPriceSummryDone(int isPriceSummryDone) {
-//        this.isPriceSummryDone = isPriceSummryDone;
-//    }
-        
-        @Column(name="formWeight")
+        @Column(name="corrigendumFormWeight")
+        public double getCorrigendumFormWeight() {
+			return corrigendumFormWeight;
+		}
+
+		public void setCorrigendumFormWeight(double corrigendumFormWeight) {
+			this.corrigendumFormWeight = corrigendumFormWeight;
+		}
+
+		@Column(name="formWeight")
         public double getFormWeight() {
 			return formWeight;
 		}
@@ -361,7 +363,16 @@ public class TblTenderForm  implements java.io.Serializable {
 			this.parentFormId = parentFormId;
 		}
 		
-        public TblTenderForm(){
+       	@Column(name="isCanceled")
+        public Integer getIsCanceled() {
+			return isCanceled;
+		}
+
+		public void setIsCanceled(Integer isCanceled) {
+			this.isCanceled = isCanceled;
+		}
+
+		public TblTenderForm(){
         }
         @Override
 	public String toString() {

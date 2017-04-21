@@ -123,9 +123,10 @@ public class BidderSubmissionService {
       	StringBuilder query = new StringBuilder();
   		 Map<String, Object> map = new HashMap<String, Object>();
   	        map.put("isActive", 1);
+                
   	        query.append("SELECT tblclientbidterm.clientBidTermId ,tblclientbidterm.bidTerm ")
              .append(" FROM  TblClientBidTerm tblclientbidterm ")
-             .append(" WHERE tblclientbidterm.isActive=:isActive");   
+             .append(" WHERE tblclientbidterm.isActive=:isActive and tblclientbidterm.isAuction=0");   
   			return hibernateQueryDao.createNewQuery(query.toString(),map);
       }
     
@@ -145,7 +146,7 @@ public class BidderSubmissionService {
     	StringBuilder query = new StringBuilder();
 	   	Map<String, Object> var = new HashMap<String, Object>();
 	   	List<Object[]> list = new ArrayList<Object[]>();
-	   	var.put("tenderId", tenderId);
+	   	var.put(TENDERID, tenderId);
 	    var.put("companyIds", companyIds);
 	    var.put("formIds", formIds);
 	    query.append(" SELECT tblTenderBid.bidid,tblTenderBid.bidderid,tblTenderBid.bidprice,tblTenderBid.createdby,tblTenderBid.createdon,tblTenderBid.cstatus");
@@ -196,7 +197,7 @@ public class BidderSubmissionService {
  		 }
  		query.append(" from tbl_tendercurrency tbltendercurrency");
  		 if(isBidCurrency){
- 			 map.put("companyId", companyId);
+ 			 map.put(COMPANYID, companyId);
  			 query.append(" inner join Tbl_TenderBidCurrency tbltenderbidcurrency on tbltendercurrency.tenderCurrencyId=tbltenderbidcurrency.tenderCurrencyId and tbltenderbidcurrency.companyId =:companyId");
  		 }
  		
@@ -206,7 +207,7 @@ public class BidderSubmissionService {
       }
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean addTenderBidCurrency(TblTenderBidCurrency tblTenderBidCurrency) throws Exception{
-        boolean bSuccess = false;             
+        boolean bSuccess;             
            tblTenderBidCurrencyDao.addTblTenderBidCurrency(tblTenderBidCurrency);
            bSuccess=true;        
            return bSuccess;
@@ -214,7 +215,7 @@ public class BidderSubmissionService {
     }
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean addTenderBidConfm(TblTenderbidconfirmation tenderBidConfirmation, List<TblTenderProxyBid>lstTblTenderProxyBid ) throws Exception{
-		boolean bSuccess = false;
+		boolean bSuccess;
 		tblTenderBidConfirmationDao.addTblTenderBidConfirmation(tenderBidConfirmation);
 		if(lstTblTenderProxyBid != null && !lstTblTenderProxyBid.isEmpty()){
 			tblTenderProxyBidDao.saveUpdateAllTblTenderProxyBid(lstTblTenderProxyBid);
@@ -234,7 +235,7 @@ public class BidderSubmissionService {
     	}
     	List<Object> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
+        var.put(TENDERID,tenderId);
         var.put("companyIds",companyIds);
         list = hibernateQueryDao.getSingleColQuery(query.toString(),var);        
         return list;
@@ -242,9 +243,8 @@ public class BidderSubmissionService {
     
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean addTenderBidOpenDetails(String ipAddress, int... params) throws Exception {
-        boolean bSuccess = false;
+        boolean bSuccess;
         Object[] companyIds = {new TblCompany(params[1])};
-        TblTender tblTender =  tenderCommonService.getTenderById(params[0]);
         
         List<Object> formIdList = getTenderBidForms(params[0], companyIds, params[4]);
         Object[] formIds = new Object[formIdList.size()];
@@ -328,32 +328,32 @@ public class BidderSubmissionService {
  	   	result = spBidWithdrawal(tenderId, companyId, bidderId, ipAddress, remark,userId,tblFinalsubmission);
         deleteBidOpenData(tenderId, companyId);
         deleteTenderRebateDetails(tenderId, companyId);
-//        deleteTenderBidderDocs(tenderId, bidderId);
+        /***deleteTenderBidderDocs(tenderId, bidderId);***/
         return result;
     }
     
     @Transactional
    	public boolean deleteTenderBidderDocs(int tenderId,int bidderId) throws Exception{
-       	int cnt = 0;
+       	int cnt;
            Map<String, Object> var = new HashMap<String, Object>();
-           var.put("tenderId",tenderId);
+           var.put(TENDERID,tenderId);
            var.put("bidderId",bidderId);
            cnt = hibernateQueryDao.updateDeleteNewQuery("delete from TblBidderdocument where bidderId =:bidderId AND tenderId=:tenderId",var);        
            return cnt!=0;
     }
     @Transactional
 	public boolean deleteTblFinalsubmission(int tenderId,int companyId) throws Exception{
-    	int cnt = 0;
+    	int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
-        var.put("companyId",companyId);
+        var.put(TENDERID,tenderId);
+        var.put(COMPANYID,companyId);
         cnt = hibernateQueryDao.updateDeleteNewQuery("delete from TblFinalsubmission tblFinalsubmission where tblFinalsubmission.tblTender.tenderId=:tenderId and tblFinalsubmission.tblCompany.companyid=:companyId",var);        
         return cnt!=0;
     }
 
     @Transactional
     private boolean spBidWithdrawal(int tenderId,int companyId, int bidderId, String ipAddress, String remark,int userId,TblFinalsubmission tblFinalsubmission) throws Exception {
-    	boolean result=false;
+    	boolean result;
     	deleteTblBidWithdrawal(tblFinalsubmission,bidderId,remark,ipAddress,userId);
     	deleteTblFinalsubmission(tenderId,companyId);
     	result=true;
@@ -362,7 +362,7 @@ public class BidderSubmissionService {
 
     @Transactional
 	public boolean deleteTblBidWithdrawal(TblFinalsubmission tblFinalsubmission,int bidderId,String remark,String ipAddress,int userId) throws Exception{
-    	boolean result=false;
+    	boolean result;
     	TblBidWithdrawal tblBidWithdrawal = new TblBidWithdrawal();
     	tblBidWithdrawal.setTblTender(tblFinalsubmission.getTblTender());
     	tblBidWithdrawal.setTblCompany(tblFinalsubmission.getTblCompany());
@@ -379,25 +379,25 @@ public class BidderSubmissionService {
 
     @Transactional
 	public boolean deleteTenderRebateDetails(int tenderId, int companyId) throws Exception{
-        int cnt = 0;
+        int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
-        var.put("companyId",companyId);
-        hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderRebate tbltenderrebate where tbltenderrebate.tblTender.tenderId=:tenderId and tbltenderrebate.tblCompany.companyid=:companyId",var);
+        var.put(TENDERID,tenderId);
+        var.put(COMPANYID,companyId);
+        cnt = hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderRebate tbltenderrebate where tbltenderrebate.tblTender.tenderId=:tenderId and tbltenderrebate.tblCompany.companyid=:companyId",var);
         return cnt!=0;
 
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean deleteBidOpenData(int tenderId, int companyId) throws Exception {
-    	boolean bSuccess = false;
-    	List<Object> bidIds = null;
+    	boolean bSuccess;
+    	List<Object> bidIds;
     	Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
-        var.put("companyId",companyId);
+        var.put(TENDERID,tenderId);
+        var.put(COMPANYID,companyId);
     	bidIds = hibernateQueryDao.getSingleColQuery("select tblTenderBid.bidid from TblTenderBid tblTenderBid where tblTenderBid.tblTender.tenderId=:tenderId and tblTenderBid.tblCompany.companyid=:companyId",var);
     	
-    	List<Object> bidTableIds = null;
+    	List<Object> bidTableIds;
     	Map<String, Object> var1 = new HashMap<String, Object>();
         var1.put("bidIds",bidIds);
         bidTableIds = hibernateQueryDao.getSingleColQuery("select tblTenderBidMatrix.bidtableid from TblTenderBidMatrix tblTenderBidMatrix where tblTenderBidMatrix.tblTenderbid.bidid in (:bidIds)",var1);
@@ -413,16 +413,16 @@ public class BidderSubmissionService {
     }
     @Transactional
     public boolean deleteTenderOpenData(int tenderId, int companyId) throws Exception {
-   	 int cnt = 0;
+   	 int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
-        var.put("companyId",companyId);
+        var.put(TENDERID,tenderId);
+        var.put(COMPANYID,companyId);
         cnt = hibernateQueryDao.updateDeleteNewQuery("delete from TblTenderopen tblTenderOpen where tblTenderOpen.tblTender.tenderId=:tenderId and tblTenderOpen.tblCompany.companyid=:companyId",var);        
         return cnt!=0;
    }
     @Transactional
     public boolean deleteTenderBidDetailData(List<Object> bidTableIds) throws Exception {
-    	int cnt = 0;
+    	int cnt;
     	Map<String, Object> var = new HashMap<String, Object>();
     	var.put("bidTableIds",bidTableIds);
     	cnt = hibernateQueryDao.updateDeleteNewQuery("delete from TblTenderBidDetail tblTenderBidDetail where tblTenderBidDetail.tblTenderbidmatrix.bidtableid in (:bidTableIds)",var);        
@@ -431,10 +431,10 @@ public class BidderSubmissionService {
 
     @Transactional
     public boolean addTenderRebateDetails(int tenderId, int companyId) throws Exception {
-    	int cnt = 0;
+    	int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
-        var.put("companyId",companyId);
+        var.put(TENDERID,tenderId);
+        var.put(COMPANYID,companyId);
         cnt = hibernateQueryDao.updateDeleteNewQuery("INSERT INTO TblRebateDetail (tblTenderRebate, rebateValue, decryptionLevel) select tblTenderRebate, tblTenderRebate.rebateValue, 0 from TblRebate tblRebate inner join tblRebate.tblTenderRebate tblTenderRebate where tblRebate.tblTender.tenderId = :tenderId and tblTenderRebate.tblCompany.companyid = :companyId",var);        
         return cnt!=0;
     }
@@ -458,7 +458,7 @@ public class BidderSubmissionService {
     }
     @Transactional
     public List<Object> getRebateCellId(int formId) throws Exception{
-        List<Object> list = null;
+        List<Object> list;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("formId",formId);
         list = hibernateQueryDao.getSingleColQuery("select tblrebateform.tblTenderCell.cellId from TblRebateForm tblrebateform where tblrebateform.tblTenderForm.formId=:formId",var);                
@@ -481,7 +481,7 @@ public class BidderSubmissionService {
     }
     @Transactional
     public boolean isFinalSubmissionDone(int tenderId, int companyId) throws Exception {
-      	long count = 0;
+      	long count;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put(TENDERID, tenderId);
         var.put(COMPANYID, companyId);
@@ -490,16 +490,16 @@ public class BidderSubmissionService {
    }
     @Transactional
     public boolean checkFormBided(int formId,int companyId) throws Exception{
-        long count=0;
+        long count;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("formId",formId);
-        var.put("companyId",companyId);
+        var.put(COMPANYID,companyId);
         count = hibernateQueryDao.countForNewQuery("TblTenderBid tbltenderbid ","tbltenderbid.bidid ","tbltenderbid.tblCompany.companyid=:companyId and tbltenderbid.tblTenderform.formId=:formId",var);
         return count==0;
     }
     @Transactional
     public boolean deleteBid(int bidId) throws Exception{
-        int cnt = 0;
+        int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("bidId",bidId);
         cnt = hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderBidMatrix tbltenderbidmatrix where tbltenderbidmatrix.tblTenderbid.bidid=:bidId",var);        
@@ -517,10 +517,9 @@ public class BidderSubmissionService {
     
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)
     public boolean deleteBidSubmitted(int bidId,int tenderId,int formId,int companyId,int bidderId) throws Exception{
-        int cnt = 0;
-        int cnt1 = 0;
+        int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
+        var.put(TENDERID,tenderId);
         var.put(COMPANYID,companyId);
         hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderRebate tbltenderrebate where tbltenderrebate.tblTender.tenderId=:tenderId and tbltenderrebate.tblCompany.companyid=:companyId",var);
         
@@ -532,7 +531,7 @@ public class BidderSubmissionService {
         var.put("formId",formId);
         List<Object> formData = hibernateQueryDao.singleColQuery("select isPriceBid from TblTenderForm where formId=:formId", var);
         if(!formData.isEmpty()){
-        	var.put("companyId",companyId);
+        	var.put(COMPANYID,companyId);
             if((Integer)formData.get(0)==0){
                 hibernateQueryDao.updateDeleteNewQuery("delete from TblItemSelection where tblTenderForm.formId=:formId and tblCompany.companyid=:companyId", var);                
             }else{
@@ -557,13 +556,13 @@ public class BidderSubmissionService {
         var.put(TENDERID,tenderId);
         var.put("formId",formId);
         var.put("bidderId",bidderId);
-        cnt1 = hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderCellGrandTotal tblTenderCellGrandTotal where tblTenderCellGrandTotal.tblTender.tenderId=:tenderId AND tblTenderCellGrandTotal.tblBidder.bidderId=:bidderId AND tblTenderCellGrandTotal.tblTenderForm.formId=:formId",var);
+        hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderCellGrandTotal tblTenderCellGrandTotal where tblTenderCellGrandTotal.tblTender.tenderId=:tenderId AND tblTenderCellGrandTotal.tblBidder.bidderId=:bidderId AND tblTenderCellGrandTotal.tblTenderForm.formId=:formId",var);
         return cnt!=0;
     }
     
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean addBidderBid(TblTenderBid tblTenderBid, List<TblTenderBidMatrix> tblTenderBidMatrixs,List<TblBidDetail> bidDetails,List<TblItemSelection> itemSelections,List<TblTenderCellGrandTotal> lstTblTenderCellGrandTotal) throws Exception {
-        boolean bSuccess = false;
+        boolean bSuccess;
         if(tblTenderBid!=null){
             tblTenderBidDao.addTblTenderBid(tblTenderBid);
         }else{
@@ -577,7 +576,7 @@ public class BidderSubmissionService {
        
         if(!bidDetails.isEmpty()){
             Map<String, Object> var = new HashMap<String, Object>();
-            var.put("companyId",bidDetails.get(0).getTblCompany().getCompanyid());
+            var.put(COMPANYID,bidDetails.get(0).getTblCompany().getCompanyid());
             var.put("formId",bidDetails.get(0).getTblTenderForm().getFormId());
             hibernateQueryDao.updateDeleteNewQuery("delete from TblBidDetail where companyId=:companyId and formId=:formId", var);
             tblBidDetailDao.saveUpdateAllTblBidDetail(bidDetails);
@@ -585,11 +584,11 @@ public class BidderSubmissionService {
         if(!itemSelections.isEmpty()){
             if(itemSelections.get(0).getIsSelected()==-1){
                 Map<String, Object> var = new HashMap<String, Object>();
-                var.put("companyId",itemSelections.get(0).getTblCompany().getCompanyid());
+                var.put(COMPANYID,itemSelections.get(0).getTblCompany().getCompanyid());
                 var.put("formId",itemSelections.get(0).getTblTenderForm().getFormId());
                 Map<Integer,List<Integer>> tableRows = new HashMap<Integer, List<Integer>>();
                 for (TblItemSelection tblItemSelection : itemSelections) {
-                    List<Integer> rowId = null;
+                    List<Integer> rowId;
                     if(tableRows.containsKey(tblItemSelection.getTblTenderTable().getTableId())){
                         rowId = tableRows.get(tblItemSelection.getTblTenderTable().getTableId());
                     }else{                        
@@ -607,7 +606,7 @@ public class BidderSubmissionService {
                 
             }else{
                 Map<String, Object> var = new HashMap<String, Object>();
-                var.put("companyId",itemSelections.get(0).getTblCompany().getCompanyid());
+                var.put(COMPANYID,itemSelections.get(0).getTblCompany().getCompanyid());
                 var.put("formId",itemSelections.get(0).getTblTenderForm().getFormId());
                 hibernateQueryDao.updateDeleteNewQuery("delete from TblItemSelection where tblTenderForm.formId=:formId and tblCompany.companyid=:companyId", var);
                 tblItemSelectionDao.saveUpdateAllTblItemSelection(itemSelections);
@@ -622,7 +621,7 @@ public class BidderSubmissionService {
         }
         if(!lstTblTenderCellGrandTotal.isEmpty()){
         	 Map<String, Object> var1 = new HashMap<String, Object>();
-        	 var1.put("tenderId",lstTblTenderCellGrandTotal.get(0).getTblTender().getTenderId());
+        	 var1.put(TENDERID,lstTblTenderCellGrandTotal.get(0).getTblTender().getTenderId());
         	 var1.put("bidderId",lstTblTenderCellGrandTotal.get(0).getTblBidder().getBidderId());
         	 var1.put("formId",lstTblTenderCellGrandTotal.get(0).getTblTenderForm().getFormId());
              hibernateQueryDao.updateDeleteNewQuery("delete from TblTenderCellGrandTotal tblTenderCellGrandTotal where tblTenderCellGrandTotal.tblTender.tenderId=:tenderId and tblTenderCellGrandTotal.tblBidder.bidderId=:bidderId AND tblTenderCellGrandTotal.tblTenderForm.formId=:formId", var1);
@@ -636,7 +635,7 @@ public class BidderSubmissionService {
     }
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean addTenderRebate(TblTenderRebate tblTenderRebate) throws Exception{
-        boolean bSuccess = false;             
+        boolean bSuccess;             
         tblTenderRebateDao.addTblTenderRebate(tblTenderRebate);
         bSuccess=true;        
         return bSuccess;
@@ -645,23 +644,22 @@ public class BidderSubmissionService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean editTenderRebate(int tenderId,TblTenderRebate tenderRebate,int companyId) throws Exception{
     boolean bSuccess = false;
-    boolean dSuccess = false;
+    boolean dSuccess;
     
     	dSuccess = deleteTenderRebate(tenderId,companyId);
     	
     	if(dSuccess){
     		tblTenderRebateDao.addTblTenderRebate(tenderRebate);
             bSuccess=true;
-            return bSuccess;
     	}
     	 return bSuccess;
     }
     @Transactional
     public boolean deleteTenderRebate(int tenderId,int companyId) throws Exception{
-        int cnt = 0;
+        int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId",tenderId);
-        var.put("companyId",companyId);
+        var.put(TENDERID,tenderId);
+        var.put(COMPANYID,companyId);
         cnt = hibernateQueryDao.updateDeleteNewQuery("delete  from TblTenderRebate tbltenderrebate where tbltenderrebate.tblCompany.companyid=:companyId and tbltenderrebate.tblTender.tenderId=:tenderId",var);        
         return cnt!=0;
 

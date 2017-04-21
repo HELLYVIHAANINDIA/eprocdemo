@@ -352,7 +352,7 @@ public class CommitteeService {
         	var.put("envelopeId",envelopeId);
         }
         StringBuffer query = new StringBuffer();
-        query.append(" SELECT fs.bidderId,fs.companyId, te.envelopeId,TB.cstatus,COALESCE(bad.isApproved,'') isApproved,bc.encodedName");
+        query.append(" SELECT fs.bidderId,fs.companyId, te.envelopeId,TB.cstatus,bad.isApproved,bc.encodedName");
         query.append(" ,fs.partnerType,bad.remarks, (case when (te.sortOrder) > 1 then ");
         query.append(" (select b.isApproved from tbl_bidderapprovaldetail b where b.companyId=fs.companyId and  b.envelopeId in ");
         query.append(" (select c.envelopeId from tbl_tenderenvelope c where c.tenderId=fs.tenderId and c.sortOrder=te.sortOrder-1)");
@@ -606,6 +606,24 @@ public class CommitteeService {
        query.append(" select tblTenderEnvelope.isOpened ");
        query.append(" from TblTenderEnvelope tblTenderEnvelope");
        query.append(" where tblTenderEnvelope.tblTender.tenderId=:tenderId and tblTenderEnvelope.isOpened=1");
+       list = hibernateQueryDao.singleColQuery(query.toString(), var);
+       if (list!=null && !list.isEmpty()) {
+    	   bSuccess=true;
+       }
+       return bSuccess;
+   }
+   
+   
+   @Transactional
+   public boolean isSingleEnvelopeIsEvaluated(int tenderId) throws Exception {
+       boolean bSuccess = false;
+       List<Object> list = null;
+       Map<String, Object> var = new HashMap<String, Object>();
+       var.put("tenderId", tenderId);
+       StringBuilder query = new StringBuilder();
+       query.append(" select tblTenderEnvelope.isEvaluated ");
+       query.append(" from TblTenderEnvelope tblTenderEnvelope");
+       query.append(" where tblTenderEnvelope.tblTender.tenderId=:tenderId and tblTenderEnvelope.isEvaluated=1");
        list = hibernateQueryDao.singleColQuery(query.toString(), var);
        if (list!=null && !list.isEmpty()) {
     	   bSuccess=true;

@@ -55,7 +55,7 @@ public class OfficerController {
 	@Autowired
     private ExceptionHandlerService exceptionHandlerService;
 	@Autowired
-    private OfficerService userService;
+    private OfficerService officerService;
 	@Autowired
     private CommonService commonService;
 		
@@ -104,7 +104,7 @@ public class OfficerController {
     public String getNotificationCount(@PathVariable("userId") Integer userId,@PathVariable("tenderId") Integer tenderId) {
 	    String jsonStr = "";
 		try {
-			    List<Map<String,Object>> obj = userService.getNotificaitonCount(userId,tenderId);
+			    List<Map<String,Object>> obj = officerService.getNotificaitonCount(userId,tenderId);
 			    jsonStr = commonService.convertToGsonStr(obj);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
@@ -124,11 +124,32 @@ public class OfficerController {
 	    String jsonStr = "";
 		try {	
 				String searchParam = request.getParameter("term");
-			    List<Object[]> obj = userService.getCategoryData(searchParam,level);
+			    List<Object[]> obj = officerService.getCategoryData(searchParam,level);
 			    jsonStr = commonService.convertToGsonStr(obj);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
 			} 
+	return jsonStr;
+    }
+    /**
+     * 
+     * @param searchParam
+     * @param level
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/common/user/getUNSPSCCategoryData")
+    public String getUNSPSCCategoryData(HttpServletRequest request) {
+	    String jsonStr = "";
+		try {	
+				String searchParam = request.getParameter("term");
+				String dataFrom = request.getParameter("dataFrom");
+			    List<Object[]> obj = officerService.getUNSPSCCategoryData(searchParam,dataFrom);
+			    jsonStr = commonService.convertToGsonStr(obj);
+			} catch (Exception ex) {
+			     exceptionHandlerService.writeLog(ex);
+			} finally {
+		}
 	return jsonStr;
     }
 
@@ -137,7 +158,7 @@ public class OfficerController {
     public String updateNotificationStatus(@PathVariable("userId") Integer userId,@PathVariable("tenderId") Integer tenderId) {
 	    String returnStr = "";
 		try {
-			    returnStr = userService.updateNotificationStatus(userId,tenderId);
+			    returnStr = officerService.updateNotificationStatus(userId,tenderId);
 			    if(OfficerService.notificationData.containsKey(userId+"_"+tenderId)){
 			    	OfficerService.notificationData.remove(userId+"_"+tenderId);	
 			    }
@@ -199,7 +220,7 @@ public class OfficerController {
 				modelAndView = new ModelAndView("redirect:/common/user/currencyMapping/"+departmentId);	
 				String[] currencyIds = request.getParameterValues("selCurrencyId");
 				SessionBean sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
-				boolean response =  userService.updateCurrencyMap(sessionBean,currencyIds,departmentId);
+				boolean response =  officerService.updateCurrencyMap(sessionBean,currencyIds,departmentId);
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_currencymapping_save");
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
@@ -244,7 +265,7 @@ public class OfficerController {
 	    boolean isExist = false;
 	    String jsonStr = "[{";
 		try {
-				isExist=userService.isEmailIdExists(searchValue);
+				isExist=officerService.isEmailIdExists(searchValue);
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
@@ -260,7 +281,7 @@ public class OfficerController {
 	    boolean isExist = false;
 	    String jsonStr = "[{";
 		try {
-				isExist=userService.isCompanyExists(searchValue,type);
+				isExist=officerService.isCompanyExists(searchValue,type);
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
@@ -276,7 +297,7 @@ public class OfficerController {
 	    boolean isExist = false;
 	    String jsonStr = "[{";
 		try {
-				isExist=userService.isCompanyRegNoExists(searchValue,type);
+				isExist=officerService.isCompanyRegNoExists(searchValue,type);
 				jsonStr=jsonStr+"\"isExists\":\""+isExist+"\"}]";
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
@@ -469,7 +490,12 @@ public class OfficerController {
 			String txtPersonalPhoneNo = StringUtils.hasLength(request.getParameter("txtPersonalPhoneNo")) ? request.getParameter("txtPersonalPhoneNo") : "";
 			password= "Officer@"+Math.abs(new Random().nextInt());
 			String txtRegisterType = "R";
-			String [] selBidderSector = request.getParameterValues("selBidderSector");
+			//String [] selBidderSector = request.getParameterValues("selBidderSector");
+
+			String [] sector = request.getParameterValues("sector");
+			String [] industry = request.getParameterValues("industry");
+			String [] activity = request.getParameterValues("activity");
+			
 			TblDepartment tblDepartment = new TblDepartment();
 			tblDepartment.setAddress(address);
 			tblDepartment.setCity(city);
@@ -504,12 +530,14 @@ public class OfficerController {
 			
 			
 			List<TblBidderSectorMapping> bidderSectorMappings = new ArrayList<TblBidderSectorMapping>();
-			for (String bidderSectorId : selBidderSector) {
+			for (int i=0; i < sector.length; i++) {
 				TblBidderSectorMapping bidderSectorMapping = new TblBidderSectorMapping();
-				bidderSectorMapping.setSectorId(Integer.parseInt(bidderSectorId));
+				bidderSectorMapping.setSectorId(Integer.parseInt(sector[i]));
+				bidderSectorMapping.setIndustry(Integer.parseInt(industry[i]));
+				bidderSectorMapping.setActivity(Integer.parseInt(activity[i]));
 				bidderSectorMappings.add(bidderSectorMapping);
 			}	
-			bSuccess = userService.addOrganization(tblDepartment, bidderSectorMappings);
+			bSuccess = officerService.addOrganization(tblDepartment, bidderSectorMappings);
 			TblDesignation tblDesignationOrgAdmin = new TblDesignation();
 			tblDesignationOrgAdmin.setDeptId(tblDepartment.getDeptId());
 			tblDesignationOrgAdmin.setDesignationName("Org Admin");
@@ -523,10 +551,10 @@ public class OfficerController {
 				String url = "http://"+stagingurl+"/eProcurement/verifyregistration/org/"+hash;
 				String href = "<a href=\""+url+"\" />";
                String content = "Thank you for registration click here to verify your registration : " + href;
-               userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details ",content,"Registration details "));
+               officerService.addMail(officerService.setTblMailMessage(emailId,mailFrom, "Registration details ",content,"Registration details "));
                
                String contentforadmin = "TenderAuthority registered in our system," + emailId;
-               userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details"));
+               officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details"));
             } 
             catch (Exception e) 
             {
@@ -534,7 +562,7 @@ public class OfficerController {
             }
 			redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_create_successfully");
 			if(!categoryText.isEmpty()){
-				userService.saveCategoryData(tblDepartment.getDeptId(), tblDepartment.getDeptId().longValue(),0,0,categoryText);
+				officerService.saveCategoryData(tblDepartment.getDeptId(), tblDepartment.getDeptId().longValue(),0,0,categoryText);
 			}
 		}else {
 			redirect="redirect:/common/user/register";	
@@ -567,32 +595,32 @@ public class OfficerController {
     
 		try {
 			if (department!=null) {
-				TblDepartment department2 = userService.getDepartmentById(deptId);
+				TblDepartment department2 = officerService.getDepartmentById(deptId);
 				department2.setParentDeptId(0);
 				department2.setGrandParentDeptId(0);
 				department2.setCstatus(orgstatus);
 				department2.setRemarks(remarks);
-				userService.addDepartment(department2,"edit");
+				officerService.addDepartment(department2,"edit");
 			  if(orgstatus==2){ 
 				String contentforadmin = "Tender Authority is rejected successfully," + department2.getDeptName()+"("+department2.getEmailId()+")";
 	            String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your profile is rejected.re-register by clicking this link ," + href;
-	            userService.addMail(userService.setTblMailMessage(department2.getEmailId(),mailFrom, "Your profile has been rejected",contentforbidder,"Your profile has been rejected"));
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Tender Authority status change",contentforadmin,"Tender Authority status change "));
+	            officerService.addMail(officerService.setTblMailMessage(department2.getEmailId(),mailFrom, "Your profile has been rejected",contentforbidder,"Your profile has been rejected"));
+	            officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Tender Authority status change",contentforadmin,"Tender Authority status change "));
 	            redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_rejected_successfully");
 			}else if(orgstatus==1) {
 				String contentforadmin = " Tender Authority is approved successfully," + department2.getDeptName()+"("+department2.getEmailId()+")";
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_approved_successfully");
 				String contentforbidder = "Your profile has been approved and password for the system is : "+department2.getTenderAuthorityFirstTimePassword();
-	            userService.addMail(userService.setTblMailMessage(department2.getEmailId(),mailFrom,"Your profile has been approved",contentforbidder,"Your profile has been approved"));
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom,"Tender Authority status change",contentforadmin,"Tender Authority status change "));
+	            officerService.addMail(officerService.setTblMailMessage(department2.getEmailId(),mailFrom,"Your profile has been approved",contentforbidder,"Your profile has been approved"));
+	            officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom,"Tender Authority status change",contentforadmin,"Tender Authority status change "));
 			}else if(orgstatus==3) {
 				String contentforadmin = " Tender Authority is de-activated successfully," + department2.getDeptName()+"("+department2.getEmailId()+")";
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_org_de_activated_successfully");
 				String contentforbidder = "Your profile has been de-activated .";
-	            userService.addMail(userService.setTblMailMessage(department2.getEmailId(),mailFrom, "Your profile has been de-activated",contentforbidder,"Your profile has been de-activated "));
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Tender Authority status change",contentforadmin,"Tender Authority status change "));
+	            officerService.addMail(officerService.setTblMailMessage(department2.getEmailId(),mailFrom, "Your profile has been de-activated",contentforbidder,"Your profile has been de-activated "));
+	            officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Tender Authority status change",contentforadmin,"Tender Authority status change "));
 			}
 			}
 		} catch (Exception ex) {
@@ -624,7 +652,7 @@ public class OfficerController {
 		modelMap.addAttribute("deptstatus", deptstatus);
 		countryJson = getContryJson();
 		TblDepartment tblDepartment = new TblDepartment();
-		tblDepartment = userService.getDepartmentById(deptId);
+		tblDepartment = officerService.getDepartmentById(deptId);
 		modelMap.addAttribute("countryJson", countryJson);
 		modelMap.addAttribute("optType", "Edit");    
 		modelMap.addAttribute("tblDepartment", tblDepartment);
@@ -639,18 +667,18 @@ public class OfficerController {
 	    modelMap.addAttribute("isview", isView);
 	    String remarks = "";
 	    if(isView==1){
-	    	remarks = userService.getStatusRemarks(deptId, deptstatus, 2);
+	    	remarks = officerService.getStatusRemarks(deptId, deptstatus, 2);
 	    }
 	    modelMap.addAttribute("remarks", remarks);
 	    
 	    
 	    StringBuilder sectors = new StringBuilder();
-	    List<TblBidderSectorMapping> bidderSectorMappings = userService.getSectorMappingById(deptId);
-	    for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
-			sectors.append(userService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
-		}
-	    
-	    modelMap.addAttribute("sectors", sectors);
+	    List<TblBidderSectorMapping> bidderSectorMappings = officerService.getSectorMappingById(deptId);
+	   /* for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
+			sectors.append(officerService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
+		}*/
+	    modelMap.addAttribute("bidderSectorMappings", bidderSectorMappings);
+	    //modelMap.addAttribute("sectors", sectors);
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
 	} 
@@ -675,7 +703,7 @@ public class OfficerController {
     	if(sessionBean!=null){
     		TblDepartment tblParentDepartment ;
     		grandParentDeptJson=getGrandParentDeptList();
-    		tblParentDepartment = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+    		tblParentDepartment = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
     		TblDepartment tblDepartment = new TblDepartment();
     		tblDepartment.setGrandParentDeptId(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
     	    modelMap.addAttribute("tblDepartment", tblDepartment);
@@ -694,9 +722,9 @@ public class OfficerController {
     String retVal = "/common/user/getlocationdepartment";
 		try {
 			if (department!=null) {
-				if(!userService.isDepartmentNameExists(department.getDeptName(),department.getGrandParentDeptId())){
+				if(!officerService.isDepartmentNameExists(department.getDeptName(),department.getGrandParentDeptId())){
 				department.setParentDeptId(0);
-				userService.addDepartment(department,"new");
+				officerService.addDepartment(department,"new");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_location_create_successfully");
 				}else{
 					redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_location_already_created");
@@ -716,13 +744,13 @@ public class OfficerController {
 		try {
 			boolean isDeptExist = false;
 			if (department!=null) {
-				TblDepartment editDept = userService.getDepartmentById(department.getDeptId());
+				TblDepartment editDept = officerService.getDepartmentById(department.getDeptId());
 				if(!editDept.getDeptName().equals(department.getDeptName())){
-					isDeptExist = userService.isDepartmentNameExists(department.getDeptName(),department.getGrandParentDeptId());	
+					isDeptExist = officerService.isDepartmentNameExists(department.getDeptName(),department.getGrandParentDeptId());	
 				}
 				if(!isDeptExist){
 				department.setParentDeptId(0);
-				userService.addDepartment(department,"edit");
+				officerService.addDepartment(department,"edit");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_location_edit_successfully");
 				}else{
 					redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_location_already_created");
@@ -751,12 +779,12 @@ public class OfficerController {
         	if(sessionBean!=null){
         		grandParentDeptJson=getGrandParentDeptList();
         		TblDepartment tblParentDepartment = new TblDepartment();
-        		TblDepartment tblDepartment = userService.getDepartmentById(deptId);
+        		TblDepartment tblDepartment = officerService.getDepartmentById(deptId);
         		if(sessionBean.getIsOrgenizationUser()==1) {
-        			tblParentDepartment = userService.getDepartmentById(deptId);
+        			tblParentDepartment = officerService.getDepartmentById(deptId);
             		modelMap.addAttribute("grandParentDeptId", tblDepartment.getGrandParentDeptId());	
         		}else {
-        			tblParentDepartment = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+        			tblParentDepartment = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
             		tblDepartment.setGrandParentDeptId(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
             		modelMap.addAttribute("grandParentDeptId", sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
         		}
@@ -789,8 +817,8 @@ public class OfficerController {
 			TblDepartment tblDepartment = new TblDepartment();
 			tblDepartment.setGrandParentDeptId(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 			grandParentDeptJson=getGrandParentDeptList();
-			TblDepartment tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
-		    List<TblDepartment> tblDepartments = userService.getSubDepartments(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId(), "0");
+			TblDepartment tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+		    List<TblDepartment> tblDepartments = officerService.getSubDepartments(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId(), "0");
 		    Map<String,String> parentDeptLst = new LinkedHashMap<String,String>();
 		    parentDeptLst.put(String.valueOf(-1), "Please select");
 		    for (TblDepartment tblDepartment2 : tblDepartments) {
@@ -812,19 +840,19 @@ public class OfficerController {
     String retVal = "/common/user/getdepartments";
 		try {
 			if (department!=null) {
-				if(!userService.isSubDepartmentNameExists(department.getDeptName(),department.getParentDeptId())){
+				if(!officerService.isSubDepartmentNameExists(department.getDeptName(),department.getParentDeptId())){
 				if(department.getParentDeptId()==-1) {
 					department.setParentDeptId(0);
 				}else if(department.getGrandParentDeptId()==-1){
 					department.setGrandParentDeptId(0);
 				}
-				userService.addDepartment(department,"new");
+				officerService.addDepartment(department,"new");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_sub_dept_create_successfully");
 				}else{
 					redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_subdepartment_already_created");
 				}
 			}
-			List<TblDepartment> tblDepartments = userService.getDepartments();
+			List<TblDepartment> tblDepartments = officerService.getDepartments();
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
@@ -851,16 +879,16 @@ public class OfficerController {
         TblDepartment tblGrandParentDept  = null;
         List<TblDepartment> tblDepartments  = null;
 		TblDepartment tblDepartment = new TblDepartment();
-		tblDepartment = userService.getDepartmentById(deptId);
+		tblDepartment = officerService.getDepartmentById(deptId);
 		
 		if(sessionBean.getIsOrgenizationUser()==1) {
-			tblGrandParentDept  = userService.getDepartmentById(deptId);
-		    tblDepartments = userService.getSubDepartments(tblGrandParentDept.getGrandParentDeptId(), "0");
+			tblGrandParentDept  = officerService.getDepartmentById(deptId);
+		    tblDepartments = officerService.getSubDepartments(tblGrandParentDept.getGrandParentDeptId(), "0");
 		    modelMap.addAttribute("grandParentDeptId", tblGrandParentDept.getGrandParentDeptId());
 		    modelMap.addAttribute("parentDeptId", tblGrandParentDept.getParentDeptId());
 		}else {
-			tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
-		    tblDepartments = userService.getSubDepartments(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId(), "0");
+			tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+		    tblDepartments = officerService.getSubDepartments(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId(), "0");
 		    modelMap.addAttribute("grandParentDeptId", sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 		    modelMap.addAttribute("parentDeptId", sessionBean.getParentDeptId());
 		}
@@ -892,9 +920,9 @@ public class OfficerController {
 		try {
 			boolean isDeptExist = false;
 			if (department!=null) {
-					TblDepartment editDept = userService.getDepartmentById(department.getDeptId());
+					TblDepartment editDept = officerService.getDepartmentById(department.getDeptId());
 					if(!editDept.getDeptName().equals(department.getDeptName())){
-						isDeptExist = userService.isSubDepartmentNameExists(department.getDeptName(),department.getParentDeptId());	
+						isDeptExist = officerService.isSubDepartmentNameExists(department.getDeptName(),department.getParentDeptId());	
 					}
 					if(!isDeptExist){
 				if(department.getParentDeptId()==-1) {
@@ -902,13 +930,13 @@ public class OfficerController {
 				}else if(department.getGrandParentDeptId()==-1){
 					department.setGrandParentDeptId(0);
 				}
-				userService.addDepartment(department,"edit");
+				officerService.addDepartment(department,"edit");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_sub_dept_edit_successfully");
 				}else{
 					redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_subdepartment_already_created");
 				}
 			}
-			List<TblDepartment> tblDepartments = userService.getDepartments();
+			List<TblDepartment> tblDepartments = officerService.getDepartments();
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
@@ -934,14 +962,14 @@ public class OfficerController {
 		TblDesignation tblDesignation = new TblDesignation();
 		TblDepartment tblGrandParentDept = null;
 		if(sessionBean.getIsOrgenizationUser()==1) {
-			tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+			tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 			tblDesignation.setDeptId(tblGrandParentDept.getDeptId());
 		}else {
-			tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+			tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 			tblDesignation.setDeptId(tblGrandParentDept.getDeptId());
 		}
 		
-//	    List<TblDepartment> tblDepartments = userService.getParentDepartments();
+//	    List<TblDepartment> tblDepartments = officerService.getParentDepartments();
 //	    Map<String,String> parentDeptLst = new LinkedHashMap<String,String>();
 //	    parentDeptLst.put("-1", "Please select department");
 //	    for (TblDepartment tblDepartment2 : tblDepartments) {
@@ -971,7 +999,7 @@ public class OfficerController {
 			grandParentDeptId = StringUtils.hasLength(request.getParameter("grandParentDeptId")) ? Integer.parseInt(request.getParameter("grandParentDeptId")) !=-1 ? Integer.parseInt(request.getParameter("grandParentDeptId")) : 0 : 0;
 			parentDeptId = tblDesignation.getDeptId()!=null ? tblDesignation.getDeptId()!=-1 ?tblDesignation.getDeptId() : 0 : 0;
 			if (tblDesignation!=null) {
-				if(!userService.isDesignationExists(tblDesignation.getDesignationName(), new Integer[]{tblDesignation.getDeptId()})){
+				if(!officerService.isDesignationExists(tblDesignation.getDesignationName(), new Integer[]{tblDesignation.getDeptId()})){
 					tblDesignation.setCreatedBy(1);
 					tblDesignation.setCreateDate(commonService.getServerDateTime());
 					tblDesignation.setDeptId(tblDesignation.getDeptId());
@@ -982,14 +1010,14 @@ public class OfficerController {
 //					}else if(subDeptId==0 && grandParentDeptId!=0 && parentDeptId!=0) {
 //						tblDesignation.setDeptId(parentDeptId);
 //					}
-					userService.addDesignation(tblDesignation,"new");
+					officerService.addDesignation(tblDesignation,"new");
 					redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_designation_create_successfully");
 				}else{
 					redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_designation_already_created");
 				}
 				
 			}
-			List<TblDepartment> tblDepartments = userService.getDepartments();
+			List<TblDepartment> tblDepartments = officerService.getDepartments();
 		    modelMap.addAttribute("tblDepartments", tblDepartments);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
@@ -1018,15 +1046,15 @@ public class OfficerController {
     	SessionBean sessionBean = session != null && session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null ? (SessionBean) session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) : null;
         try {
         if(sessionBean!=null){
-	    List<TblDepartment> tblDepartments = userService.getDepartments();
-	    tblDesignation = userService.getDesignationById(designationId);
-	    tblDepartment = userService.getDepartmentById(tblDesignation.getDeptId());
+	    List<TblDepartment> tblDepartments = officerService.getDepartments();
+	    tblDesignation = officerService.getDesignationById(designationId);
+	    tblDepartment = officerService.getDepartmentById(tblDesignation.getDeptId());
 	    TblDepartment tblGrandParentDept = null;
 	    if(sessionBean.getIsOrgenizationUser()==1) {
-	    	tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+	    	tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 		    grandParentDeptId=sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId();
 		}else {
-			tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+			tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 		    grandParentDeptId=sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId();
 		}
 	    
@@ -1078,10 +1106,10 @@ public class OfficerController {
 			subDeptId = StringUtils.hasLength(request.getParameter("subDeptId")) ? Integer.parseInt(request.getParameter("subDeptId"))!=-1 ? Integer.parseInt(request.getParameter("subDeptId")) : 0 : 0;
 			grandParentDeptId = StringUtils.hasLength(request.getParameter("grandParentDeptId")) ? Integer.parseInt(request.getParameter("grandParentDeptId"))!=-1 ? Integer.parseInt(request.getParameter("grandParentDeptId")) : 0 : 0;
 			parentDeptId = tblDesignation.getDeptId()!=null? tblDesignation.getDeptId()!=-1?tblDesignation.getDeptId():0:0;
-			TblDesignation editDesignation = userService.getDesignationById(tblDesignation.getDesignationId());
+			TblDesignation editDesignation = officerService.getDesignationById(tblDesignation.getDesignationId());
 			if (tblDesignation!=null) {
 				if(!editDesignation.getDesignationName().equals(tblDesignation.getDesignationName())){
-					isDesignationExists=userService.isDesignationExists(tblDesignation.getDesignationName(), new Integer[]{tblDesignation.getDeptId()});
+					isDesignationExists=officerService.isDesignationExists(tblDesignation.getDesignationName(), new Integer[]{tblDesignation.getDeptId()});
 				}
 				if(!isDesignationExists){
 					if(subDeptId!=0 && grandParentDeptId!=0 && parentDeptId!=0) {
@@ -1095,14 +1123,14 @@ public class OfficerController {
 					tblDesignation.setModifiedDate(commonService.getServerDateTime());
 					tblDesignation.setCreatedBy(1);
 					tblDesignation.setCreateDate(commonService.getServerDateTime());
-					userService.addDesignation(tblDesignation,"edit");
+					officerService.addDesignation(tblDesignation,"edit");
 					redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_designation_edit_successfully");
 				}else{
 					redirectAttributes.addFlashAttribute(CommonKeywords.ERROR_MSG.toString(), "msg_designation_already_created");
 				}
 			}
 			
-			List<TblDepartment> tblDepartments = userService.getDepartments();
+			List<TblDepartment> tblDepartments = officerService.getDepartments();
 			Map<String,String> parentDeptLst = new LinkedHashMap<String,String>();
 		    parentDeptLst.put("-1", "Please select department");
 		    for (TblDepartment tblDepartment2 : tblDepartments) {
@@ -1134,7 +1162,7 @@ public class OfficerController {
 	    deptIds[1] = Integer.parseInt(searchValue.split("@@")[2]!=""?searchValue.split("@@")[2]:"0");
 	    deptIds[2] = Integer.parseInt(searchValue.split("@@")[3]!=""?searchValue.split("@@")[3]:"0");
 		try {
-			isExist=userService.isDesignationExists(designationName, deptIds);
+			isExist=officerService.isDesignationExists(designationName, deptIds);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
 			} 
@@ -1163,7 +1191,7 @@ public class OfficerController {
 		sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
 		if(sessionBean!=null) {
 			grandParentDeptJson=getGrandParentDeptList();
-			TblDepartment tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+			TblDepartment tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 			rolesJson = getRolesJson();
 			countryJson=getContryJson();
 		    modelMap.addAttribute("rolesJson", rolesJson);
@@ -1205,12 +1233,12 @@ public class OfficerController {
 	try {
 		sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
 		if(sessionBean!=null) {
-	    Object[] officerDtl = userService.getOfficerDetails(officerId);
-	    TblDepartment tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+	    Object[] officerDtl = officerService.getOfficerDetails(officerId);
+	    TblDepartment tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 	    rolesJson = getRolesJson();
 	    if(officerDtl!=null) {
 	    	tblUserRoles = commonService.getUserRoleByUserId((Long)officerDtl[4]);
-	    	TblDepartment  tblDepartment = userService.getDepartmentById((Integer)officerDtl[6]); 
+	    	TblDepartment  tblDepartment = officerService.getDepartmentById((Integer)officerDtl[6]); 
 	    	if(tblDepartment!=null) {
 	    		grandParentDeptId=tblDepartment.getGrandParentDeptId();
 				if(grandParentDeptId!=0 && tblDepartment.getParentDeptId()!=0) {
@@ -1273,7 +1301,7 @@ public class OfficerController {
 			sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
 			if(sessionBean!=null) {
 				
-				userService.deleteUser(officerId);
+				officerService.deleteUser(officerId);
 				pageName = "redirect:/common/user/getmanageuser"; 
 			}
 		} catch (Exception ex) {
@@ -1335,10 +1363,10 @@ public class OfficerController {
 			if(optType.equalsIgnoreCase("Edit")) {
 				userId = StringUtils.hasLength(request.getParameter("hdUserId")) ? Integer.parseInt(request.getParameter("hdUserId")) : 0;
 				officerId = StringUtils.hasLength(request.getParameter("hdOfficerId")) ? Integer.parseInt(request.getParameter("hdOfficerId")) : 0;
-				officerDb = userService.getOfficerDetailsByUserId((int) userId);
+				officerDb = officerService.getOfficerDetailsByUserId((int) userId);
 				tblUserLoginDb = commonService.getUserLoginDetailById(userId);
-				tblUserLogin = userService.getTblUseloginbyUserId(userId);
-				tblOfficer = userService.getTblOfficerbyUserId(officerId);
+				tblUserLogin = officerService.getTblUseloginbyUserId(userId);
+				tblOfficer = officerService.getTblOfficerbyUserId(officerId);
 			}else {
 				tblUserLogin = new TblUserLogin();
 				tblOfficer = new TblOfficer();
@@ -1346,10 +1374,10 @@ public class OfficerController {
 			if(editfrom.equals("buyer")) {
 		    	retVal = "etenderdashboard";
 		    	if(officerDb!=null) {
-		    		tblDesignation = userService.getDesignationById((Integer) officerDb[7]);
+		    		tblDesignation = officerService.getDesignationById((Integer) officerDb[7]);
 		    	}
 		    }else {
-		    	tblDesignation = userService.getDesignationById(designationId);
+		    	tblDesignation = officerService.getDesignationById(designationId);
 		    }
 			
 			tblUserLogin.setCstatus(1);
@@ -1418,14 +1446,14 @@ public class OfficerController {
 					userRoleMappingLst.add(userRoleMapping);
 				}
 			}else {
-				userRoleMappingLst = userService.getUserRoleMappingByUserId(userId);
+				userRoleMappingLst = officerService.getUserRoleMappingByUserId(userId);
 			}
 			
 			if(optType.equalsIgnoreCase("Edit")) {
-				bSuccess = userService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "edit");
+				bSuccess = officerService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "edit");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_officer_edit_successfully");
 			}else {
-				bSuccess = userService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "new");
+				bSuccess = officerService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "new");
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_officer_create_successfully");
 			}
 
@@ -1435,9 +1463,9 @@ public class OfficerController {
 					String url = "http://"+stagingurl+"/eProcurement/verifyregistration/bidder/"+hash;
 					String href = "<a href=\""+url+"\" />";
 	               String content = "Thank you for registration. Your password is : "+password;
-	               userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
+	               officerService.addMail(officerService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
 	               String contentforadmin = "user registered in our system," + emailId;
-	               userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
+	               officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
 				}catch (Exception e){
 					exceptionHandlerService.writeLog(e);
                 }
@@ -1539,12 +1567,14 @@ public class OfficerController {
 				String txtPersonalPhoneNo = StringUtils.hasLength(request.getParameter("txtPersonalPhoneNo")) ? request.getParameter("txtPersonalPhoneNo") : "";
 				String txtRegisterType = "R";
 				
-				String [] selBidderSector = request.getParameterValues("selBidderSector");
+				String [] sector = request.getParameterValues("sector");
+				String [] industry = request.getParameterValues("industry");
+				String [] activity = request.getParameterValues("activity");
 				
 				if(optType.equalsIgnoreCase("edit")) {
 					userId = StringUtils.hasLength(request.getParameter("hdUserId")) ? Integer.parseInt(request.getParameter("hdUserId")) : 0;
 					bidderId = StringUtils.hasLength(request.getParameter("hdBidderId")) ? Integer.parseInt(request.getParameter("hdBidderId")) : 0;
-					bidderDtl = userService.getBiddderDetails(bidderId);
+					bidderDtl = officerService.getBiddderDetails(bidderId);
 				}
 				TblDesignation tblDesignation = new TblDesignation(0);
 				TblUserLogin tblUserLogin = new TblUserLogin();
@@ -1622,18 +1652,23 @@ public class OfficerController {
 				TblUserRoleMapping userRoleMapping = new TblUserRoleMapping();
 				userRoleMapping.setTblRoles(new TblRoles(5));//bidder role = 5
 				userRoleMapping.setTblUserlogin(tblUserLogin);
-				
+				for (int i = 0; i < sector.length; i++) {
+					TblBidderSectorMapping bidderSectorMapping = new TblBidderSectorMapping();
+					bidderSectorMapping.setSectorId(Integer.parseInt(sector[i]));
+					bidderSectorMapping.setIndustry(Integer.parseInt(industry[i]));
+					bidderSectorMapping.setActivity(Integer.parseInt(activity[i]));
+					if(optType.equalsIgnoreCase("edit")) {
+						bidderSectorMapping.setBidderId(tblBidder.getBidderId());
+					}
+					bidderSectorMappings.add(bidderSectorMapping);
+				}
 				if(optType.equalsIgnoreCase("edit")) {
-					bidderSectorMappings = userService.getSectorMappingById(bidderId);
-					bSuccess = userService.addBidder(tblBidder, tblUserLogin,tblCompany, "edit",userRoleMapping,bidderSectorMappings);
+					//bidderSectorMappings = officerService.getSectorMappingById(bidderId);
+					bSuccess = officerService.addBidder(tblBidder, tblUserLogin,tblCompany, "edit",userRoleMapping,bidderSectorMappings);
 					redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_edit_successfully");
 				}else {
-					for (String bidderSectorId : selBidderSector) {
-						TblBidderSectorMapping bidderSectorMapping = new TblBidderSectorMapping();
-						bidderSectorMapping.setSectorId(Integer.parseInt(bidderSectorId));
-						bidderSectorMappings.add(bidderSectorMapping);
-					}
-					bSuccess = userService.addBidder(tblBidder, tblUserLogin,tblCompany, "new",userRoleMapping,bidderSectorMappings);
+					
+					bSuccess = officerService.addBidder(tblBidder, tblUserLogin,tblCompany, "new",userRoleMapping,bidderSectorMappings);
 					redirectAttributes.addFlashAttribute("message", msg_bidder_create_successfully);
 				}
 				
@@ -1644,16 +1679,16 @@ public class OfficerController {
 						String url = "http://"+stagingurl+"/eProcurement/verifyregistration/bidder/"+hash;
 						String href = "<a href=\""+url+"\" />";
 	                   String content = "Thank you for registration. Your password is : "+pwd+" </br> Click here to verify your email address : " + href;
-	                   userService.addMail(userService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
+	                   officerService.addMail(officerService.setTblMailMessage(emailId,mailFrom, "Registration details",content,"Registration details "));
 	                   String contentforadmin = "Bidder registered in our system," + emailId;
-	                   userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
+	                   officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, "Registration details",contentforadmin,"Registration details "));
 	                }catch (Exception e) {
 	                	exceptionHandlerService.writeLog(e);
 	                }
 				}
 				
 				if(!categoryText.isEmpty()){
-					userService.saveCategoryData(tblBidder.getBidderId(), tblBidder.getTblUserlogin().getUserId(),0,0,categoryText);
+					officerService.saveCategoryData(tblBidder.getBidderId(), tblBidder.getTblUserlogin().getUserId(),0,0,categoryText);
 				}
 				//code to send password in mail
 				
@@ -1680,7 +1715,7 @@ public class OfficerController {
 		try {
 			sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
 			if(sessionBean!=null) {
-				TblDepartment tblGrandParentDept  = userService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
+				TblDepartment tblGrandParentDept  = officerService.getDepartmentById(sessionBean.getGrandParentDeptId()==0?sessionBean.getDeptId():sessionBean.getGrandParentDeptId());
 				modelMap.addAttribute("tblGrandParentDept", tblGrandParentDept);
 			}
 		} catch (Exception ex) {
@@ -1752,6 +1787,27 @@ public class OfficerController {
 	}
 	return countryJson;
     }
+
+    
+    /**
+     * 
+     * @param modelMap
+     * @param request
+     * @param officerId
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/common/user/getIndustryData/{sector}", method = RequestMethod.GET)
+    public List<Map<String,Object>> getIndustryData(ModelMap modelMap, HttpServletRequest request,@PathVariable("sector") int sector) {
+    	return officerService.getIndustryData(sector);
+    
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/common/user/getActivityData/{sector}/{industry}", method = RequestMethod.GET)
+    public List<Map<String,Object>> getActivityData(ModelMap modelMap, HttpServletRequest request,@PathVariable("sector") int sector,@PathVariable("industry") int industry) {
+    	return officerService.getActivityData(sector,industry);
+    }
     
     /**
      * 
@@ -1764,12 +1820,12 @@ public class OfficerController {
     public String getEditBidder(ModelMap modelMap, HttpServletRequest request,@PathVariable("bidderId") int bidderId,@PathVariable("editfrom") int editfrom) {
    	String redirect ="etender/bidder/CreateBidder";
    	String countryJson = "";
-   	List<Integer> tblBidderSector  = new ArrayList<Integer>();
-   	List<Object[]> bidderSectorLst = new ArrayList<Object[]>();
+   	//List<Integer> tblBidderSector  = new ArrayList<Integer>();
+   	//List<Object[]> bidderSectorLst = new ArrayList<Object[]>();
 		try {
 			countryJson = getContryJson();
 			modelMap.addAttribute("countryJson", countryJson);
-			Object[] bidderDtls = userService.getBiddderDetails(bidderId);
+			Object[] bidderDtls = officerService.getBiddderDetails(bidderId);
 			modelMap.addAttribute("optType", "Edit");    
 			modelMap.addAttribute("bidderDtls", bidderDtls);
 			modelMap.addAttribute(BIDDERID, bidderId);
@@ -1795,22 +1851,24 @@ public class OfficerController {
 		    modelMap.addAttribute("timeZone", commonService.getTimeZonebyId((Integer)bidderDtls[15]));
 		    modelMap.addAttribute("objectId", bidderRegistrationObjectId);
 		    StringBuilder sectors = new StringBuilder();
-		    List<TblBidderSectorMapping> bidderSectorMappings = userService.getSectorMappingById(bidderId);
-		    for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
-				sectors.append(userService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
+		    List<TblBidderSectorMapping> bidderSectorMappings = officerService.getSectorMappingById(bidderId);
+		    /*for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
+				sectors.append(officerService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
 				tblBidderSector.add(tblBidderSectorMapping.getSectorId());
 				Object[] bidderSectorArray = new Object[2];
 				bidderSectorArray[0] = tblBidderSectorMapping.getSectorId();
-				bidderSectorArray[1] = userService.getSectorNameById(tblBidderSectorMapping.getSectorId());
+				bidderSectorArray[1] = officerService.getSectorNameById(tblBidderSectorMapping.getSectorId());
 				bidderSectorLst.add(bidderSectorArray);
-			}
+			}*/
+		    
+		    modelMap.addAttribute("bidderSectorMappings", bidderSectorMappings);
 		    modelMap.addAttribute("sectors", sectors);
-			List<Object[]> data = userService.getCategoryMap(Integer.parseInt(bidderDtls[12].toString()),0,0);
+			List<Object[]> data = officerService.getCategoryMap(Integer.parseInt(bidderDtls[12].toString()),0,0);
 			if(data != null && !data.isEmpty()){
 				modelMap.addAttribute("categoryList", data);
 			}
-			modelMap.addAttribute("tblBidderSector", tblBidderSector);
-			modelMap.addAttribute("bidderSectorLst", bidderSectorLst);
+			//modelMap.addAttribute("tblBidderSector", tblBidderSector);
+			//modelMap.addAttribute("bidderSectorLst", bidderSectorLst);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
 		} 
@@ -1849,7 +1907,7 @@ public class OfficerController {
 			modelMap.addAttribute("userstatus", userstatus);
 			countryJson = getContryJson();
 			modelMap.addAttribute("countryJson", countryJson);
-			Object[] bidderDtls = userService.getBiddderDetails(bidderId);
+			Object[] bidderDtls = officerService.getBiddderDetails(bidderId);
 			modelMap.addAttribute("optType", "Edit");    
 			modelMap.addAttribute("bidderDtls", bidderDtls);
 			modelMap.addAttribute("establishDate", bidderDtls[22].toString());
@@ -1865,15 +1923,16 @@ public class OfficerController {
 		    modelMap.addAttribute("isview", isView);
 		    String remarks = "";
 		    if(isView==1){
-		    	remarks = userService.getStatusRemarks(bidderId, userstatus, 1);
+		    	remarks = officerService.getStatusRemarks(bidderId, userstatus, 1);
 		    }
 		    modelMap.addAttribute("remarks", remarks);
-		    StringBuilder sectors = new StringBuilder();
-		    List<TblBidderSectorMapping> bidderSectorMappings = userService.getSectorMappingById(bidderId);
-		    for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
-				sectors.append(userService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
-			}
-		    modelMap.addAttribute("sectors", sectors);
+		    //StringBuilder sectors = new StringBuilder();
+		    List<TblBidderSectorMapping> bidderSectorMappings = officerService.getSectorMappingById(bidderId);
+		    /*for (TblBidderSectorMapping tblBidderSectorMapping : bidderSectorMappings) {
+				sectors.append(officerService.getSectorNameById(tblBidderSectorMapping.getSectorId())).append(",");
+			}*/
+		    modelMap.addAttribute("bidderSectorMappings", bidderSectorMappings);
+//		    modelMap.addAttribute("sectors", sectors);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
 		} 
@@ -1904,32 +1963,32 @@ public class OfficerController {
 			userstatus = StringUtils.hasLength(request.getParameter("userstatus")) ? Integer.parseInt(request.getParameter("userstatus")) : 0;
 			tabId = StringUtils.hasLength(request.getParameter("tabId")) ? Integer.parseInt(request.getParameter("tabId")) : 0;
 			bidderId = StringUtils.hasLength(request.getParameter(BIDDERID)) ? Integer.parseInt(request.getParameter(BIDDERID)) : 0;
-			Object[] bidderDtl  = userService.getBiddderDetails(bidderId);
-			userService.updateBidderstatus(bidderId, userstatus,remarks);
+			Object[] bidderDtl  = officerService.getBiddderDetails(bidderId);
+			officerService.updateBidderstatus(bidderId, userstatus,remarks);
 			if(userstatus==1) {
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_approved_successfully");
 				String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your request for new bidder registration is approved. ";
-	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been approved",contentforbidder,BIDDERSTATUSCHANGE));
+	            officerService.addMail(officerService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been approved",contentforbidder,BIDDERSTATUSCHANGE));
 				String contentforadmin = "New bidder request is approved successfully," + bidderDtl[1].toString()+"("+bidderDtl[0].toString()+")";
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE));
+	            officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE));
 			}else if(userstatus==2) {
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_rejected_successfully");
 				String contentforadmin = "New bidder request is rejected," + bidderDtl[1].toString()+"("+bidderDtl[0].toString()+")";
-				userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE));
+				officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE));
 				String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your request for new bidder registration is rejected. You can re-register by clicking this link .." + href;
-	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been rejected",contentforbidder,"Bidder Profile Rejection"));
+	            officerService.addMail(officerService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been rejected",contentforbidder,"Bidder Profile Rejection"));
 			}else if(userstatus==3) {
 				String url = "http://"+stagingurl+"/eProcurement/";
 	            String href = "<a href=\""+url+"\" />";
 	            String contentforbidder = "Your profile has been deactivated ";
-	            userService.addMail(userService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been de-activated",contentforbidder,"Your profile has been de-activated"));
+	            officerService.addMail(officerService.setTblMailMessage(bidderDtl[0].toString(),mailFrom, "Your profile has been de-activated",contentforbidder,"Your profile has been de-activated"));
 				redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_bidder_blacklisted_successfully");
 				String contentforadmin = "Bidder is deactivated," + bidderDtl[1].toString()+"("+bidderDtl[0].toString()+")";
-	            userService.addMail(userService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE)); 
+	            officerService.addMail(officerService.setTblMailMessage("sapan@cahoot-technologies.com",mailFrom, BIDDERSTATUSCHANGE,contentforadmin,BIDDERSTATUSCHANGE)); 
 			}
 			}
 		} catch (Exception ex) {
@@ -1964,7 +2023,7 @@ public class OfficerController {
     public String getEditLink(ModelMap modelMap, HttpServletRequest request,@ModelAttribute("tblLink") TblLink tblLink,@PathVariable("linkId") int linkId) {
    	String redirect ="/common/AddLink";
 		try {
-			tblLink= userService.getTblLinkById(linkId);
+			tblLink= officerService.getTblLinkById(linkId);
 			modelMap.addAttribute("tblLink", tblLink);
 			modelMap.addAttribute("optType", "edit");
 		} catch (Exception ex) {
@@ -1986,7 +2045,7 @@ public class OfficerController {
    	String optType = "";
 		try {
 			optType = StringUtils.hasLength(request.getParameter("optType")) ? request.getParameter("optType") : "";
-			userService.addLink(tblLink,optType);
+			officerService.addLink(tblLink,optType);
 		} catch (Exception ex) {
 		    exceptionHandlerService.writeLog(ex);
 		} 
@@ -2007,7 +2066,7 @@ public class OfficerController {
 	    String link = "";
 		try {
 			link=requestData.split("=")[1].replaceAll("%2F", "/");
-			isExist=userService.isLinkExists(link);
+			isExist=officerService.isLinkExists(link);
 			} catch (Exception ex) {
 			     exceptionHandlerService.writeLog(ex);
 			} 
@@ -2050,10 +2109,10 @@ public class OfficerController {
    	   if(""!=requestData && requestData!=null) {
    		roleId=Integer.parseInt(requestData.split("=")[1]);
    	   }
-   	   List<TblRoleLinkMapping> roleLinkMappings = userService.getLinksByRoleId(roleId);
+   	   List<TblRoleLinkMapping> roleLinkMappings = officerService.getLinksByRoleId(roleId);
    	   List<String> chkRooleLinkId = new ArrayList<String>();
            if (request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null) {
-               List<TblLink> tblLinkLst = userService.getTblLinks();
+               List<TblLink> tblLinkLst = officerService.getTblLinks();
                if(tblLinkLst!=null && !tblLinkLst.isEmpty()) {
             	   for (TblLink tblLink : tblLinkLst) {
             		   if(linksMap.containsKey(tblLink.getModule())) {
@@ -2107,7 +2166,7 @@ public class OfficerController {
         			  roleLinkMapping.setTblRoles(new TblRoles(roleId));
         			  roleLinkMappings.add(roleLinkMapping);
         		  }	
-        		  userService.addRoleLinks(roleLinkMappings,roleId);
+        		  officerService.addRoleLinks(roleLinkMappings,roleId);
         		  redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_assignrights_successfully");
         	  }
           } else {
@@ -2147,20 +2206,20 @@ public class OfficerController {
 		if(sessionBean!=null) {
 			
 		if(usertype==1) {	
-	    Object[] officerDtl = userService.getOfficerDetails(userId);
+	    Object[] officerDtl = officerService.getOfficerDetails(userId);
 	    if(officerDtl!=null) {
 	    	tblUserRoles = commonService.getUserRoleByUserId((Long)officerDtl[4]);
-	    	TblDepartment  tblDepartment = userService.getDepartmentById((Integer)officerDtl[6]); 
+	    	TblDepartment  tblDepartment = officerService.getDepartmentById((Integer)officerDtl[6]); 
 	    	if(tblDepartment!=null) {
 	    		grandParentDeptId=tblDepartment.getGrandParentDeptId();
 				if(grandParentDeptId!=0 && tblDepartment.getParentDeptId()!=0) {
-					TblDepartment  tblParentDepartment = userService.getDepartmentById(tblDepartment.getParentDeptId());
-					TblDepartment  tblGrandParentDepartment = userService.getDepartmentById(tblDepartment.getGrandParentDeptId());
+					TblDepartment  tblParentDepartment = officerService.getDepartmentById(tblDepartment.getParentDeptId());
+					TblDepartment  tblGrandParentDepartment = officerService.getDepartmentById(tblDepartment.getGrandParentDeptId());
 					modelMap.addAttribute("grandParentDeptName", tblGrandParentDepartment.getDeptName());
 					modelMap.addAttribute("parentDeptName", tblParentDepartment.getDeptName());
 					modelMap.addAttribute("subDeptName", tblDepartment.getDeptName());
 				}else if (grandParentDeptId!=0 && tblDepartment.getParentDeptId()==0) {
-					TblDepartment  tblGrandParentDepartment = userService.getDepartmentById(tblDepartment.getGrandParentDeptId());
+					TblDepartment  tblGrandParentDepartment = officerService.getDepartmentById(tblDepartment.getGrandParentDeptId());
 					modelMap.addAttribute("grandParentDeptName", tblGrandParentDepartment.getDeptName());
 					modelMap.addAttribute("parentDeptName", tblDepartment.getDeptName());
 					modelMap.addAttribute("subDeptName", "-");
@@ -2170,7 +2229,7 @@ public class OfficerController {
 					modelMap.addAttribute("subDeptName", "-");
 				}
 	    	}
-	    	modelMap.addAttribute("designation", userService.getDesignationById((Integer)officerDtl[7]).getDesignationName());
+	    	modelMap.addAttribute("designation", officerService.getDesignationById((Integer)officerDtl[7]).getDesignationName());
 	    	redirect="etender/buyer/ViewOfficer";
 		    modelMap.addAttribute("officerDtl", officerDtl);
 		    modelMap.addAttribute("country", commonService.getCountryById((Integer)officerDtl[9]));
@@ -2222,7 +2281,7 @@ public class OfficerController {
 				TblOfficer tblOfficer  = null;
 				tblUserLogin = new TblUserLogin();
 				tblOfficer = new TblOfficer();
-				userService.addDesignation(tblDesignation, "new");
+				officerService.addDesignation(tblDesignation, "new");
 				tblUserLogin.setCstatus(1);
 				tblUserLogin.setLoginid(emailId);
 				tblUserLogin.setTblDesignation(tblDesignation);
@@ -2257,7 +2316,7 @@ public class OfficerController {
 						userRoleMapping.setTblUserlogin(tblUserLogin);
 						userRoleMappingLst.add(userRoleMapping);
 					}
-					bSuccess = userService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "new");
+					bSuccess = officerService.addUser(tblOfficer, tblUserLogin,userRoleMappingLst, "new");
 				
 			} catch (Exception ex) {
 			    exceptionHandlerService.writeLog(ex);
@@ -2276,7 +2335,7 @@ public class OfficerController {
     	String jsonStr = "";
 	    StringBuilder json = new StringBuilder("[");
     	try {
-				List<TblDepartment> tblDepartments = userService.getSubDepartments(parentDeptId,deptLevel);
+				List<TblDepartment> tblDepartments = officerService.getSubDepartments(parentDeptId,deptLevel);
 				json.append("{\"value\":\"-1\",\"label\":\"Please select\"}").append(",");
 				if(tblDepartments!=null && !tblDepartments.isEmpty()){
 					for (TblDepartment tblDepartment : tblDepartments) {
@@ -2300,7 +2359,7 @@ public class OfficerController {
     	String jsonStr = "";
 	    StringBuilder json = new StringBuilder("[");
     	try {
-				List<TblDepartment> tblDepartments = userService.getGrandParentDepartments();
+				List<TblDepartment> tblDepartments = officerService.getGrandParentDepartments();
 				json.append("{\"value\":\"-1\",\"label\":\"Please select\"}").append(",");
 				if(tblDepartments!=null && !tblDepartments.isEmpty()){
 					for (TblDepartment tblDepartment : tblDepartments) {
@@ -2325,7 +2384,7 @@ public class OfficerController {
     	String jsonStr = "";
 	    StringBuilder json = new StringBuilder("[");
     	try {
-				List<TblDesignation> tblDesignations = userService.getDesignationBydeptId(deptId);
+				List<TblDesignation> tblDesignations = officerService.getDesignationBydeptId(deptId);
 				json.append("{\"value\":\"-1\",\"label\":\"Please select\"}").append(",");
 				if(tblDesignations!=null && !tblDesignations.isEmpty()){
 					for (TblDesignation tblDesignation : tblDesignations) {

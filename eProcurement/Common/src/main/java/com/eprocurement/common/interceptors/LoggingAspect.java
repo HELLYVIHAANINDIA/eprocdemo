@@ -1,7 +1,5 @@
 package com.eprocurement.common.interceptors;
 
-import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -11,16 +9,16 @@ import javax.servlet.http.HttpSession;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.eprocurement.common.model.TblAuditLog;
 import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.common.services.CommonService;
 import com.eprocurement.common.utility.CommonKeywords;
 import com.eprocurement.common.utility.SessionBean;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 @Aspect
 public class LoggingAspect {
@@ -29,9 +27,9 @@ public class LoggingAspect {
 	CommonDAO commonDao;
 	@Autowired
 	CommonService commonService;
-	static Set<String> skipURL = new HashSet<String>();
+	static Set<String> skipURL = CustomInterceptor.skipURL;
 	public LoggingAspect(){
-		skipURL.add("/common/user/getCategoryData");
+	/*	skipURL.add("/common/user/getCategoryData");
 		skipURL.add("/common/user/notificationTab");
 		skipURL.add("/common/user/getNotificationCount");
 		skipURL.add("/common/user/getstatebycountry");
@@ -52,7 +50,7 @@ public class LoggingAspect {
 		skipURL.add("/submitLogin");
 		skipURL.add("/submitlogout");
 		skipURL.add("/notloggedin");
-		skipURL.add("/common/user/getbidderregistration");
+		skipURL.add("/common/user/register");
 		skipURL.add("/common/user/addbidder");
 		skipURL.add("/login");
 		skipURL.add("/getforgotpassword");
@@ -73,11 +71,12 @@ public class LoggingAspect {
 		skipURL.add("/registersuccess");
 		skipURL.add("/changepasswordredirect");
 		skipURL.add("/ajax/departments/");
+		skipURL.add("/ajax/departments/");*/
 		
 	}
 	
 	@Before("within(com.eprocurement.common.controller.*) || within(com.eprocurement.etender.controller.*)")
-	public void beforeExecution(JoinPoint jp) {
+	public void beforeExecution(JoinPoint jp) throws UnknownHostException {
 		Object[] args = jp.getArgs();
 		String requestType="";
 		boolean isSkipURL = false;
@@ -98,7 +97,7 @@ public class LoggingAspect {
 					requestType = request.getMethod();
 			        HttpSession session = request.getSession();
 			        SessionBean sessionBean = session != null && session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null ? (SessionBean) session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) : null;
-			        String linkDetail="User has access ";
+			        String linkDetail=sessionBean.getFullName() +" has access ";
 			        if(sessionBean!=null) {
 			        	Map<String,String> userLinkDtls = (Map<String,String>) request.getSession().getAttribute("userLinksDtls");
 						if (userLinkDtls != null && userLinkDtls.size() > 0) {
@@ -117,6 +116,9 @@ public class LoggingAspect {
 			        		auditLog.setPageUrl(request.getRequestURI());
 			        		auditLog.setEntityName(sessionBean.getUserName());
 			        		auditLog.setDetail(linkDetail);
+			        		auditLog.setUserType(sessionBean.getUserTypeId());
+                                                InetAddress ipAddr = InetAddress.getLocalHost();
+                                                auditLog.setIpAddress(ipAddr.getHostAddress());
 			        	}
 			        }else {
 			        	
@@ -150,7 +152,7 @@ public class LoggingAspect {
 			}
 		}
 			if(request!=null){
-				if(!isSkipURL) {
+				if(!isSkipURL && auditLog != null && auditLog.getPageUrl() != null) {
 	        		commonDao.save(auditLog);
 	        	}
 			}
@@ -165,7 +167,7 @@ public class LoggingAspect {
 	}
 	private boolean isPageSkipped(String uri,String contextName) {
 		boolean pageSkipped = false;
-        if(uri.equals(contextName+"/")){
+	    if(uri.equals(contextName+"/") || uri.contains("/js/") || uri.contains("/css/") || uri.contains("/fonts/") || uri.contains("/resources/")){
         	pageSkipped = true;
         }else {
 		    for(String str : skipURL){

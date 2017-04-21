@@ -52,7 +52,6 @@ public class BidderMappingController {
     public String bidderMapping(@PathVariable("tenderId") int tenderId, HttpServletRequest request, ModelMap modelMap) {
         try {
             tenderCommonService.tenderSummary(tenderId, new HashMap<String, Object>());
-            modelMap.addAttribute("lstSearchOpt", eventBidderMapService.getSearchOptions());
             modelMap.addAttribute("lstMappedBidders", tenderCommonService.getTenderMappedBidderDetails(tenderId, 1));
             int tenderMode = (Integer) tenderCommonService.getTenderField(tenderId, "tenderMode");
             TblTender tblTender=biddingFormService.BiddingTypeFromTender(tenderId);

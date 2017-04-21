@@ -53,7 +53,7 @@ public class TblDepartment implements Serializable {
     @Column(name="city", length=100)
     private String     city         ;
 
-    @Column(name="phoneNo", length=15)
+    @Column(name="phoneNo")
     private String     phoneno      ;
 
     @Column(name="parentDeptId")

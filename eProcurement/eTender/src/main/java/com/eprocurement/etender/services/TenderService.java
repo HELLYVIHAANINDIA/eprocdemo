@@ -30,7 +30,6 @@ import com.eprocurement.common.daogeneric.Operation_enum;
 import com.eprocurement.common.daointerface.HibernateQueryDao;
 import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.common.services.CommonService;
-import com.eprocurement.common.services.SelectItem;
 import com.eprocurement.etender.daointerface.TblBidderApprovalDetailDao;
 import com.eprocurement.etender.daointerface.TblBidderApprovalHistoryDao;
 import com.eprocurement.etender.daointerface.TblBidderItemsDao;
@@ -1044,12 +1043,15 @@ public class TenderService {
     } 
     
     @Transactional
-    public List<Object[]> getBidderById(int tenderId,int envelopeId,int formId,int envelopeSortOrder,int previousEnvelopeId,int tenderStage,List<Object> bidderIds) throws Exception {
+    public List<Object[]> getBidderById(int tenderId,int envelopeId,int formId,int envelopeSortOrder,int previousEnvelopeId,int tenderStage,List<Object> bidderIds,int biddingType) throws Exception {
     	Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId",tenderId);
         var.put("formId",formId);
         StringBuilder query = new StringBuilder();
         query.append(" SELECT DISTINCT FS.companyId,FS.bidderId, Tc.companyName,TBC.encodedName ");
+        if(biddingType == 2){
+	    	 query.append(" ,TCU.currencyName, TTC.isDefault  ");
+	     }
         query.append(" FROM tbl_finalsubmission FS ");
         query.append(" INNER JOIN tbl_tenderform TF ON TF.tenderId = FS.tenderId ");
         query.append(" inner join tbl_company TC on TC.companyId = FS.companyId ");
@@ -1059,11 +1061,17 @@ public class TenderService {
         	query.append(" INNER JOIN Tbl_BidderApprovalDetail BAD ON BAD.envelopeId =:previousEnvelopeId AND BAD.finalSubmissionId = FS.finalSubmissionId AND BAD.isApproved = 1");
         }
         query.append(" INNER JOIN tbl_TenderBidConfirmation TBC on TBC.tenderId = FS.tenderId AND TBC.bidderId = FS.bidderId");
+        if(biddingType == 2){
+	    	query.append(" INNER JOIN Tbl_TenderBidCurrency TTBC ON TTBC.companyid= FS.companyid ");
+	    	query.append(" INNER JOIN tbl_tendercurrency TTC ON TTC.tenderCurrencyId = TTBC.tenderCurrencyId AND TTC.tenderid = FS.tenderid");
+	    	query.append(" INNER JOIN tbl_currency TCU ON TCU.currencyId = TTC.currencyId");
+        }
         query.append(" WHERE FS.tenderId =:tenderId AND FS.isActive = 1 AND TOA.formId =:formId");
         if(bidderIds!=null && !bidderIds.isEmpty()){
         	var.put("bidderIds",bidderIds);
         	query.append(" AND FS.bidderId IN (:bidderIds)");
         }
+        
         return hibernateQueryDao.createSQLQuery(query.toString(),var);
     } 
     
@@ -1109,7 +1117,7 @@ public class TenderService {
     public List<Object[]> getTenderTableById(int formId) throws Exception {
     	Map<String, Object> var = new HashMap<String, Object>();
         var.put("formId",formId);
-        return hibernateQueryDao.createNewQuery("SELECT tblTenderTable.tableId,tblTenderTable.tableName,tblTenderTable.formId,tblTenderTable.tableName,tblTenderTable.tableHeader,tblTenderTable.tableFooter,tblTenderTable.noOfRows,tblTenderTable.noOfCols,tblTenderTable.isMultipleFilling,tblTenderTable.hasGTRow,tblTenderTable.sortOrder from TblTenderTable tblTenderTable where tblTenderTable.formId=:formId",var);
+        return hibernateQueryDao.createNewQuery("SELECT tblTenderTable.tableId,tblTenderTable.tableName,tblTenderTable.formId,tblTenderTable.tableName,tblTenderTable.tableHeader,tblTenderTable.tableFooter,tblTenderTable.noOfRows,tblTenderTable.noOfCols,tblTenderTable.isMultipleFilling,tblTenderTable.hasGTRow,tblTenderTable.sortOrder from TblTenderTable tblTenderTable where tblTenderTable.formId=:formId order by tblTenderTable.tableId desc",var);
     }    
     
 
@@ -1234,7 +1242,7 @@ public class TenderService {
         		Collections.sort(tables);
         	}*/
         List<Object[]> visibleRows = new ArrayList<Object[]>();
-        List<SelectItem> currency = null;
+        //List<SelectItem> currency = null;
         Set<Integer> comboBoxs = new HashSet<Integer>();
         Set<Integer> listBoxs = new HashSet<Integer>();
         Set<Integer> masterFields = new HashSet<Integer>();
@@ -1471,7 +1479,7 @@ public class TenderService {
             }
             if (isCurrency) {
                 showDownload=false;
-                tableInfo.put("tenderCurrency", currency);
+                //tableInfo.put("tenderCurrency", currency);
             }
             tableInfo.put("columns", columns);
             if (!columns.isEmpty()) {
@@ -1767,16 +1775,31 @@ public class TenderService {
 	    	return (lastEnvDetailscount!=0 && secondLastEnvDetailscount!=0 && lastEnvDetailscount == secondLastEnvDetailscount) ? 1 : 0;
 	    }
 	}
-	public Map<Integer,Object> checkIsEvaluationScoreDone(int tenderId) throws Exception {
-		List<Object[]> result = reportService.getTenderBidFormWithFormDetail(tenderId,0,0,"0");
-		Map<Integer,Object> envelope = new HashMap<Integer, Object>();
-		if(result != null && !result.isEmpty()){
-			for(Object[] obj : result){
+
+	public Map<Integer, Object> checkIsEvaluationScoreDone(int tenderId) throws Exception {
+		List<Object[]> result = reportService.getTenderBidFormWithFormDetail(tenderId, 0, 0, "0");
+		Map<Integer, Object> envelope = new HashMap<Integer, Object>();
+		if (result != null && !result.isEmpty()) {
+			List<Integer> totalEnvelope = new ArrayList<Integer>();
+			List<Integer> weightageAddedEnvelope = new ArrayList<Integer>();
+			for (Object[] obj : result) {
 				Float weight = (Float) obj[7];
-				Integer envelopeId = (Integer)obj[2];
-				if(!envelope.containsKey(envelopeId) && weight == 0){
-					envelope.put((Integer)obj[2],0);
+				Integer envelopeId = (Integer) obj[2];
+				if (!totalEnvelope.contains(envelopeId)) {
+					totalEnvelope.add(envelopeId); // get all envelope list
 				}
+				if (!weightageAddedEnvelope.contains(envelopeId) && weight > 0) { // get all envelope for which entry is already done
+					weightageAddedEnvelope.add((Integer) obj[2]);
+				}
+			}
+			for (Integer entity : weightageAddedEnvelope) {	
+				if (totalEnvelope.contains(entity)) {
+					totalEnvelope.remove(entity); // remove envelope which are
+													// already processed.
+				}
+			}
+			for (Integer env : totalEnvelope) {
+				envelope.put(env, 0);
 			}
 		}
 		return envelope;

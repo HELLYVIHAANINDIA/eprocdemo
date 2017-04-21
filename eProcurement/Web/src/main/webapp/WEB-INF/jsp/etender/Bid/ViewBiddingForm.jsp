@@ -337,7 +337,7 @@
                           <div class="row">
                               <form id="tenderDtBean" name="tenderDtBean" action="${pageContext.servletContext.contextPath}/eBid/Bid/updateBiddingFormValueForEdit" method="post" onsubmit="if(valOnSubmit()){return createJson();} else {return false ;}" novalidate >
                               <c:if test="${sessionUserTypeId eq 2}">
-				                  <div class="col-lg-12 col-md-12" id="divdownloadupload">
+				                  <div class="col-lg-12 col-md-12" id="divdownloadupload" style="display: none;">
 				                        <div class="box">
 						                            <div class="col-md-12">
 						                                <h3 class="box-title"> 

@@ -98,8 +98,6 @@ public class EProcureCreationService {
 	private static final String TBLTENDERTENDERID = "tblTender.tenderId";
 	@Value("#{etenderProperties['client_dateformate']}")
     private String client_dateformate;
-	@Value("#{etenderProperties['isProductionServer']}")
-    private Boolean isProductionServer;
 	@Value("#{etenderProperties['client_dateformate_hhmm']}")
     private String client_dateformate_hhmm;
 	@Value("#{etenderProperties['sql_dateformate']}")
@@ -675,105 +673,14 @@ public class EProcureCreationService {
 		if(tblTender.getIsWeightageEvaluationRequired() == 1){
 			updateWeightageForNonMandatoryForm(tblTender);
 		}
-		sendNotoficationToBidderForNewTender(tblTender.getTenderMode(),tblTender.getTenderId() ,userId);
-		sendNotoficationToCommitteMember(tblTender.getIsPreBidMeeting(),tblTender.getTenderId() ,userId);
+		tenderCommonService.sendNotoficationToBidderForNewTender(tblTender ,userId);
+		tenderCommonService.sendNotoficationToCommitteMember(tblTender.getIsPreBidMeeting(),tblTender.getTenderId() ,userId);
 	}
 
 	private void updateWeightageForNonMandatoryForm(TblTender tblTender) {
 		commonDAO.executeUpdate("update TblTenderForm tblTenderForm set formWeight=0 where tblTenderForm.tblTender.tenderId="+tblTender.getTenderId()+" and tblTenderForm.isMandatory=0", null);
 	}
-	/**
-	 * 
-	 * @param isPrebid
-	 * @param tenderId
-	 * @param userId
-	 * @throws Exception
-	 */
-	private void sendNotoficationToCommitteMember(Integer isPrebid, Integer tenderId, Integer userId) throws Exception {
-		Map<Integer,String> committeeType = new HashMap();
-		committeeType.put(1, "Opening Committee");
-		committeeType.put(2, "Evaluation Committee");
-		if(isPrebid == 1){
-			committeeType.put(3, "Prebid Committee");
-		}
-		for(Map.Entry<Integer,String> entity : committeeType.entrySet()){
-		Integer cType = entity.getKey();
-		String cText = entity.getValue();
-		String committeeQuery = "select tblOfficer.tblUserlogin.userId,tblOfficer.id,tblCommittee.committeeType,tblOfficer.emailid from TblCommitteeUser tblCommitteeUser inner join tblCommitteeUser.tblOfficer tblOfficer inner join  tblCommitteeUser.tblCommittee tblCommittee where tblCommitteeUser.tblCommittee.isActive=1 "
-				+ "and tblCommittee.tblTender.tenderId="+tenderId +" and tblCommittee.committeeType="+cType;
-			List<Object[]> oldCommittees = commonDAO.executeSelect(committeeQuery, null);
-			int[] committeeUser = null;
-			String[] committeeUserEmailId = null;
-			if(oldCommittees != null && !oldCommittees.isEmpty()){
-				committeeUser = new int[oldCommittees.size()];
-				committeeUserEmailId = new String[oldCommittees.size()];
-				for(int i = 0; i < oldCommittees.size(); i++){
-					committeeUser[i] = Integer.parseInt(oldCommittees.get(i)[0].toString());
-					committeeUserEmailId[i] = oldCommittees.get(i)[3].toString();
-				}
-			}
-			if(committeeUser != null){
-				String user = "";
-				StringBuilder emailId = new StringBuilder();
-				if(committeeUser != null){
-					for(int i = 0; i < committeeUser.length; i++){
-						user += committeeUser[i]+",";
-						emailId.append(committeeUserEmailId[i]).append(",");
-					}
-				}
-				Map<String,Object> parameter = new HashMap();
-				parameter.put("userId", user);
-				parameter.put("committeeType", cText);
-				tenderCommonService.insertNotification(tenderId, parameter, userId,6);
-				if(committeeUserEmailId != null && isProductionServer != null && isProductionServer){
-					parameter.clear();
-					parameter.put("emailId", emailId);
-					parameter.put("committeeType", cText);
-					tenderCommonService.insertNotification(tenderId, parameter, userId,6);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Send notification to all
-	 * @param tenderMode
-	 * @param tenderId
-	 * @param userId
-	 * @throws Exception
-	 */
-	private void sendNotoficationToBidderForNewTender(Integer tenderMode ,Integer tenderId,Integer userId) throws Exception {
-		Map<String,Object> parameter = new HashMap();
-		StringBuilder bidder = new StringBuilder(); 
-		StringBuilder bidderEmailId = new StringBuilder(); 
-		List<Object[]> approvedBidder;
-		if(tenderMode == 1){
-			approvedBidder =  getApprovedBidder();
-		}else{	// Limited
-			approvedBidder =  commonDAO.executeSelect("select tblBidder.bidderId,tblBidder.emailId,tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId="+tenderId, null);
-		}
-		if(approvedBidder != null && !approvedBidder.isEmpty()){
-			for(Object[] obj : approvedBidder){
-				bidder.append(obj[2]).append(",");
-				bidderEmailId.append(obj[1]).append(",");
-			}
-		}
-		parameter.put("userId", bidder);
-		tenderCommonService.insertNotification(tenderId, parameter, userId,9);
-		
-		if(bidderEmailId.length() > 0 && isProductionServer != null && isProductionServer){
-			parameter.clear();
-			parameter.put("emailId", bidderEmailId);
-			tenderCommonService.insertNotification(tenderId, parameter, userId,9);
-		}
-
-	}
-
-
-	private List<Object[]> getApprovedBidder() {
-		return commonDAO.executeSelect("select tblBidder.bidderId,tblBidder.emailId,tblUserlogin.userId from TblBidder tblBidder where tblBidder.cstatus = 1 ", null);
-	}
-
+	
 	public Map<String, Object> getCommitteeEvaluationCount(Integer officerId,Integer status,Integer committeeType) {
 		Map<String, Object> countMap = new HashMap();
 		countMap.put("officerId", officerId);
@@ -801,7 +708,7 @@ public class EProcureCreationService {
 		Map<String, Object> colValMap = new HashMap();
 		Date serverDateTime = commonService.getServerDateTime();
 		colValMap.put("departmentId", deptId);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 0 and departmentId in (:departmentId)", colValMap);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 0 and isAuction=0 and departmentId in (:departmentId)", colValMap);
 		if(list != null && !list.isEmpty()){
 			countMap.put("pending", list.get(0));
 		}
@@ -809,34 +716,34 @@ public class EProcureCreationService {
 		column.put("submissionStartDate", serverDateTime);
 		column.put("submissionEndDate", serverDateTime);
 		column.put("departmentId", deptId);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and submissionStartDate<:submissionStartDate and submissionEndDate>:submissionEndDate and departmentId in (:departmentId)", column);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and isAuction=0 and submissionStartDate<:submissionStartDate and submissionEndDate>:submissionEndDate and departmentId in (:departmentId)", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("live", list.get(0));
 		}
 		column.clear();
 		column.put("submissionEndDate", serverDateTime);
 		column.put("departmentId", deptId);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and submissionEndDate<:submissionEndDate  and departmentId in (:departmentId)", column);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and isAuction=0 and submissionEndDate<:submissionEndDate  and departmentId in (:departmentId)", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("archive", list.get(0));
 		}
 		column.clear();
 		column.put("submissionStartDate", serverDateTime);
 		column.put("departmentId", deptId);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and submissionStartDate>:submissionStartDate  and departmentId in (:departmentId)", column);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and isAuction=0 and submissionStartDate>:submissionStartDate  and departmentId in (:departmentId)", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("future", list.get(0));
 		}
 		
 		column.clear();
 		column.put("departmentId", deptId);
-		list = commonDAO.executeSelect("select count(1) as cancelCount from TblTender where cstatus = 2  and departmentId in (:departmentId)", column);
+		list = commonDAO.executeSelect("select count(1) as cancelCount from TblTender where cstatus = 2 and isAuction=0  and departmentId in (:departmentId)", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("cancel", list.get(0));
 		}
 		column.clear();
 		column.put("departmentId", deptId);
-		list = commonDAO.executeSelect("select count(1) as totalCount from TblTender where departmentId in (:departmentId)", column);
+		list = commonDAO.executeSelect("select count(1) as totalCount from TblTender where cstatus<>4 and isAuction=0 and departmentId in (:departmentId)", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("total", list.get(0));
 		}
@@ -844,14 +751,14 @@ public class EProcureCreationService {
 		return countMap;
 	}
 
-	public Map<String, Object> getTenderCount(Integer isAuction) throws Exception {
+	public Map<String, Object> getTenderCount(Integer isAuction,long userId) throws Exception {
 		Map<String, Object> countMap = new HashMap();
 		List<Object> list;
 		Map<String, Object> colValMap = new HashMap();
 		Date serverDateTime = commonService.getServerDateTime();
         colValMap.put(ISAUCTION, isAuction);
-                
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 0 and  isAuction= :isAuction ", colValMap);
+                colValMap.put("userId",userId);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender tbl_tender where cstatus = 0 and  isAuction= :isAuction and case when isAuction=1 then (case when biddingAccess=1 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) when biddingAccess=0 then (select tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId = tbl_tender.tenderId and tblUserLogin.userId = :userId ) end) when isAuction=0 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) end = :userId", colValMap);
 		if(list != null && !list.isEmpty()){
 			countMap.put("pending", list.get(0));
 		}
@@ -859,34 +766,39 @@ public class EProcureCreationService {
 		column.put("submissionStartDate", serverDateTime);
 		column.put("submissionEndDate", serverDateTime);
                 column.put(ISAUCTION, isAuction);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and case when isAuction=1 then auctionStartDate when isAuction=0 then submissionStartDate end<:submissionStartDate and case when isAuction=1 then auctionEndDate when isAuction=0 then submissionEndDate end>:submissionEndDate and  isAuction= :isAuction", column);
+                column.put("userId",userId);
+		list = commonDAO.executeSelect("select count(1) as liveCount from TblTender tbl_tender where cstatus = 1 and case when isAuction=1 then auctionStartDate when isAuction=0 then submissionStartDate end<:submissionStartDate and case when isAuction=1 then auctionEndDate when isAuction=0 then submissionEndDate end>:submissionEndDate and  isAuction= :isAuction and case when isAuction=1 then (case when biddingAccess=1 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) when biddingAccess=0 then (select tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId = tbl_tender.tenderId and tblUserLogin.userId = :userId ) end) when isAuction=0 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) end = :userId ", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("live", list.get(0));
 		}
 		column.clear();
 		column.put("submissionEndDate", serverDateTime);
                 column.put(ISAUCTION, isAuction);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and case when isAuction=1 then auctionEndDate when isAuction=0 then submissionEndDate end<:submissionEndDate and  isAuction= :isAuction ", column);
+                column.put("userId",userId);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender tbl_tender where cstatus = 1 and case when isAuction=1 then auctionEndDate when isAuction=0 then submissionEndDate end<:submissionEndDate and  isAuction= :isAuction and case when isAuction=1 then (case when biddingAccess=1 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) when biddingAccess=0 then (select tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId = tbl_tender.tenderId and tblUserLogin.userId = :userId ) end) when isAuction=0 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) end = :userId", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("archive", list.get(0));
 		}
 		column.clear();
 		column.put("submissionStartDate", serverDateTime);
                 column.put(ISAUCTION, isAuction);
-		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender where cstatus = 1 and case when isAuction=1 then auctionStartDate when isAuction=0 then submissionStartDate end>:submissionStartDate  and  isAuction= :isAuction", column);
+                column.put("userId",userId);
+		list = commonDAO.executeSelect("select count(1) as pendingCount from TblTender tbl_tender where cstatus = 1 and case when isAuction=1 then auctionStartDate when isAuction=0 then submissionStartDate end>:submissionStartDate  and  isAuction= :isAuction and case when isAuction=1 then (case when biddingAccess=1 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) when biddingAccess=0 then (select tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId = tbl_tender.tenderId and tblUserLogin.userId = :userId ) end) when isAuction=0 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) end = :userId", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("future", list.get(0));
 		}
 		
 		column.clear();
                 column.put(ISAUCTION, isAuction);
-		list = commonDAO.executeSelect("select count(1) as cancelCount from TblTender where cstatus = 2  and  isAuction= :isAuction", column);
+                column.put("userId",userId);
+		list = commonDAO.executeSelect("select count(1) as cancelCount from TblTender tbl_tender where cstatus = 2  and  isAuction= :isAuction and case when isAuction=1 then (case when biddingAccess=1 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) when biddingAccess=0 then (select tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId = tbl_tender.tenderId and tblUserLogin.userId = :userId ) end) when isAuction=0 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) end = :userId", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("cancel", list.get(0));
 		}
 		column.clear();
                 column.put(ISAUCTION, isAuction);
-		list = commonDAO.executeSelect("select count(1) as totalCount from TblTender WHERE  isAuction=:isAuction", column);
+                column.put("userId",userId);
+		list = commonDAO.executeSelect("select count(1) as totalCount from TblTender tbl_tender WHERE isAuction=:isAuction and case when isAuction=1 then (case when biddingAccess=1 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) when biddingAccess=0 then (select tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId = tbl_tender.tenderId and tblUserLogin.userId = :userId ) end) when isAuction=0 then (select tblUserlogin.userId from TblBidder where tblUserlogin.userId = :userId) end = :userId", column);
 		if(list != null && !list.isEmpty()){
 			countMap.put("total", list.get(0));
 		}
@@ -983,7 +895,7 @@ public class EProcureCreationService {
 	}
 	
 	public List<String> validatePublishTender(TblTender tblTender) {
-		List<String> list = new ArrayList();
+		List<String> list = new ArrayList<String>();
 		List<String> tenderValidlist = isTenderValidForPublish(tblTender);
 		if(tenderValidlist != null && !tenderValidlist.isEmpty())
 		{
@@ -1013,12 +925,24 @@ public class EProcureCreationService {
             	double totalWeight = 0;
             	for(int i = 0; i < lst.size(); i++){
             		Object[] data = lst.get(i);
-            		if(data[5] == null || (data[5].toString()).isEmpty() || (data[5].toString()).equals("0.0")){
-                    	list.add(messageSource.getMessage("msg_all_form_mushave_weight", null, LocaleContextHolder.getLocale()));
-            			break;
-            		}else{
-            			double weight =Double.parseDouble(data[5].toString());
-            			totalWeight = totalWeight + weight;
+            		
+            		if(tblTender.getCstatus() == 0){
+	            		if(data[5] == null || (data[5].toString()).isEmpty() || (data[5].toString()).equals("0.0")){
+	                    	list.add(messageSource.getMessage("msg_all_form_mushave_weight", null, LocaleContextHolder.getLocale()));
+	            			break;
+	            		}else{
+	            			double weight =Double.parseDouble(data[5].toString());
+	            			totalWeight = totalWeight + weight;
+	            		}
+            		}else if(tblTender.getCstatus() == 1){
+            			// check for non cancel form used for corrigendum
+            			if(!data[7].toString().equals(1) && data[9] == null || (data[9].toString()).isEmpty() || (data[9].toString()).equals("0.0")){
+	                    	list.add(messageSource.getMessage("msg_all_form_mushave_weight", null, LocaleContextHolder.getLocale()));
+	            			break;
+	            		}else{
+	            			double weight =Double.parseDouble(data[5].toString());
+	            			totalWeight = totalWeight + weight;
+	            		}
             		}
             	}
             	if(totalWeight > 100){
@@ -1128,8 +1052,8 @@ public class EProcureCreationService {
 				newTblTenderEnvelope2.setCreatedOn(commonService.getServerDateTime());
 				newTblTenderEnvelope2.setIsEvaluated(0);
 				newTblTenderEnvelope2.setIsOpened(0);
-				newTblTenderEnvelope2.setMinEvaluator(0);
-				newTblTenderEnvelope2.setMinOpeningMember(0);
+//				newTblTenderEnvelope2.setMinEvaluator(0);
+//				newTblTenderEnvelope2.setMinOpeningMember(0);
 				newTblTenderEnvelope2.setOpeningDate(null);
 				newTblTenderEnvelope2.setOpeningDatePublishedBy(0);
 				newTblTenderEnvelope2.setOpeningDatePublishedOn(null);
@@ -1214,6 +1138,8 @@ public class EProcureCreationService {
 									tblCommitteeUser.setChildId(envelopeIds.get(tblTenderEnvelope.getEnvelopeId()));
 									tblCommitteeUser.setIsApproved(0);
 									tblCommitteeUser.setApprovedBy(0);
+									tblCommitteeUser.setRemarks("");
+									tblCommitteeUser.setApprovedOn(null);
 									newTblCommitteeUser.add(tblCommitteeUser);
 								}
 							}

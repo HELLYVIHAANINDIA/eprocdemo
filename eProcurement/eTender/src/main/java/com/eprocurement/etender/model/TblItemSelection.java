@@ -22,7 +22,7 @@ public class TblItemSelection  implements java.io.Serializable {
 
         private   int bidderItemId;
         private   int createdBy;
-        private   Date createdOn;
+        private   Date createdOn=new Date();
         private   int isSelected;
         private   int isBidded;
         private   Integer rowId;
@@ -64,7 +64,7 @@ public class TblItemSelection  implements java.io.Serializable {
             this.createdBy = createdBy;
         }
         @Temporal(TemporalType.TIMESTAMP)
-        @Column(name="createdOn",nullable=false,updatable=false,insertable=false)
+        @Column(name="createdOn")
         public Date getCreatedOn() {
             return this.createdOn;
         }

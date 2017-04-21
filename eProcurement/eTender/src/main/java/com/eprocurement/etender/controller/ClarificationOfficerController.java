@@ -1,4 +1,5 @@
 /*
+
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
@@ -38,10 +39,10 @@ import com.eprocurement.etender.model.TblQuestionAnswer;
 import com.eprocurement.etender.model.TblSeekClarification;
 import com.eprocurement.etender.model.TblTender;
 import com.eprocurement.etender.model.TblTenderEnvelope;
-import com.eprocurement.etender.services.AuditTrailService;
 import com.eprocurement.etender.services.ClarificationService;
 import com.eprocurement.etender.services.CommitteeService;
 import com.eprocurement.etender.services.DocumentService;
+import com.eprocurement.etender.services.OfficerService;
 import com.eprocurement.etender.services.TenderCommonService;
 import com.eprocurement.etender.services.TenderService;
 
@@ -52,8 +53,6 @@ public class ClarificationOfficerController {
     @Autowired
     private ExceptionHandlerService exceptionHandlerService;
     @Autowired
-    private AuditTrailService auditTrailService;
-    @Autowired
     private CommonService commonService;
     @Autowired
     private TenderCommonService tenderCommonService;
@@ -63,6 +62,8 @@ public class ClarificationOfficerController {
     private CommitteeService committeeFormationService;
     @Autowired
     private TenderService tenderFormService;
+    @Autowired
+    private OfficerService userService;
     @Autowired
     private ClarificationService seekClarificationService;
     @Value("#{projectProperties['officer.docstatus.approve']?:1}")
@@ -75,21 +76,19 @@ public class ClarificationOfficerController {
     private String tenderSeekClarificationObjectId;
 	@Value("#{projectProperties['tenderSeekClarificationBidderObjectId']}")
     private String tenderSeekClarificationBidderObjectId;
+	@Value("#{projectProperties['mail.from']}")
+    private String mailFrom;
 
-    private static final int CLARIFICATION_MODULE_TYPE = 2;
     private static final String ENVELOPE_ID = "envelopeId";
     private static final String COMPANY_ID = "companyId";
     private static final String TENDER_ID = "tenderId";
     private static final String CONFIG_TYPE = "configType";
-    private static final String ENVELOPE_TYPE = "envelopeType";
     private static final String ISEVAL_DONE = "isEvalDone";
-    private static final String SORT_ORDER = "sortOrder";
-    private static final String HDENVELOPE_TYPE = "EnvelopeType";
-    private static final String HDSORT_ORDER = "SortOrder";
     private static final String HDCONFIG_TYPE = "ConfigType";
     private static final String HDISEVAL_DONE = "IsEvalDone";
     private static final String OPER_TYPE = "operType";
     private static final String REDIRECT_SESSION_EXPIRED = "redirect:/sessionexpired";
+    
     
     
         /**
@@ -140,25 +139,18 @@ public class ClarificationOfficerController {
     public String postQuery(HttpServletRequest request, ModelMap modelMap, RedirectAttributes redirectAttributes, @RequestParam("TenderId") int tenderId,@RequestParam("EnvelopeId") int envelopeId,@RequestParam("CompanyId") int companyId) {
         String retVal = REDIRECT_SESSION_EXPIRED;
         boolean isSuccess = false;
-        Map<String, Object> mailParams = new HashMap<String, Object>();
+        String bidderEmailId = "";
         int questionStatus = CommonUtility.checkValue(request.getParameter("txtQueryStatus"));
-        int questionId = request.getParameter("hdQuestionId")!=null ? Integer.parseInt(request.getParameter("hdQuestionId")) : 0;  
-        int envelopeType = CommonUtility.checkValue(request.getParameter(HDENVELOPE_TYPE));
-        int sortOrder = CommonUtility.checkValue(request.getParameter(HDSORT_ORDER));
-        int configType = CommonUtility.checkValue(request.getParameter(HDCONFIG_TYPE)); 
+        int questionId = request.getParameter("hdQuestionId")!=null ? Integer.parseInt(request.getParameter("hdQuestionId")) : 0; 
         String isEvalDone = CommonUtility.checkNull(request.getParameter(HDISEVAL_DONE));
         String redirectMsg="";
         TblQuestionAnswer tblQuestion = new TblQuestionAnswer();
-        if(questionStatus==0)
-        {
+        if(questionStatus==0){
         	redirectMsg = "msg_clarification_savequery_sucess";
-        }
-        else
-        {
+        }else{
         	redirectMsg = "msg_clarification_updatequery_sucess";
         }
         String errorMsg="redirect_failure_common";
-        List<Object> lstLoginId = null;
         try {
             String strQuery = CommonUtility.checkNull(request.getParameter("txtaQuery"));
             int sessionUserId = 1;
@@ -172,11 +164,26 @@ public class ClarificationOfficerController {
                     tblQuestion.setQuestionDate(commonService.getServerDateTime());
                     tblQuestion.setEventId(clarificationId);
                     isSuccess = seekClarificationService.addTblQuestion(tblQuestion);
-                    seekClarificationService.updateOfficerDocStatus(tblQuestion.getQuestionId(),clarificationId);
+                    Object[] bidderDtls = userService.getBiddderDetails(companyId);
+                    if(bidderDtls!=null){
+                    	bidderEmailId = bidderDtls[0].toString();
+                    }
+	               if(isSuccess){
+	                    	seekClarificationService.updateOfficerDocStatus(tblQuestion.getQuestionId(),clarificationId);
+	                    	try {
+	                            String contentForBidder = "Bid evaluation committee has sought clarification in the following Tender : "+tenderId;
+	                            String subject = " Bid Evaluation committee has sought clarification for Tender ID:"+tenderId;
+	                            userService.addMail(userService.setTblMailMessage(bidderEmailId,mailFrom, subject,contentForBidder,"seek clarification"));
+	                         }catch (Exception e) {
+	                        	 e.printStackTrace();	
+	                         }
+	                }
                 StringBuilder redirectUrl = new StringBuilder();
                 redirectUrl.append("redirect:/etender/buyer/viewClarificationQueries/").append(tenderId).append("/").append(envelopeId).append("/").append(companyId).append("/").append(isEvalDone);
                 retVal =  redirectUrl.toString();
             }
+            
+            
         } catch (Exception ex) {
             retVal = exceptionHandlerService.writeLog(ex);
         } finally {
@@ -326,10 +333,20 @@ public class ClarificationOfficerController {
             List<Object[]> list = seekClarificationService.getConfigureDateData(tenderId, envelopeId, bidderId);
             List<TblSeekClarification> seekClarifications = seekClarificationService.getSeekClarificationDtls(tenderId, envelopeId, bidderId);
             List<TblQuestionAnswer> tblQuestionAnswers  = null;
+            Map<String,String> questionDates = new HashMap<String, String>();
+            Map<String,String> answerDates = new HashMap<String, String>();
             if(list != null && !list.isEmpty()) {
                 modelMap.addAttribute("configureDateList", list.get(0));
                 modelMap.addAttribute("responseEndDate", commonService.convertSqlToClientDate(client_dateformate_hhmm, (Date)list.get(0)[1]));
                 tblQuestionAnswers = seekClarificationService.getQuestionByEventId((Integer)list.get(0)[0]);
+                for (TblQuestionAnswer tblQuestionAnswer : tblQuestionAnswers) {
+                	if(tblQuestionAnswer.getQuestionDate()!=null){
+                		questionDates.put("queId_"+tblQuestionAnswer.getQuestionId(), commonService.convertSqlToClientDate(client_dateformate_hhmm, tblQuestionAnswer.getQuestionDate().toString()));
+                	}
+                	if(tblQuestionAnswer.getAnswerDate()!=null){
+                		answerDates.put("ansId_"+tblQuestionAnswer.getQuestionId(), commonService.convertSqlToClientDate(client_dateformate_hhmm, tblQuestionAnswer.getAnswerDate().toString()));
+                	}
+				}
             }
             if(seekClarifications != null && !seekClarifications.isEmpty()) {
                 modelMap.addAttribute("seekClarifications", seekClarifications);
@@ -341,6 +358,9 @@ public class ClarificationOfficerController {
             modelMap.addAttribute("objectIdBidderSide", tenderSeekClarificationBidderObjectId);
             modelMap.addAttribute("childId", envelopeId);
             modelMap.addAttribute("subChildId", bidderId);
+            modelMap.addAttribute("questionDates", questionDates);
+            modelMap.addAttribute("answerDates", answerDates);
+            
         } catch (Exception ex) {
             return exceptionHandlerService.writeLog(ex);
         } finally {

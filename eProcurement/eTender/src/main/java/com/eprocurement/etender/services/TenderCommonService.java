@@ -57,6 +57,8 @@ public class TenderCommonService {
     HibernateQueryDao hibernateQueryDao;
     @Autowired
     CommonDAO commonDAO;
+	@Value("#{etenderProperties['isProductionServer']}")
+    private Boolean isProductionServer;
     @Autowired
     BidderSubmissionService eventBidSubmissionService;
     @Autowired
@@ -228,11 +230,11 @@ public class TenderCommonService {
         var.put("tenderId", objectId[0]);
         query.append(" select tbltenderform.formId,tbltenderform.formName,tbltenderform.tblTenderEnvelope.envelopeId, ")
                 .append(" case when tbltenderform.cstatus=0 then 'Pending' ")
-                .append(" when tbltenderform.cstatus=1 then 'Approved' end ")//when tbltenderform.cstatus=2 then 'Cancelled'
+                .append(" when tbltenderform.cstatus=1 then 'Approved' when tbltenderform.cstatus=3 then 'Cancelled' end ")//when tbltenderform.cstatus=2 then 'Cancelled'
                 .append(" ,tbltenderform.sortOrder ,tbltenderform.isMandatory ,tbltenderform.isSecondary ,tbltenderform.isPriceBid ")
                 .append(" ,tbltenderform.isEncryptionReq ,tbltenderform.isMultipleFilling ,tbltenderform.isDocumentReq")
                 .append(" ,1 ");
-        query.append(" ,tbltenderform.isItemWiseDocAllowed,tbltenderform.tblTenderEnvelope.minFormsReqForBidding,tbltenderform.minTablesReqForBidding,tbltenderform.formWeight from TblTenderForm tbltenderform where tbltenderform.tblTender.tenderId=:tenderId ");
+        query.append(" ,tbltenderform.isItemWiseDocAllowed,tbltenderform.tblTenderEnvelope.minFormsReqForBidding,tbltenderform.minTablesReqForBidding,tbltenderform.formWeight,tbltenderform.isCanceled from TblTenderForm tbltenderform where tbltenderform.tblTender.tenderId=:tenderId ");
         if (objectId.length > 1 && objectId[1] == 0) {
             query.append(" and tbltenderform.cstatus=0 ");
         }
@@ -240,7 +242,7 @@ public class TenderCommonService {
             if (objectId.length > 1 && objectId[1] == 1) {
                 query.append(" and tbltenderform.cstatus=1");
             } else {
-                query.append(" and tbltenderform.cstatus in (1)");//cancel status
+                query.append(" and tbltenderform.cstatus in (1,3)");//cancel status
             }
            /* if (isConsortium) {
                 query.append(" and tbltenderform.isSecondary=1");
@@ -277,7 +279,7 @@ public class TenderCommonService {
                 .append(",tbltender.brdMode,tbltender.tenderNo,tbltender.isEvaluationByCommittee, tbltender.cstatus,tbltender.biddingVariant ")
                 .append(",tbltender.isItemwiseWinner,tbltender.isEvaluationRequired,tbltender.officerId,tbltender.sorVariation,tbltender.isSORApplicable,tbltender.submissionMode,tbltender.isWorkflowRequired,tbltender.isEncodedName,tbltender.docFeePaymentMode,tbltender.emdPaymentMode,tbltender.isBidWithdrawal ")
                 .append(",tbltender.isPartialFillingAllowed,tbltender.isEMDApplicable,tbltender.isItemSelectionPageRequired")
-                .append(",tbltender.multiLevelEvaluationReq,tbltender.isTwoStageEvaluation,tbltender.isTwoStageOpening, tbltender.envelopeType,tbltender.assignUserId,tbltender.autoResultSharing,tbltender.isEvaluationDone ,tbltender.randPass")
+                .append(",tbltender.multiLevelEvaluationReq,tbltender.isTwoStageEvaluation,tbltender.isTwoStageOpening, tbltender.envelopeType,tbltender.assignUserId,tbltender.autoResultSharing,tbltender.isEvaluationDone ,tbltender.randPass,tbltender.currencyId,tbltender.isRebateApplicable,tbltender.isWeightageEvaluationRequired")
                 .append(" from  TblTender tbltender ")
                 .append(" where tbltender.tenderId=:tenderId ");
         List<Object[]> list = hibernateQueryDao.createNewQuery(query.toString(), var);
@@ -336,8 +338,10 @@ public class TenderCommonService {
             hashMap.put("assignUserId", ((Object[])list.get(0))[43]);
             hashMap.put("autoResultSharing", ((Object[])list.get(0))[44]);
             hashMap.put("isEvaluationDone", list.get(0)[45]);
-            
             hashMap.put("randPass", list.get(0)[46]);
+            hashMap.put("currencyId", list.get(0)[47]);
+            hashMap.put("isRebateApplicable", list.get(0)[48]);
+            hashMap.put("isWeightageEvaluationRequired", list.get(0)[49]);
         }
     }
 
@@ -446,7 +450,7 @@ public class TenderCommonService {
      */
     @Transactional
     public List<Object[]> getTenderBidDtls(int tenderId, int companyId, boolean isFinalSubmission) throws Exception {
-        List<Object[]> list = null;
+        List<Object[]> list;
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId", tenderId);
@@ -1565,7 +1569,7 @@ public class TenderCommonService {
         	query.append(" AND tblTenderCurrency.isDefault!=1");
         return hibernateQueryDao.createNewQuery(query.toString(),var);
 	}
-
+	
 	public HashMap<String, String> getOfficerNameIdMap(Integer officerId) {
 		List<Object[]> tblOfficerList = getOfficerById(officerId);
 		HashMap<String,String> officerNameMap = new HashMap<String, String>();
@@ -1673,6 +1677,7 @@ public class TenderCommonService {
 				if((mandatoryForCreated - mandatoryBiddedForm) == 0){
 					if(nonMandatoryBiddedForm < remainingMinReqFormFilling){
 						result = "msg_tender_fs_fillnonmandatory_forms";
+						allowFinalSubmission = 0;
 					}else{
 						List<TblTenderForm> formList = eventCreationService.getTblTenderFormList(tenderId);
 						int formId = 0;
@@ -1688,20 +1693,24 @@ public class TenderCommonService {
 							if(true || mandatoryTableCreated == mandatoryBiddedtable){//hardcode
 								if(remainingMinReqTableFilling !=0 && nonMandatoryBiddedTable < remainingMinReqTableFilling){
 									result = "msg_tender_fs_fillnonmandatory_tables";
+									allowFinalSubmission = 0;
 								}else{
 									itemSelected = getItemSelected(tenderId,companyId,false);
 									itemBidded = getItemSelected(tenderId,companyId,true);
 									if(itemSelected!=0 && itemSelected != itemBidded){
 										result = "msg_tender_fs_bidding_pending";
+										allowFinalSubmission = 0;
 									}
 								}
 							}else{
 								result = "msg_tender_fs_fillmandatory_tables";
+								allowFinalSubmission = 0;
 							}
 						}
 					}
 				}else{
 					result = "msg_tender_fs_fillmandatory_forms";
+					allowFinalSubmission = 0;
 				}
 			}
 		}
@@ -1905,7 +1914,106 @@ public class TenderCommonService {
 		}
 		return officerId;
 	}
-	
+	/**
+	 * 
+	 * @param isPrebid
+	 * @param tenderId
+	 * @param userId
+	 * @throws Exception
+	 */
+	public void sendNotoficationToCommitteMember(Integer isPrebid, Integer tenderId, Integer userId) throws Exception {
+		Map<Integer,String> committeeType = new HashMap();
+		committeeType.put(1, "Opening Committee");
+		committeeType.put(2, "Evaluation Committee");
+		if(isPrebid == 1){
+			committeeType.put(3, "Prebid Committee");
+		}
+		for(Map.Entry<Integer,String> entity : committeeType.entrySet()){
+		Integer cType = entity.getKey();
+		String cText = entity.getValue();
+		String committeeQuery = "select tblOfficer.tblUserlogin.userId,tblOfficer.id,tblCommittee.committeeType,tblOfficer.emailid from TblCommitteeUser tblCommitteeUser inner join tblCommitteeUser.tblOfficer tblOfficer inner join  tblCommitteeUser.tblCommittee tblCommittee where tblCommitteeUser.tblCommittee.isActive=1 "
+				+ "and tblCommittee.tblTender.tenderId="+tenderId +" and tblCommittee.committeeType="+cType;
+			List<Object[]> oldCommittees = commonDAO.executeSelect(committeeQuery, null);
+			int[] committeeUser = null;
+			String[] committeeUserEmailId = null;
+			if(oldCommittees != null && !oldCommittees.isEmpty()){
+				committeeUser = new int[oldCommittees.size()];
+				committeeUserEmailId = new String[oldCommittees.size()];
+				for(int i = 0; i < oldCommittees.size(); i++){
+					committeeUser[i] = Integer.parseInt(oldCommittees.get(i)[0].toString());
+					committeeUserEmailId[i] = oldCommittees.get(i)[3].toString();
+				}
+			}
+			if(committeeUser != null){
+				String user = "";
+				StringBuilder emailId = new StringBuilder();
+				if(committeeUser != null){
+					for(int i = 0; i < committeeUser.length; i++){
+						user += committeeUser[i]+",";
+						emailId.append(committeeUserEmailId[i]).append(",");
+					}
+				}
+				Map<String,Object> parameter = new HashMap();
+				parameter.put("userId", user);
+				parameter.put("committeeType", cText);
+				insertNotification(tenderId, parameter, userId,6);
+				if(committeeUserEmailId != null && isProductionServer != null && isProductionServer){
+					parameter.clear();
+					parameter.put("emailId", emailId);
+					parameter.put("committeeType", cText);
+					insertNotification(tenderId, parameter, userId,6);
+				}
+			}
+		}
+	}
+	/**
+	 * Send notification to all
+	 * @param tenderMode
+	 * @param tenderId
+	 * @param userId
+	 * @throws Exception
+	 */
+	public void sendNotoficationToBidderForNewTender(TblTender tblTender,Integer userId) throws Exception {
+		Map<String,Object> parameter = new HashMap();
+		StringBuilder bidder = new StringBuilder(); 
+		StringBuilder bidderEmailId = new StringBuilder(); 
+		List<Object[]> approvedBidder = null;
+		if(tblTender.getCstatus() == 0 && tblTender.getTenderMode() == 1){  // if open but not publish
+			approvedBidder =  getApprovedBidder();
+		}else if(tblTender.getTenderMode() == 2 || tblTender.getTenderMode() == 3){	// Limited or single
+			approvedBidder =  commonDAO.executeSelect("select tblBidder.bidderId,tblBidder.emailId,tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId="+tblTender.getTenderId(), null);
+		}else if(tblTender.getCstatus() == 1){
+			//approvedBidder =  commonDAO.executeSelect("select tblBidder.bidderId,tblBidder.emailId,tblUserLogin.userId from TblTenderBidderMap where tblTender.tenderId="+tblTender.getTenderId(), null);
+			approvedBidder =  commonDAO.executeSqlSelect("select tblBidder.bidderId,tblBidder.emailId,tblBidder.userId from tbl_bidder tblBidder, tbl_tenderbidconfirmation tbltenderbidconfirmation where tbltenderbidconfirmation.tenderId="+tblTender.getTenderId()+" and tblBidder.bidderId=tbltenderbidconfirmation.bidderId",null);
+		}
+		if(approvedBidder != null && !approvedBidder.isEmpty()){
+			for(Object[] obj : approvedBidder){
+				bidder.append(obj[2]).append(",");
+				bidderEmailId.append(obj[1]).append(",");
+			}
+		}
+		parameter.put("userId", bidder);
+		if(tblTender.getCstatus() == 1){
+			insertNotification(tblTender.getTenderId(), parameter, userId,7);// for corrigendum
+		}else{
+			insertNotification(tblTender.getTenderId(), parameter, userId,9);
+		}
+		
+		if(bidderEmailId.length() > 0 && isProductionServer != null && isProductionServer){
+			parameter.clear();
+			parameter.put("emailId", bidderEmailId);
+			if(tblTender.getCstatus() == 1){
+				insertNotification(tblTender.getTenderId(), parameter, userId,7); // for corrigendum
+			}else{
+				insertNotification(tblTender.getTenderId(), parameter, userId,9);
+			}
+		}
+
+	}
+	private List<Object[]> getApprovedBidder() {
+		return commonDAO.executeSelect("select tblBidder.bidderId,tblBidder.emailId,tblUserlogin.userId from TblBidder tblBidder where tblBidder.cstatus = 1 ", null);
+	}
+
 	/**
 	  * Officer by id
 	  * @param officerId
@@ -1996,12 +2104,13 @@ public class TenderCommonService {
 				}else{
 					//mailSender.sendMail(userId[i], text, "eprocurement.help@gmail.com", userId[i], text);
 					String subject;
-					if(parameter.containsKey("committeeType")){
-						subject = "Dear committee member";
+//					subject = tblProcess.getSubject();
+					/*if(parameter.containsKey("committeeType")){
+						subject = tblProcess.getSubject();
 					}else{
-						subject = "Dear bidder";
-					}
-					officerService.addMail(officerService.setTblMailMessage(userId[i],mailFrom, subject,text,subject));
+						subject = tblProcess.getSubject();
+					}*/
+//					officerService.addMail(officerService.setTblMailMessage(userId[i],mailFrom, subject,text,subject));
 				}
 			}
 		}
@@ -2011,13 +2120,25 @@ public class TenderCommonService {
 		}
 	}
 
-	public void updateTblTenderFormWithWeight(String[] formIds, String[] txtWeightage) {
+	public void updateTblTenderFormWithWeight(String[] formIds, String[] txtWeightage,int tenderStatus ) {
 		for(int i = 0; i < formIds.length; i++){
 			String form= formIds[i];
 			String weightage= txtWeightage[i];
-			String query = "update TblTenderForm set formWeight="+weightage+" where formId="+form;
+			String query ; 
+			if(tenderStatus == 1){
+				query = "update TblTenderForm set corrigendumFormWeight="+weightage+" where formId="+form;
+			}else{
+				query = "update TblTenderForm set formWeight="+weightage+" where formId="+form;
+			}
 			commonDAO.executeUpdate(query, null);
 		}
+	}
+	// if corrigendum done and changes done in form then finalsubmission will be removed.
+	public void updateFinalsubmission(int tenderId) {
+		// TODO Auto-generated method stub
+		Map<String,Object> param = new HashMap<String, Object>();
+		param.put(TENDER_ID, param);
+		commonDAO.executeUpdate("update TblFinalsubmission set isActive=0 where tblTender.tenderId=:tenderId", param);
 	}
 
 }

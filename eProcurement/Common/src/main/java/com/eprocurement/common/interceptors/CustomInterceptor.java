@@ -32,7 +32,14 @@ public class CustomInterceptor implements HandlerInterceptor  {
 	
 	static Set<String> skipURL = new HashSet<String>();
 	public CustomInterceptor(){
+		
+		skipURL.add("/eBid/Bid/bidSubmissionValidationForAuction");
+		skipURL.add("/eBid/Bid/CurrentTimeAjax");
+		skipURL.add("/common/user/getActivityData");
+		skipURL.add("/common/user/getIndustryData");
 		skipURL.add("/common/user/getCategoryData");
+		skipURL.add("/tenderListingCount/tenderListingCount");
+		skipURL.add("/common/user/getUNSPSCCategoryData");
 		skipURL.add("/common/user/notificationTab");
 		skipURL.add("/common/user/getNotificationCount");
 		skipURL.add("/common/user/getstatebycountry");
@@ -52,7 +59,8 @@ public class CustomInterceptor implements HandlerInterceptor  {
 		skipURL.add("/setcookie");
 		skipURL.add("/submitLogin");
 		skipURL.add("/submitlogout");
-		skipURL.add("/common/user/getbidderregistration");
+		skipURL.add("/common/user/register");
+		skipURL.add("/common/user/getClientDateTime");
 		skipURL.add("/common/user/addbidder");
 		skipURL.add("/login");
 		skipURL.add("/getforgotpassword");
@@ -100,7 +108,7 @@ public class CustomInterceptor implements HandlerInterceptor  {
 							TblLinkAlter  linkAlter = new TblLinkAlter();
 							linkAlter.setURL(request.getRequestURI());
 							linkAlter.setType(request.getMethod() );
-							commonDao.save(linkAlter);
+//							commonDao.save(linkAlter); commenting alert link entry for some time
 							for (String link : userLinks) {
 								if(request.getRequestURI().contains(link)) {
 									isAllow=true;
@@ -141,7 +149,7 @@ public class CustomInterceptor implements HandlerInterceptor  {
 	
 	boolean isPageSkipped(String uri,String contextName) {
         boolean pageSkipped = false;
-        if(uri.equals(contextName+"/")){
+        if(uri.equals(contextName+"/") || uri.contains("/js/") || uri.contains("/css/") || uri.contains("/fonts/") || uri.contains("/resources/")){
         	pageSkipped = true;
         }else {
 		    for(String str : skipURL){

@@ -6,7 +6,6 @@
 package com.eprocurement.etender.services;
 
 import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -38,9 +36,9 @@ import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.common.services.CommonService;
 import com.eprocurement.common.services.EncrptDecryptUtils;
 import com.eprocurement.common.utility.CommonKeywords;
-import com.eprocurement.common.utility.EncryptDecryptUtils;
 import com.eprocurement.common.utility.SessionBean;
 import com.eprocurement.etender.daointerface.TblTenderCellGrandTotalDao;
+import com.eprocurement.etender.daointerface.TblTenderColumnDao;
 import com.eprocurement.etender.databean.BiddingFormBean;
 import com.eprocurement.etender.databean.BiddingFormColumnBean;
 import com.eprocurement.etender.databean.BiddingFormTableBean;
@@ -70,7 +68,6 @@ import com.eprocurement.etender.model.TblTenderFormula;
 import com.eprocurement.etender.model.TblTenderGovColumn;
 import com.eprocurement.etender.model.TblTenderRebate;
 import com.eprocurement.etender.model.TblTenderTable;
-import java.util.Map.Entry;
 
 @Service
 public class FormService {
@@ -86,15 +83,22 @@ public class FormService {
     @Autowired
     TenderCommonService tenderCommonService;
     @Autowired
+    AmendmentService amendmentService;
+    @Autowired
     CommonService commonService;
     @Autowired
     TblBidderDao tblBidderDao;
     @Autowired
     ReportService reportService;
+    @Autowired
+    TblTenderColumnDao tblTenderColumnDao;
     
 
     @Value("#{etenderProperties['client_dateformate_hhmm']}")
     private String client_dateformate_hhmm;
+    
+    private final String FORMID = "formId";
+    private final String TABLEID = "tableId";
 
     public BiddingFormBean setBiddingFormParameters(HttpServletRequest request) throws Exception {
         BiddingFormBean biddingFormBean = new BiddingFormBean();
@@ -113,8 +117,8 @@ public class FormService {
         biddingFormBean.setIsMultipleFilling(convertInt(checkRequestNull(request, "IsMultiple")));
         biddingFormBean.setIsSecondary(convertInt(checkRequestNull(request, "rdbsecondaryPartner")));
 
-        biddingFormBean.setEnvelopeid(convertInt(checkRequestNull(request, "optFormType"))); 
-        
+        biddingFormBean.setEnvelopeid(convertInt(checkRequestNull(request, "optFormType")));
+
         biddingFormBean.setTenderid(convertInt(checkRequestNull(request, "tenderId")));
 
         biddingFormBean.setCstatus(0);
@@ -189,7 +193,7 @@ public class FormService {
 
     }
 
-    public HashMap setBiddingFormTableParameters(HttpServletRequest request) throws Exception {
+    public HashMap<List<BiddingFormTableBean>, List<BiddingFormColumnBean>> setBiddingFormTableParameters(HttpServletRequest request) throws Exception {
         BiddingFormTableBean biddingFormTableBean = new BiddingFormTableBean();
         HashMap hsMain = new HashMap();
         List<BiddingFormColumnBean> lstBiddingFormColumnBean = new ArrayList<BiddingFormColumnBean>();
@@ -316,20 +320,7 @@ public class FormService {
         return bSuccess;
     }
 
-    public List<BiddingFormColumnBean> setBiddingFormColumnParameters(HttpServletRequest request) {
-        List<BiddingFormColumnBean> lstBiddingFormColumnBean = new ArrayList<BiddingFormColumnBean>();
-        BiddingFormColumnBean biddingFormColumnBean = new BiddingFormColumnBean();
-        biddingFormColumnBean.setColumnHeader("header");
-        biddingFormColumnBean.setColumnNo(1);
-        biddingFormColumnBean.setColumntypeid(1);
-        biddingFormColumnBean.setDataType(1);
-        biddingFormColumnBean.setFilledBy(1);
-        biddingFormColumnBean.setIsCurrConvReq(1);
-        biddingFormColumnBean.setIsShown(1);
-        biddingFormColumnBean.setTableid(1);
-        lstBiddingFormColumnBean.add(biddingFormColumnBean);
-        return lstBiddingFormColumnBean;
-    }
+    
 
     public TblTenderColumn setBiddingFormColumnParameterToTable(BiddingFormColumnBean biddingFormColumnBean) {
         TblTenderColumn tblTenderColumn = new TblTenderColumn();
@@ -433,18 +424,18 @@ public class FormService {
             }
         }
         Map<String, Object> column = new HashMap<String, Object>();
-        column.put("formId", formId);
+        column.put(FORMID, formId);
         column.put("tableMandatoryCount", tableMandatoryCount);
         StringBuilder query = new StringBuilder();
         query.append("update tbl_tenderform set minTablesReqForBidding = :tableMandatoryCount where formId=:formId");
         int cnt = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), column);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List<Object[]> ViewTenderForm(String formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
         query.append("select "
@@ -457,7 +448,8 @@ public class FormService {
                 + " right join tbl_tendercolumn a on  tblTenderCell.columnid=a.columnId "
                 + " right join tbl_tendertable c on a.tableid=c.tableId "
                 + " right join tbl_tenderform d  on c.formid=d.formId "
-                + " where d.formId= :formId order by c.tableId,a.columnNo,tblTenderCell.rowId,tblTenderCell.cellNo,tblTenderCell.columnid");
+//                + " where d.formId= :formId order by c.tableId,a.columnNo,tblTenderCell.rowId,tblTenderCell.cellNo,tblTenderCell.columnid desc");
+			+ " where d.formId= :formId order by c.tableId  desc");
 
         List<Object[]> ls = hibernateQueryDao.createSQLQuery(query.toString(), var);
         return ls;
@@ -467,7 +459,7 @@ public class FormService {
     public TblTenderEnvelope getEnvlopeNameIdForEdit(String formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         query.append(" select t.envelopeid,e.envelopeName from tbl_tenderform t inner join tbl_tenderenvelope e on t.envelopeid=e.envelopeId and t.formId= :formId");
         List<Object[]> ls = hibernateQueryDao.createSQLQuery(query.toString(), var);
         TblTenderEnvelope tblTenderEnvelope = new TblTenderEnvelope();
@@ -711,46 +703,26 @@ public class FormService {
     
     @Transactional
     public TblBidder getTblBidderCompanyId(int companyId) throws Exception {
-    	List<TblBidder> list = tblBidderDao.findTblBidder("tblCompany.companyid", Operation_enum.EQ, companyId);
-    	return (list != null && !list.isEmpty()) ? list.get(0) : null;
+        List<TblBidder> list = tblBidderDao.findTblBidder("tblCompany.companyid", Operation_enum.EQ, companyId);
+        return (list != null && !list.isEmpty()) ? list.get(0) : null;
     }
     
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
-    public List<Object[]> getFormLibraryByEnvType(Integer[] formType, Integer tenderId) {
-        StringBuilder query = new StringBuilder();
-        Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tenderId", tenderId);
-        if(formType != null && formType.length > 0){
-        	var.put("formType", formType);
-        }
-        query.append("select f.formId,f.formName,f.envelopeId,e.envId,e.envelopeName,f.formWeight from tbl_tenderform f "
-                + " inner join tbl_tender t on f.tenderId=t.tenderId "
-                + " inner join tbl_tenderenvelope e on e.envelopeId = f.envelopeId where 1 =1 ");
-                if(formType != null && formType.length > 0){
-                    
-                	query.append(" and e.envid in (:formType)  ");
-                }
-                query.append(" and t.tenderId =:tenderId  and f.cstatus<>2  order by e.envId");
-
-        List<Object[]> lst = hibernateQueryDao.createSQLQuery(query.toString(), var);
-        return lst;
-    }
+    
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public List<Object[]> getFormForTender(Integer tenderId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId", tenderId);
-        query.append("select f.formId,f.formName,f.envelopeId,e.envId,e.envelopeName,f.formWeight,f.isMandatory from tbl_tenderform f "
+        query.append("select f.formId,f.formName,f.envelopeId,e.envId,e.envelopeName,f.formWeight,f.isMandatory,f.isCanceled,f.cstatus,f.corrigendumFormWeight from tbl_tenderform f "
                 + " inner join tbl_tender t on f.tenderId=t.tenderId "
                 + " inner join tbl_tenderenvelope e on e.envelopeId = f.envelopeId where isMandatory=1 ");
                 query.append(" and t.tenderId =:tenderId  and f.cstatus<>2  order by e.envId");
 
-        List<Object[]> lst = hibernateQueryDao.createSQLQuery(query.toString(), var);
-        return lst;
+        return hibernateQueryDao.createSQLQuery(query.toString(), var);
     }
     
     @Transactional
-    private List<TblTenderCellGrandTotal> decryptGrandTotal(int tenderId, List<TblTenderCellGrandTotal> list) throws Exception {
+    public List<TblTenderCellGrandTotal> decryptGrandTotal(int tenderId, List<TblTenderCellGrandTotal> list) throws Exception {
         TblTender tblTender = tenderCommonService.getTenderById(tenderId);
         List<TblTenderCellGrandTotal> newlist = new ArrayList<TblTenderCellGrandTotal>();
         for (TblTenderCellGrandTotal tblTenderCellGrandTotal : list) {
@@ -779,60 +751,6 @@ public class FormService {
         return decryptGrandTotal(tenderId, list);
     }
 
-   /* @Transactional
-    public List<TblTenderCell> getTblBidDetail(int formId, int companyId,int bidderId) throws Exception {
-        List<Object[]> list = null;
-        Map<String, Object> var = new HashMap<String, Object>();
-        
-        var.put("formId", formId);
-        var.put("bidderId",bidderId);
-        StringBuffer query = new StringBuffer();
-        query.append("SELECT distinct case when cl.filledby=2 then ifnull(bd.cellId,0) ");
-        query.append("when cl.filledby=1 then ifnull(tc.cellId,0) ");
-        query.append("when cl.filledby=3 then ifnull(bd.cellId,0)end as cellId, ");
-        query.append("ifnull(tc.cellNo,0) cellNo, ");
-        query.append(" case when cl.filledby=2 then ifnull(bd.cellValue,'0') " );
-        query.append(" when cl.filledby=1 then ifnull(tc.cellValue,'0')  " );
-        query.append(" when cl.filledby=3 then ifnull(bd.cellValue,'0') " );
-        query.append(" end as cellVal, " );
-        query.append(" ifnull(cl.dataType,0) dataType, " );
-        query.append(" ifnull(tc.objectId,0) objectId, " );
-        query.append(" ifnull(tc.rowId,0) rowId, ");
-        query.append(" cl.columnId, " );
-        query.append(" cl.formId, " );
-        query.append(" tt.tableId,cl.filledby,cl.isGTColumn " );
-        query.append(" FROM Tbl_tendertable tt " );
-        query.append(" inner join Tbl_tendercolumn cl on tt.formid=cl.formid " );
-        query.append(" left outer join Tbl_TenderCell tc on cl.formid=tc.formId and cl.columnId=tc.columnid " );
-        query.append(" left outer join Tbl_BidDetail bd on cl.formid=bd.formId and cl.columnId=bd.columnid and bd.cellid = tc.cellId " );//and bd.cellid = tc.cellId added cond later
-        query.append(" inner join tbl_bidder b on b.companyId=bd.companyId " );
-        query.append(" WHERE tt.formId=:formId and b.bidderId=:bidderId");
-        
-
-        list = hibernateQueryDao.nativeSQLQuery(query.toString(), var);
-        List<TblTenderCell> tblTenderCellList = new ArrayList<TblTenderCell>();
-        for (Object[] obj : list) {
-            TblTenderCell tblTenderCell = new TblTenderCell();
-            tblTenderCell.setCellId(Integer.parseInt(obj[0].toString()));
-            tblTenderCell.setCellNo(Integer.parseInt(obj[1].toString()));
-            TblTenderColumn tblTenderColumn=new TblTenderColumn();
-            tblTenderColumn.setFilledBy((Integer)obj[9]);
-            tblTenderColumn.setColumnId(Integer.parseInt(obj[6].toString()));
-            tblTenderColumn.setisGTColumn((Integer)obj[10]);
-            tblTenderCell.setCellValue(obj[2].toString());
-            tblTenderCell.setDataType(Integer.parseInt(obj[3].toString()));
-            tblTenderCell.setObjectId(Integer.parseInt(obj[4].toString()));
-            tblTenderCell.setRowId(Integer.parseInt(obj[5].toString()));
-            tblTenderCell.setTblTenderColumn(tblTenderColumn);
-            tblTenderCell.setTblTenderForm(new TblTenderForm(Integer.parseInt(obj[7].toString())));
-            tblTenderCell.setTblTenderTable(new TblTenderTable(Integer.parseInt(obj[8].toString())));
-            
-            tblTenderCellList.add(tblTenderCell);
-        }
-        
-        return tblTenderCellList;
-
-    }*/
     /**
     *
     * @author Lipi Shah
@@ -840,11 +758,11 @@ public class FormService {
     @Transactional
     public List<TblTenderCell> getTblBidDetail(int formId, int companyId, int bidderId) throws Exception {
 
-        List<Object[]> list = null;
+        List<Object[]> list;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         var.put("companyId", companyId);
-        StringBuffer query = new StringBuffer();
+        StringBuilder query = new StringBuilder();
         query.append(" SELECT tblBidDetail.cellId, tblTenderCell.cellNo,tblBidDetail.cellValue,tblTenderCell.dataType,tblTenderCell.objectId");
         query.append(" ,tblTenderCell.rowId,tblTenderCell.tblTenderColumn.columnId,tblBidDetail.tblTenderForm.formId,tblTenderCell.tblTenderTable.tableId");
         query.append(" FROM TblBidDetail tblBidDetail,TblTenderCell tblTenderCell");
@@ -876,7 +794,7 @@ public class FormService {
     public Map getFormula(int formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         query.append("select f.formula,c.columnId,c.formId from tbl_tenderformula f inner join tbl_tendercolumn c "
                 + " on f.columnId=c.columnId where c.formId= :formId");
         List<Object[]> lst = hibernateQueryDao.createSQLQuery(query.toString(), var);
@@ -891,7 +809,7 @@ public class FormService {
     public Map getFormulaPerColumn(String formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
         query.append("select f.formula,c.columnId,c.formId from tbl_tenderformula f inner join tbl_tendercolumn c "
@@ -998,11 +916,10 @@ public class FormService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean removeCell(String formId) throws Exception {
-        boolean success = false;
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        int cnt = 0;
-        var.put("formId", formId);
+        int cnt;
+        var.put(FORMID, formId);
         query.append("delete from tbl_tendercell  where formid = :formId");
         cnt = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), var);
         return cnt != 0;
@@ -1010,7 +927,7 @@ public class FormService {
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean addCell(List<TblTenderCell> lstTblTenderCell) throws Exception {
-        boolean success = false;
+        boolean success;
         success = addCellForm(lstTblTenderCell);
         return success;
     }
@@ -1023,7 +940,7 @@ public class FormService {
     }
 
     public boolean addAuctionStopResume(TblAuctionStopResume tblAuctionStopResume) throws Exception {
-        boolean bSuccess = false;
+        boolean bSuccess;
         commonDAO.saveOrUpdate(tblAuctionStopResume);
         bSuccess = true;
         return bSuccess;
@@ -1064,12 +981,12 @@ public class FormService {
         } else {
             var.put("tenderId", tblTender.getTenderId());
             query.append("update tbl_tender set isAuctionStop=1 where tenderId=:tenderId");
-            int cnt = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), var);
+            hibernateQueryDao.updateDeleteSQLQuery(query.toString(), var);
         }
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List<TblTenderForm> FormListing(int tenderId) throws Exception{
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
@@ -1093,7 +1010,7 @@ public class FormService {
                 + "                 f.isDocumentReq,f.isPriceBid,"
                 + "                 (select count(filledBy) from tbl_tendercolumn where formId=f.formId and filledBy=3 ) isAuto, "
                 + "                 (select count(formulaId) from tbl_tenderformula where formId=f.formId  )isFormulaCreated ,f.isMandatory"
-                + "                 ,en.envId"
+                + "                 ,en.envId,isCanceled"
                 + " from tbl_envelope en "
                 + " inner join tbl_tenderenvelope e on en.envId=e.envid"
                 + " left outer join tbl_tenderform f on f.envelopeid=e.envelopeId AND f.CSTATUS!=2"
@@ -1102,20 +1019,20 @@ public class FormService {
         List<TblTenderForm> lstForm = new ArrayList();
         TblTenderForm tblTenderForm = new TblTenderForm();
         for (int i = 0; i < ls.size(); i++) {
-
             tblTenderForm = new TblTenderForm();
             tblTenderForm.setFormId(convertInt(ls.get(i)[0]));
             tblTenderForm.setFormName((String) ls.get(i)[1]);
             tblTenderForm.setCstatus(convertInt(ls.get(i)[2]));
             TblTenderEnvelope tblTenderEnvelope = new TblTenderEnvelope();
             tblTenderEnvelope.setEnvelopeName((String) ls.get(i)[4]);
-            tblTenderEnvelope.setEnvelopeId(convertInt(ls.get(i)[10]));
             tblTenderForm.setTblTenderEnvelope(tblTenderEnvelope);
             tblTenderForm.setIsDocumentReq(convertInt(ls.get(i)[5]));
             tblTenderForm.setIsPriceBid(convertInt(ls.get(i)[6]));
+            tblTenderForm.setIsCanceled(convertInt(ls.get(i)[11]));
             tblTenderForm.setLoadNoOfItems(convertInt(ls.get(i)[7])); //this method is use to check if any auto column is available or not
             tblTenderForm.setIsEncryptionReq(convertInt(ls.get(i)[8])); // THIS METHOD IS USED TO CHECK WHETHER FORMULA IS CREATED OR NOT
             tblTenderForm.setIsMandatory(convertInt(ls.get(i)[9]));
+            tblTenderEnvelope.setEnvelopeId(convertInt(ls.get(i)[10]));
           //  tblTenderForm.setIsPriceSummryDone(checkIfPriceSummryCreated(tblTenderForm.getFormId()));
             lstForm.add(tblTenderForm);
         }
@@ -1171,7 +1088,6 @@ public class FormService {
     }
 
     @Transactional
-
     public void copyFormForTenderCopy(String fromTenderId, String toTenderId, Map envIds) throws Exception {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
@@ -1179,7 +1095,7 @@ public class FormService {
         //Do not change the sequance of the column in query
         query.append("select TblTenderForm.formId,TblTenderForm.formName"
                 + " from    TblTenderForm TblTenderForm              "
-                + " where  TblTenderForm.tblTender.tenderId = :tenderId and  TblTenderForm.cstatus!=2");
+                + " where  TblTenderForm.tblTender.tenderId = :tenderId and  TblTenderForm.cstatus not in (2,3)"); // not allowed cancel and deleted forms.
 
         List<Object[]> ls = hibernateQueryDao.createQuery(query.toString(), var);
         String[] formId = new String[ls.size()];
@@ -1323,8 +1239,9 @@ public class FormService {
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
-    public void copyForm(String[] formIds, String tenderId, String envId, HttpServletRequest request) throws Exception {
+    public void copyForm(String[] formIds, String tenderIds, String envId, HttpServletRequest request) throws Exception {
         Map TenderFormDetails = new LinkedHashMap();
+        Integer tenderId = convertInt(tenderIds);
         int count = 0;
         HttpSession session = request.getSession();
         SessionBean sessionBean = (SessionBean) session.getAttribute(CommonKeywords.SESSION_OBJ.toString());
@@ -1357,7 +1274,7 @@ public class FormService {
             tblTenderForm.setCreatedOn(new Date());
             tblTenderForm.setCreatedBy(((int) userId));
             TblTender tblTender = new TblTender();
-            tblTender.setTenderId(convertInt(tenderId));
+            tblTender.setTenderId(tenderId);
 
             tblTenderForm.setTblTender(tblTender);
             TblTenderEnvelope tblTenderEnvelope = new TblTenderEnvelope();
@@ -1465,7 +1382,7 @@ public class FormService {
             status = addDocumentform(lstTblTenderDoc);
             status = addEvaluationColumn(lstTblTenderGovColumn);
             status = addFormula(lstTblTenderFormulaWithFormula);
-
+            addToCorrigendum(tenderId,tblTenderForm.getFormId(),Integer.parseInt(sessionBean.getUserId()+""),1);
         }
 
     }
@@ -1486,7 +1403,7 @@ public class FormService {
      * **need to add***************************
      */
     
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public TblTender BiddingTypeFromTender(Integer tenderId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
@@ -1510,18 +1427,18 @@ public class FormService {
     
     
     public List<TblTenderForm> getFormById(Integer formId) throws Exception {
-        return commonDAO.findEntity(TblTenderForm.class, "formId", Operation_enum.EQ, formId);
+        return commonDAO.findEntity(TblTenderForm.class, FORMID, Operation_enum.EQ, formId);
     }
     
     /**
      * ********hemal changes*******************
      */
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List<TblTenderForm> FormData(Integer formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
         query.append("select tblTenderForm.formId,tblTenderForm.formName,tblTenderForm.formHeader,"
@@ -1552,7 +1469,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public void publishForm(Integer formId) {
         Map<String, Object> column = new HashMap<String, Object>();
-        column.put("formId", formId);
+        column.put(FORMID, formId);
 
     }
 
@@ -1560,7 +1477,7 @@ public class FormService {
     public Map getTableStructure(Integer formId) throws Exception {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         TblTenderColumn tblTenderColumn = new TblTenderColumn();
         TblTenderTable tblTenderTable = new TblTenderTable();
         TblTenderForm tblTenderForm = new TblTenderForm();
@@ -1644,7 +1561,7 @@ public class FormService {
 
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         query.append("select t.columnId,t.columnHeader,t.columnNo,t.dataType,t.filledBy,t.tblTenderTable "
                 + " from TblTenderColumn t where (t.dataType=3 or t.dataType=4 or t.dataType=5 or t.filledBy=3 ) "
@@ -1676,25 +1593,25 @@ public class FormService {
             ColumnMap.put(o.getTableId() + "", lstColumn);
 
         }
-        formulaColumnMap.put("formId", formId.toString());
+        formulaColumnMap.put(FORMID, formId.toString());
         formulaColumnMap.put("AutoColumn", AutoColumnMap);
         formulaColumnMap.put("columnList", ColumnMap);
 
         return formulaColumnMap;
     }
     
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List getBidForConversion(Integer tenderId) throws Exception {
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId", tenderId);
         StringBuilder query = new StringBuilder();
-        query.append("select bd.bidDetailId,bd.cellId,bd.cellValue,tc.filledBy,tc.isCurrConvReq,tc.columnId,tc.formId,tc.tableId,tt.randPass,tb.bidderId from tbl_biddetail bd "
-                + " inner join tbl_bidder tb on tb.companyId=bd.companyId  "
-                + " inner join tbl_tenderform tf on tf.formId=bd.formId  "
-                + " inner join tbl_tender tt on tt.tenderId=tf.tenderId  "
-                + " inner join tbl_tendercell tc1 on tc1.cellId=bd.cellId "
-                + " inner join tbl_tendercolumn tc on tc.columnId=tc1.columnId "
-                + " where tt.tenderId=:tenderId and tc.filledBy in (2,3)");
+        query.append("select bd.bidDetailId,bd.cellId,bd.cellValue,tc.filledBy,tc.isCurrConvReq,tc.columnId,tc.formId,tc.tableId,tt.randPass,tb.bidderId from tbl_biddetail bd ");
+        query.append(" inner join tbl_bidder tb on tb.companyId=bd.companyId  ");
+        query.append(" inner join tbl_tenderform tf on tf.formId=bd.formId  ");
+        query.append(" inner join tbl_tender tt on tt.tenderId=tf.tenderId  ");
+        query.append(" inner join tbl_tendercell tc1 on tc1.cellId=bd.cellId ");
+		query.append(" inner join tbl_tendercolumn tc on tc.columnId=tc1.columnId ");
+        query.append(" where tt.tenderId=:tenderId and tc.filledBy in (3)");//(2,3)
         List<Object[]> lst = hibernateQueryDao.nativeSQLQuery(query.toString(), var);
         List<TblBidDetail> lstBidDetail = new ArrayList<TblBidDetail>();
         for (int i = 0; i < lst.size(); i++) {
@@ -1717,12 +1634,12 @@ public class FormService {
         return lstBidDetail;
     }
     
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List GetFormulaGrid(Integer formId) {
 
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         query.append("select t.formulaId,t.displayFormula,t.tblTenderColumn,t.formula "
                 + " from TblTenderFormula t where  t.tblTenderForm.formId= :formId");
@@ -1744,12 +1661,17 @@ public class FormService {
 
         return lstColumnFormula;
     }
+    
+    @Transactional
+    public TblTenderColumn getTblTenderColumn(int columnId) throws Exception {
+        List<TblTenderColumn> list = tblTenderColumnDao.findTblTenderColumn("columnId", Operation_enum.EQ, columnId);
+        return (list != null && !list.isEmpty()) ? list.get(0) : null;
+    }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
-
-    public int SaveFormula(HttpServletRequest request) {
+    public int SaveFormula(HttpServletRequest request) throws Exception {
         String formula = checkRequestNull(request, "frmFormFormula");
-        String formId = checkRequestNull(request, "hdnFormId");
+        int formId = Integer.parseInt(checkRequestNull(request, "hdnFormId"));
         String formulaToDisplay = checkRequestNull(request, "txtaFormFormula");
         String colId = checkRequestNull(request, "formulaColumn");
         String formulaId = checkRequestNull(request, "hdnFormulaId");
@@ -1758,28 +1680,19 @@ public class FormService {
         if (formulaId.trim().length() != 0) {
             tblTenderFormula.setFormulaId(convertInt(formulaId));
         }
-        TblTenderForm tblTenderForm = new TblTenderForm();
-        TblTenderColumn tblTenderColumn = new TblTenderColumn();
-        TblTenderTable tblTenderTable = new TblTenderTable();
-        boolean bSuccess = false;
+       
+        TblTenderColumn tblTenderColumn = getTblTenderColumn(convertInt(colId));
         tblTenderFormula.setDisplayFormula(formulaToDisplay);
         tblTenderFormula.setFormula(formula);
-
-        tblTenderForm.setFormId(convertInt(formId));
-        tblTenderFormula.setTblTenderForm(tblTenderForm);
-        tblTenderColumn.setColumnId(convertInt(colId));
+        tblTenderFormula.setTblTenderForm(new TblTenderForm(formId));
         tblTenderFormula.setTblTenderColumn(tblTenderColumn);
-
-        tblTenderTable.setTableId(19);
-        tblTenderFormula.setTblTenderTable(tblTenderTable);
-
+        tblTenderFormula.setTblTenderTable( new TblTenderTable(tblTenderColumn.getTblTenderTable().getTableId()));
         tblTenderFormula.setCellId(0);
         tblTenderFormula.setCellNo(0);
         tblTenderFormula.setColFormula("");
-        tblTenderFormula.setColumnNo(0);
+        tblTenderFormula.setColumnNo(tblTenderColumn.getColumnNo());
         tblTenderFormula.setFormulaId(0);
         tblTenderFormula.setValidationMessage("");
-        //tblTenderFormula.set
 
         if (formulaId.trim().length() != 0) {
             tblTenderFormula.setFormulaId(convertInt(formulaId));
@@ -1826,7 +1739,7 @@ public class FormService {
 
     public ArrayList<TblTenderDocument> setDocumentFormParameters(HttpServletRequest request) throws Exception {
         ArrayList<TblTenderDocument> lstFormDocumentBean = new ArrayList<TblTenderDocument>();
-        String formId = checkRequestNull(request, "formId");
+        String formId = checkRequestNull(request, FORMID);
         String tenderId = checkRequestNull(request, "tenderId");
         String json = checkRequestNull(request, "DocumentJson");
         JSONObject jobj = new JSONObject(json);
@@ -1851,7 +1764,7 @@ public class FormService {
 
     public ArrayList<TblTenderGovColumn> setJsonValueForEvaluationColumn(HttpServletRequest request) throws Exception {
         ArrayList<TblTenderGovColumn> lstTblTenderGovColumn = new ArrayList<TblTenderGovColumn>();
-        String formId = checkRequestNull(request, "formId");
+        String formId = checkRequestNull(request, FORMID);
         String tenderId = checkRequestNull(request, "tenderId");
         String json = checkRequestNull(request, "EvaluationColumnJson");
 
@@ -1861,7 +1774,7 @@ public class FormService {
         while (iterator.hasNext()) {
             String key = (String) iterator.next();
             TblTenderForm tblTenderForm = new TblTenderForm();
-            tblTenderForm.setFormId(colJsonObject.getInt("formId"));
+            tblTenderForm.setFormId(colJsonObject.getInt(FORMID));
             TblTender tblTender = new TblTender();
             tblTender.setTenderId(colJsonObject.getInt("tenderId"));
             if (key.equals("EavluationColumnObj")) {
@@ -1878,7 +1791,7 @@ public class FormService {
                     TblTenderColumn tblTenderColumn = new TblTenderColumn();
                     tblTenderColumn.setColumnId(jobj.getInt("columnId"));
                     TblTenderTable tblTenderTable = new TblTenderTable();
-                    tblTenderTable.setTableId(jobj.getInt("tableId"));
+                    tblTenderTable.setTableId(jobj.getInt(TABLEID));
                     tblTenderGovColumn.setTblTenderColumn(tblTenderColumn);
                     tblTenderGovColumn.setTblTenderTable(tblTenderTable);
                     tblTenderGovColumn.setTblTenderForm(tblTenderForm);
@@ -1891,7 +1804,7 @@ public class FormService {
         return lstTblTenderGovColumn;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public StringBuilder getEvaluationColumnName(List<TblTenderGovColumn> lstTblTenderGovColumns) {
 
         StringBuilder query = new StringBuilder();
@@ -1903,10 +1816,8 @@ public class FormService {
             query = new StringBuilder();
             var = new HashMap<String, Object>();
             var.put("columnId", TblTenderGovColumn.getTblTenderColumn().getColumnId());
-            
-           // query.append("select TblTenderColumn.columnId,TblTenderColumn.columnHeader from TblTenderColumn TblTenderColumn where TblTenderColumn.columnId= :columnId");
-           query.append("select tblTenderColumn.columnId,tblTenderColumn.columnHeader from TblTenderColumn tblTenderColumn where tblTenderColumn.columnId= :columnId"); 
-           List<Object[]> lst = hibernateQueryDao.createNewQuery(query.toString(), var);
+            query.append("select tblTenderColumn.columnId,tblTenderColumn.columnHeader from TblTenderColumn tblTenderColumn where tblTenderColumn.columnId= :columnId"); 
+            List<Object[]> lst = hibernateQueryDao.createNewQuery(query.toString(), var);
             msg.append(lst.get(0)[1] + ",");
         }
         if (msg != null && msg.length() > 0) {
@@ -1916,7 +1827,7 @@ public class FormService {
 
     }
     
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public Map<Integer,Integer> checkIfEvaluationColumnSet(Integer tenderId)throws Exception
     {
         Map<String,Object> var=new HashMap<String,Object>();
@@ -1968,12 +1879,12 @@ public class FormService {
         return bSuccess;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public Map getDocumentFormDetail(Integer formId) {
         Map map = new HashMap();
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         query.append("select tblTenderForm.formId,tblTenderForm.createdOn,tblTenderForm.formName,tblTenderForm.isDocumentReq,tblTenderForm.isMandatory,"
                 + "tblTenderForm.isPriceBid,te.envelopeName,tblTenderForm.formWeight,te.tblEnvelope.envId from TblTenderForm tblTenderForm "
                 + " inner join tblTenderForm.tblTenderEnvelope te  "
@@ -1994,15 +1905,15 @@ public class FormService {
         return map;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public ArrayList getColumnsForGrandTotal(Integer formId) {
         ArrayList<TblTenderColumn> lstGrandTotal = new ArrayList<TblTenderColumn>();
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
-        query.append("select tblTenderColumn.columnId,tblTenderColumn.columnHeader,tblTenderColumn.isGTColumn"
+        query.append("select tblTenderColumn.columnId,tblTenderColumn.columnHeader,tblTenderColumn.isGTColumn,tblTenderColumn.tblColumnType.columnTypeId"
                 + " from TblTenderColumn tblTenderColumn "
                 + " inner join tblTenderColumn.tblTenderForm d "
                 + "where d.formId= :formId and tblTenderColumn.dataType in (3,4,5) and tblTenderColumn.tblColumnType.columnTypeId != 2");
@@ -2012,14 +1923,16 @@ public class FormService {
             tblTenderColumn.setColumnId(convertInt(lst.get(i)[0]));
             tblTenderColumn.setColumnHeader((String) lst.get(i)[1]);
             tblTenderColumn.setisGTColumn(convertInt(lst.get(i)[2]));
+            TblColumnType tblColumnType = new TblColumnType();
+            tblColumnType.setColumnTypeId(convertInt(lst.get(i)[3].toString()));
+            tblTenderColumn.setTblColumnType(tblColumnType);
             lstGrandTotal.add(tblTenderColumn);
         }
-
         return lstGrandTotal;
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public TblTender getTenderDetails(Integer tenderId) {
         ArrayList<TblTenderColumn> lstGrandTotal = new ArrayList<TblTenderColumn>();
         StringBuilder query = new StringBuilder();
@@ -2040,12 +1953,12 @@ public class FormService {
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public Map getColumnsForPriceSummury(Integer formId) {
         Map map = new HashMap();
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
         query.append("select tblTenderColumn.columnId,tblTenderColumn.columnHeader,t.tableId,t.tableName"
@@ -2073,13 +1986,13 @@ public class FormService {
 
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
 
     public Map getEvaluationColumn(Integer formId,int operation) {
         Map map = new HashMap();
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
         
@@ -2128,11 +2041,11 @@ public class FormService {
         return evaluationMap;
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List<TblTenderDocument> getAllDocumentDetail(Integer formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         query.append("select tblTenderDocument.documentId,tblTenderDocument.isMandatory,tblTenderDocument.documentName"
                 + " from TblTenderDocument tblTenderDocument "
                 + " inner join tblTenderDocument.tblTenderForm tblTenderForm"
@@ -2153,11 +2066,11 @@ public class FormService {
     }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List<TblTenderGovColumn> getAllEvaluationColumn(Integer formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         query.append("select tblTenderGovColumn.govColumnId,tblTenderTable.tableName,tblTenderColumn.columnHeader,tblTenderTable.tableId,tblTenderColumn.columnId,"
                 + " tblTenderGovColumn.cellId,tblTenderGovColumn.columnNo,tblTenderGovColumn.ipAddress"
                 + " from TblTenderGovColumn tblTenderGovColumn "
@@ -2203,7 +2116,6 @@ public class FormService {
         return bSuccess;
     }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean DeleteDocumentForm(TblTenderDocument tblTenderDocument) {
         boolean bSuccess = false;
@@ -2212,7 +2124,6 @@ public class FormService {
         return bSuccess;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public boolean DeleteEvaluationColumn(TblTenderGovColumn tblTenderGovColumn) {
         boolean bSuccess = false;
@@ -2227,7 +2138,7 @@ public class FormService {
 
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", tblTenderForm.getFormId());
+        var.put(FORMID, tblTenderForm.getFormId());
         query.append("select isMandatory,formId from TblTenderForm where formId= :formId");
 
         List<Object[]> lst = hibernateQueryDao.createNewQuery(query.toString(), var);
@@ -2361,7 +2272,7 @@ public class FormService {
             cnt = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), var);
 
             Map<String, Object> var1 = new HashMap<String, Object>();
-            var1.put("tableId", tblTenderTable.getTableId());
+            var1.put(TABLEID, tblTenderTable.getTableId());
 
             query2 = new StringBuilder();
             query2.append("select noOfCols,tableId from tbl_tendertable where tableId= :tableId");
@@ -2383,20 +2294,32 @@ public class FormService {
         boolean success = false;
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
-        query.append("update tbl_tenderform set cstatus=2 where formId= :formId");
-        int cnt = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), var);
+        var.put(FORMID, formId);
+        query.append("update TblTenderForm set cstatus=2 where formId= :formId");
+        int cnt = hibernateQueryDao.updateDeleteQuery(query.toString(), var);
+        return cnt != 0;
+    }
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public boolean UpdateFormStatusForCancel(Integer formId,Integer userId, int tenderId) throws Exception {
+        boolean success = false;
+        StringBuilder query = new StringBuilder();
+        Map<String, Object> var = new HashMap<String, Object>();
+        var.put(FORMID, formId);
+        var.put("userId", userId);
+        query.append("update TblTenderForm set isCanceled=1,cancelledBy=:userId where formId= :formId");
+        int cnt = hibernateQueryDao.updateDeleteQuery(query.toString(), var);
+        addToCorrigendum(tenderId,formId,userId,4);
         return cnt != 0;
     }
     
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
+    @Transactional
     public List<TblTenderEnvelope> getMinimumFormCountForBidding(Integer tenderId)throws Exception
     {
         List<TblTenderEnvelope> lstTblTenderEnvelope=new ArrayList<TblTenderEnvelope>();
         Map<String,Object> var=new HashMap<String,Object>();
         var.put("tenderId",tenderId);
-        List<Object[]> lst=new ArrayList<Object[]>();
-        lst=hibernateQueryDao.nativeSQLQuery("select count(*),envelopeId from tbl_tenderform where tenderId=:tenderId and cstatus!=2 group by envelopeId", var);
+        List<Object[]> lst=new ArrayList<Object[]>(); // not deleted and cancel
+        lst=hibernateQueryDao.nativeSQLQuery("select count(1),envelopeId from tbl_tenderform where tenderId=:tenderId and cstatus not in (2,3) group by envelopeId", var);
         for(int i=0;i<lst.size();i++){
             TblTenderEnvelope tblTenderEnvelope=new TblTenderEnvelope();
             tblTenderEnvelope.setEnvelopeId((Integer)lst.get(i)[1]);
@@ -2418,7 +2341,7 @@ public class FormService {
             int c=hibernateQueryDao.updateDeleteSQLQuery("update tbl_tenderenvelope set minFormsReqForBidding=:count where envelopeId=:envelopeId", var);
         }
     }
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public ArrayList getFormStatus(Integer tenderId) throws Exception {
         BigInteger cntFormula = null;
         BigInteger cntCells = null;
@@ -2442,18 +2365,11 @@ public class FormService {
             cntFormula = null;
             Integer formId = (Integer) formLst.get(i)[0];
 
-            var.put("formId", formId);
+            var.put(FORMID, formId);
 
-            /*    query.append("select count(*),tblTenderForm.formId"
-                    + " from TblTenderFormula tblTenderFormula "
-                    + " inner join tblTenderFormula.tblTenderForm tblTenderForm"
-                    + " where tblTenderForm.formId= :formId");
-            List<Object[]> lst = hibernateQueryDao.createNewQuery(query.toString(), var);*/
             query.append("select count(*),tt.formId from tbl_tenderformula tt"
                     + " where tt.formId= :formId");
             List<Object[]> lst = hibernateQueryDao.nativeSQLQuery(query.toString(), var);
-            // count=(Integer)lst.get(0)[0
-            //  cntFormula = (Long) lst.get(0)[0];
             cntFormula = (BigInteger) lst.get(0)[0];
             StringBuilder query1 = new StringBuilder();
             query1.append("select count(*),tc.formid from tbl_tendercell tc "
@@ -2490,7 +2406,7 @@ public class FormService {
     }
 
     /// Method That Checks Validation For Tender Publish , Related to Bidding Forms
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    @Transactional
     public List<String> PublishFormValidation(TblTender tblTender) throws Exception {
         List<String> lstValidation = new ArrayList<String>();
         Integer tenderId=tblTender.getTenderId();
@@ -2535,7 +2451,7 @@ public class FormService {
                 Integer formId = (Integer) lstForTenderForm.get(i)[0];
                 Map<String, Object> varForFormId = new HashMap<String, Object>();
 
-                varForFormId.put("formId", formId);
+                varForFormId.put(FORMID, formId);
 
                 StringBuilder queryForGetCellCount = new StringBuilder();
                 queryForGetCellCount.append("select count(*),tc.formid from tbl_tendercell tc "
@@ -2590,51 +2506,51 @@ public class FormService {
                 {
                 // 6. Check if Bidding Form contains Mandatory Documents Uploaded or what
                
-                queryForDocumentCheckList.append("select count(*),td.formId,tf.isDocumentReq from tbl_tenderdocument td "
-                        + " inner join tbl_tenderform tf on tf.formId=td.formId "
-                        + " where td.formId=:formId");
-                List<Object[]> lstDocument = hibernateQueryDao.nativeSQLQuery(queryForDocumentCheckList.toString(), varForFormId);
-                BigInteger countForDocumentcheckList = (BigInteger) lstDocument.get(0)[0];
-
-                // No Need to Check if Envelop Type is Price Bid'
-                if (countForDocumentcheckList.compareTo(BigZero) == 0 && convertInt(lstForTenderForm.get(i)[2]) != 4 && convertInt(lstDocument.get(0)[2]) == 1) {
-                    lstValidation.add(ValidationMessage.DOCUMENT_CHECKLIST_NOT_CREATED + " : " + lstForTenderForm.get(i)[1]);
-                }
-              
-                queryForDocumentCheckList = new StringBuilder();
-                queryForDocumentCheckList.append("select f.formId,f.isPriceBid from tbl_tenderform f "
-                        + " inner join tbl_tender t on t.tenderId=f.tenderid"
-                        + " and t.isItemwiseWinner=0"
-                        + " where f.isPriceBid=1 and f.isMandatory =1 and f.formId=:formId ");
-                List<Object[]> lstPriseBid = hibernateQueryDao.nativeSQLQuery(queryForDocumentCheckList.toString(), varForFormId);
-                // BigInteger countForPriceBidList = (BigInteger) lstPriseBid.get(0)[0];
-
-                // No Need to Check if Envelop Type is Price Bid'
-                if (lstPriseBid.size() != 0) {
-
-                    StringBuilder queryForCheckList = new StringBuilder();
-                    queryForCheckList.append("select columnId,isGTColumn from tbl_tendercolumn where formid = :formId and isGTColumn=1 ");
-                    List<Object[]> lstManPriseBid = hibernateQueryDao.nativeSQLQuery(queryForCheckList.toString(), varForFormId);
-                    //  BigInteger countForManPriceBidList = (BigInteger) lstPriseBid.get(0)[0];
-
-                    if (lstManPriseBid.size() == 0) {
-                        lstValidation.add(ValidationMessage.PriceBidForm + " : " + lstForTenderForm.get(i)[1]);
-                    }
-                }
+//                queryForDocumentCheckList.append("select count(*),td.formId,tf.isDocumentReq from tbl_tenderdocument td "
+//                        + " inner join tbl_tenderform tf on tf.formId=td.formId "
+//                        + " where td.formId=:formId");
+//                List<Object[]> lstDocument = hibernateQueryDao.nativeSQLQuery(queryForDocumentCheckList.toString(), varForFormId);
+//                BigInteger countForDocumentcheckList = (BigInteger) lstDocument.get(0)[0];
+//
+//                // No Need to Check if Envelop Type is Price Bid'
+//                if (countForDocumentcheckList.compareTo(BigZero) == 0 && convertInt(lstForTenderForm.get(i)[2]) != 4 && convertInt(lstDocument.get(0)[2]) == 1) {
+//                    lstValidation.add(ValidationMessage.DOCUMENT_CHECKLIST_NOT_CREATED + " : " + lstForTenderForm.get(i)[1]);
+//                }
+//              
+//                queryForDocumentCheckList = new StringBuilder();
+//                queryForDocumentCheckList.append("select f.formId,f.isPriceBid from tbl_tenderform f "
+//                        + " inner join tbl_tender t on t.tenderId=f.tenderid"
+//                        + " and t.isItemwiseWinner=0"
+//                        + " where f.isPriceBid=1 and f.isMandatory =1 and f.formId=:formId ");
+//                List<Object[]> lstPriseBid = hibernateQueryDao.nativeSQLQuery(queryForDocumentCheckList.toString(), varForFormId);
+//                // BigInteger countForPriceBidList = (BigInteger) lstPriseBid.get(0)[0];
+//
+//                // No Need to Check if Envelop Type is Price Bid'
+//                if (lstPriseBid.size() != 0) {
+//
+//                    StringBuilder queryForCheckList = new StringBuilder();
+//                    queryForCheckList.append("select columnId,isGTColumn from tbl_tendercolumn where formid = :formId and isGTColumn=1 ");
+//                    List<Object[]> lstManPriseBid = hibernateQueryDao.nativeSQLQuery(queryForCheckList.toString(), varForFormId);
+//                    //  BigInteger countForManPriceBidList = (BigInteger) lstPriseBid.get(0)[0];
+//
+//                    if (lstManPriseBid.size() == 0) {
+//                        lstValidation.add(ValidationMessage.PriceBidForm + " : " + lstForTenderForm.get(i)[1]);
+//                    }
+//                }
                 
-                StringBuilder queryForDocument = new StringBuilder();
-                queryForDocument.append("select f.formId, "
-                        + " case when d.documentId is null and f.isPriceBid <>1 and f.isDocumentReq=1 then 1 else 0 end as DocStatus "
-                        + " from tbl_tenderform f "
-                        + " left outer join tbl_tenderdocument d on d.formId=f.formId "
-                        + " where f.formId= :formId ");
-                List<Object[]> lstDocumentList = hibernateQueryDao.nativeSQLQuery(queryForDocument.toString(), varForFormId);
-                int statusDoc = convertInt(lstDocumentList.get(0)[1]);
-                if (statusDoc == 1) {
-                    lstValidation.add(ValidationMessage.DocumentCheckListForm + " : " + lstForTenderForm.get(i)[1]);
-                }
+//                StringBuilder queryForDocument = new StringBuilder();
+//                queryForDocument.append("select f.formId, "
+//                        + " case when d.documentId is null and f.isPriceBid <>1 and f.isDocumentReq=1 then 1 else 0 end as DocStatus "
+//                        + " from tbl_tenderform f "
+//                        + " left outer join tbl_tenderdocument d on d.formId=f.formId "
+//                        + " where f.formId= :formId ");
+//                List<Object[]> lstDocumentList = hibernateQueryDao.nativeSQLQuery(queryForDocument.toString(), varForFormId);
+//                int statusDoc = convertInt(lstDocumentList.get(0)[1]);
+//                if (statusDoc == 1) {
+//                    lstValidation.add(ValidationMessage.DocumentCheckListForm + " : " + lstForTenderForm.get(i)[1]);
+//                }
                 //for price summary
-                 var.put("formId", formId);
+                 var.put(FORMID, formId);
                 StringBuilder queryForPriceSummary = new StringBuilder();
                 queryForPriceSummary.append("select f.formName," +
                                         " (select count(isPriceSummary) from tbl_tendercolumn where isPriceSummary=1 and formid=f.formId ) as PriceCount " +
@@ -2726,7 +2642,7 @@ public class FormService {
     public List<Object[]> CopyTenderForm(String formId) {
         StringBuilder query = new StringBuilder();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         //Do not change the sequance of the column in query
         query.append("select "
@@ -2755,7 +2671,6 @@ public class FormService {
         TblTenderForm tblTenderForm = new TblTenderForm();
         Map TableColumn = new HashMap();
         Map formStructure = new HashMap<String, Object>();
-//        Map formStructure=new HashMap();
         Map cell = new LinkedHashMap();
         Map cellNew = new LinkedHashMap();
         List column = new ArrayList();
@@ -2792,7 +2707,6 @@ public class FormService {
                 tblTenderForm.setMinTablesReqForBidding((Integer) lst.get(i)[40]);
                 tblTenderForm.setParentFormId((Integer) lst.get(i)[41]);
                 tblTenderForm.setPublishedBy((Integer) lst.get(i)[42]);
-                // tblTenderForm.setPublishedOn(publishedOn);
                 tblTenderForm.setSortOrder((Integer) lst.get(i)[44]);
                 TblTender tblTender = new TblTender();
                 tblTender.setTenderId((Integer) lst.get(i)[45]);
@@ -2800,8 +2714,7 @@ public class FormService {
                 TblTenderEnvelope tblTenderEnvelope = new TblTenderEnvelope();
                 tblTenderEnvelope.setEnvelopeId((Integer) lst.get(i)[46]);
                 tblTenderForm.setTblTenderEnvelope(tblTenderEnvelope);
-//                tblTenderForm.setFormWeight((Double)lst.get(i)[53]);
-
+                
             }
 
             tblTenderTable = new TblTenderTable();
@@ -2897,7 +2810,7 @@ public class FormService {
         }
         Integer isAuction=tblTenderObj.getisAuction();
         var.put("eventId", eventId); //tender id
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         var.put("refNo", refNo); //tender no
         var.put("formName", formName);
         var.put("dept", dept);
@@ -3012,7 +2925,7 @@ public class FormService {
 
         List<Object[]> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         var.put("columnId", columnId);
         StringBuffer query = new StringBuffer();
         query.append(" select TblTenderFormula.cellId,TblTenderFormula.cellNo,TblTenderFormula.colFormula,TblTenderFormula.columnNo,TblTenderFormula.displayFormula,TblTenderFormula.formula,TblTenderFormula.formulaType"
@@ -3043,9 +2956,9 @@ public class FormService {
 
         List<Object[]> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         var.put("columnId", columnId);
-        var.put("tableId", tableId);
+        var.put(TABLEID, tableId);
         StringBuffer query = new StringBuffer();
         query.append(" select TblTenderGovColumn.cellId,TblTenderGovColumn.columnNo,TblTenderGovColumn.ipAddress from TblTenderGovColumn TblTenderGovColumn");
         query.append(" WHERE TblTenderGovColumn.tblTenderColumn.columnId =:columnId");
@@ -3071,7 +2984,7 @@ public class FormService {
 
         List<Object[]> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         var.put("columnId", columnId);
         StringBuffer query = new StringBuffer();
         query.append(" select TblTenderCellGrandTotal.cellGrandTotalId,TblTenderCellGrandTotal.GTValue,TblTenderCellGrandTotal.tblBidder.bidderId from TblTenderCellGrandTotal TblTenderCellGrandTotal");
@@ -3096,7 +3009,7 @@ public class FormService {
 
         List<Object[]> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         StringBuffer query = new StringBuffer();
         query.append(" select TblTenderDocument.isMandatory,TblTenderDocument.documentName from TblTenderDocument TblTenderDocument");
         query.append(" WHERE TblTenderDocument.tblTenderForm.formId =:formId");
@@ -3121,11 +3034,11 @@ public class FormService {
             StringBuilder query = new StringBuilder();
             Map<String, Object> column = new HashMap<String, Object>();
 
-            column.put("formId", formId);
+            column.put(FORMID, formId);
             query.append("update tbl_tendercolumn set isGTColumn=0 where formid= :formId");
 
             int cnt = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), column);
-            column.remove("formId");
+            column.remove(FORMID);
             column.put("colId", colIds);
             query = new StringBuilder();
             query.append("update tbl_tendercolumn set isGTColumn=1 where columnId in (:colId)");
@@ -3152,7 +3065,7 @@ public class FormService {
 
             }
 
-            //   tblTenderCellGrandTotalDao.saveUpdateAllTblTenderCellGrandTotal(lstTblTenderCellGrandTotal);
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -3164,7 +3077,7 @@ public class FormService {
     public Map getIsGTColumn(Integer formId) throws Exception {
         Map map = new HashMap();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         StringBuilder query = new StringBuilder();
         query.append("select tc.columnId,tc.columnHeader,tt.tablename,tt.tableId from tbl_tenderColumn tc "
                 + " inner join tbl_tendertable tt on tt.tableid=tc.tableid "
@@ -3206,7 +3119,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public void priceSummaryColumnUpdate(Integer tableId, Integer ColumnId) throws Exception {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("tableId", tableId);
+        map.put(TABLEID, tableId);
         StringBuilder query = new StringBuilder();
         query.append("update tbl_tendercolumn set isPriceSummary=0 where tableId = :tableId");
         int i = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), map);
@@ -3242,7 +3155,7 @@ public class FormService {
     public Map getGridForPriceSummary(Integer formId) throws Exception {
         Map map = new HashMap();
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         StringBuilder query = new StringBuilder();
         query.append("select tc.columnId,tc.columnHeader,tt.tablename,tt.tableId from tbl_tenderColumn tc "
                 + " inner join tbl_tendertable tt on tt.tableid=tc.tableid "
@@ -3274,7 +3187,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public void deletePriceSummaryColumnForTable(Integer tableId) throws Exception {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("tableId", tableId);
+        map.put(TABLEID, tableId);
         StringBuilder query = new StringBuilder();
         query.append("update tbl_tendercolumn set isPriceSummary=0 where tableId = :tableId");
         int i = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), map);
@@ -3292,12 +3205,12 @@ public class FormService {
             String key = iterator.next().toString();
             JSONObject jobj = json.getJSONObject(key);
             lstColumnId.add(jobj.getInt("columnId"));
-            if (!lstTableId.contains(jobj.getInt("tableId"))) {
-                lstTableId.add(jobj.getInt("tableId"));
+            if (!lstTableId.contains(jobj.getInt(TABLEID))) {
+                lstTableId.add(jobj.getInt(TABLEID));
             }
         }
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("tableId", lstTableId);
+        map.put(TABLEID, lstTableId);
         StringBuilder query = new StringBuilder();
         query.append("update tbl_tendercolumn set isPriceSummary=0 where tableId in :tableId");
         int i = hibernateQueryDao.updateDeleteSQLQuery(query.toString(), map);
@@ -3308,7 +3221,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public List<TblTenderColumn> getTableColumn(Integer tableId) throws Exception {
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("tableId", tableId);
+        var.put(TABLEID, tableId);
 
         StringBuilder query = new StringBuilder();
         query.append("select columnId ,columnNo from TblTenderColumn where tblTenderTable.tableId= :tableId");
@@ -3326,7 +3239,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public int getTableCount(Integer formId) throws Exception {
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         StringBuilder query = new StringBuilder();
         query.append("select noOfTables,formId from TblTenderForm where formId= :formId");
@@ -3412,13 +3325,13 @@ public class FormService {
         }
         var = new HashMap<String, Object>();
 
-        var.put("tableId", tableId);
+        var.put(TABLEID, tableId);
         query2 = new StringBuilder();
         query2.append("delete from tbl_tendertable  where tableId = :tableId");
         hibernateQueryDao.updateDeleteSQLQuery(query2.toString(), var);
 
         var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
 
         query2 = new StringBuilder();
         query2.append("select noOfTables,formId from tbl_tenderform where formId= :formId");
@@ -3435,7 +3348,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public List<Integer> getIsPriceSumaryColumn(Integer formId) throws Exception {
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         StringBuilder query = new StringBuilder();
         query.append("select columnid,tableid from tbl_tenderColumn where formid= :formId and ispricesummary=1");
         List<Object[]> lst = hibernateQueryDao.nativeSQLQuery(query.toString(), var);
@@ -3449,7 +3362,7 @@ public class FormService {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public int checkEnvForCopyForm(Integer formId, Integer envId) throws Exception {
         Map<String, Object> var = new HashMap<String, Object>();
-        var.put("formId", formId);
+        var.put(FORMID, formId);
         var.put("envId", envId);
         
         StringBuilder query = new StringBuilder();
@@ -3473,21 +3386,32 @@ public class FormService {
         var.put("columnId", columnId);
         StringBuilder query = new StringBuilder();
         commonDAO.executeUpdate("update TblTenderCell set cellValue = '' where tblTenderColumn.columnId=:columnId", var);
-
     }
 
+    
     /*auction start*/
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
+    public Integer getFormIdByTenderId(Integer tenderId)throws Exception
+    {
+        Map<String,Object> var = new HashMap<String,Object>();
+        var.put("tenderId",tenderId);
+        List<Object[]> lst = hibernateQueryDao.nativeSQLQuery("select formId,tenderId from tbl_tenderform where tenderId=:tenderId and cstatus=1", var);
+        if(lst !=  null && lst.size() > 0 && !lst.isEmpty())
+        {
+            return Integer.parseInt(lst.get(0)[0].toString());
+        }
+        return 0;
+    }
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
-    public TblTender InsretAuction(TblTender tblTender, TblTenderEnvelope tblTenderEnvelope,String opt,TblTenderCurrency tblTenderCurrency,List<TblTenderCurrency> lsttblTenderCurrency) {
+    public TblTender InsretAuction(TblTender tblTender, TblTenderEnvelope tblTenderEnvelope, String opt, TblTenderCurrency tblTenderCurrency, List<TblTenderCurrency> lsttblTenderCurrency) {
         boolean bSuccess = false;
         commonDAO.saveOrUpdate(tblTender);
-        
-        if(!opt.equalsIgnoreCase("Edit"))
-       {
-        commonDAO.saveOrUpdate(tblTenderEnvelope);
-        
-       }
-        
+
+        if (!opt.equalsIgnoreCase("Edit")) {
+            commonDAO.saveOrUpdate(tblTenderEnvelope);
+
+        }
+
         commonDAO.saveOrUpdate(tblTenderCurrency);
         commonDAO.saveOrUpdateAll(lsttblTenderCurrency);
         bSuccess = true;
@@ -3502,18 +3426,30 @@ public class FormService {
     }
     
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
-    public List<Object[]> getBidderCurrencyDetailByTenderId(Integer tenderId)
-    {
-        Map<String,Object> var=new HashMap<String,Object>();
-        var.put("tenderId",tenderId);
+    public List<Object[]> getAuctionBidConfirmForm() throws Exception {
         StringBuilder query = new StringBuilder();
-        query.append("select tc.currencyId,tc.exchangeRate,bidderId,tb.userId,c.currencyName,ul.loginId from tbl_tenderbidcurrency tb  " +
-" inner join tbl_tendercurrency tc on tc.tenderCurrencyId=tb.tenderCurrencyId " +
-" inner join tbl_currency c on c.currencyId=tc.currencyId " +
-" inner join tbl_bidder bd on bd.userId=tb.userId " +
-" inner join tbl_userlogin ul on ul.userId=tb.userId " +
-" where tenderId= :tenderId");
-        List<Object[]> lst=hibernateQueryDao.nativeSQLQuery(query.toString(), var);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("isActive", 1);
+
+        query.append("SELECT tblclientbidterm.clientBidTermId ,tblclientbidterm.bidTerm ")
+                .append(" FROM  TblClientBidTerm tblclientbidterm ")
+                .append(" WHERE tblclientbidterm.isActive=:isActive and tblclientbidterm.isAuction=1");
+        return hibernateQueryDao.createNewQuery(query.toString(), map);
+    }
+    
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public List<Object[]> getBidderCurrencyDetailByTenderId(Integer tenderId) {
+        Map<String, Object> var = new HashMap<String, Object>();
+        var.put("tenderId", tenderId);
+        StringBuilder query = new StringBuilder();
+        query.append("select tc.currencyId,tc.exchangeRate,bidderId,tb.userId,c.currencyName,ul.loginId from tbl_tenderbidcurrency tb  "
+                + " inner join tbl_tendercurrency tc on tc.tenderCurrencyId=tb.tenderCurrencyId "
+                + " inner join tbl_currency c on c.currencyId=tc.currencyId "
+                + " inner join tbl_bidder bd on bd.userId=tb.userId "
+                + " inner join tbl_userlogin ul on ul.userId=tb.userId "
+                + " where tenderId= :tenderId");
+        List<Object[]> lst = hibernateQueryDao.nativeSQLQuery(query.toString(), var);
         return lst;
     }
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
@@ -3527,21 +3463,22 @@ public class FormService {
     {
         commonDAO.saveOrUpdate(tblTenderBidHistory);
     }
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
-    public List<TblTenderBidHistory> getBidHistoryByBidderId(Integer bidderId,Integer tenderId)throws Exception
-    {
-        Map<String,Object> var=new HashMap<String,Object>();
-        var.put("bidderId",bidderId);
-        var.put("tenderId",tenderId);
-        StringBuilder query=new StringBuilder();
-        List<TblTenderBidHistory> lstTblTenderBidHistory=new ArrayList<TblTenderBidHistory>();
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public List<TblTenderBidHistory> getBidHistoryByBidderId(Integer bidderId, Integer tenderId) throws Exception {
+        TblTender tblTender = tenderCommonService.getTenderById(tenderId);
+        Map<String, Object> var = new HashMap<String, Object>();
+        var.put("bidderId", bidderId);
+        var.put("tenderId", tenderId);
+        StringBuilder query = new StringBuilder();
+        List<TblTenderBidHistory> lstTblTenderBidHistory = new ArrayList<TblTenderBidHistory>();
         query.append("select bidValue,biddateTime,isValid from tbl_tenderbidhistory where bidderId=:bidderId and tenderId=:tenderId");
-        List<Object[]> lst=hibernateQueryDao.nativeSQLQuery(query.toString(), var);
-        for(int i=0;i<lst.size();i++){
-            TblTenderBidHistory tenderBidHistory=new TblTenderBidHistory();
-            tenderBidHistory.setBidValue((String)lst.get(i)[0]);
-            tenderBidHistory.setBidDateTime((Date)lst.get(i)[1]);
-            tenderBidHistory.setIsValid((Integer)lst.get(i)[2]);
+        List<Object[]> lst = hibernateQueryDao.nativeSQLQuery(query.toString(), var);
+        for (int i = 0; i < lst.size(); i++) {
+            TblTenderBidHistory tenderBidHistory = new TblTenderBidHistory();
+
+            tenderBidHistory.setBidValue(String.format("%." + tblTender.getDecimalValueUpto() + "f", Float.parseFloat(lst.get(i)[0].toString())));
+            tenderBidHistory.setBidDateTime((Date) lst.get(i)[1]);
+            tenderBidHistory.setIsValid((Integer) lst.get(i)[2]);
             lstTblTenderBidHistory.add(tenderBidHistory);
         }
         return lstTblTenderBidHistory;
@@ -3597,21 +3534,19 @@ public class FormService {
        var.put("tenderId",tenderId);
        List<LoginReportBean> lstLoginReportBean=new ArrayList<LoginReportBean>();
        StringBuilder query=new StringBuilder();
-       query.append("select distinct ta.CREATED_DATE,tb.companyName,tb.cstatus,ta.ENTITY_NAME from tbl_auditlog ta " +
+        query.append("select distinct ta.CREATED_DATE,tb.companyName,tb.cstatus,ta.ENTITY_NAME,ta.IpAddress from tbl_auditlog ta " +
                     " inner join tbl_bidder tb on tb.emailId=ta.ENTITY_NAME " +
-                    " where ta.entity_id = :tenderId");
+                    " where ta.entity_id = :tenderId group by ta.ENTITY_NAME");
        
        List<Object[]> lst=hibernateQueryDao.nativeSQLQuery(query.toString(), var);
        LoginReportBean loginReportBean=new LoginReportBean();
        for(int i=0;i<lst.size();i++)
        {
            loginReportBean=new LoginReportBean();
-         //String date = commonService.convertSqlToClientDate(client_dateformate_hhmm,lst.get(i)[0].toString());
-        	   
            loginReportBean.setCreatedOn(commonService.convertSqlToClientDate(client_dateformate_hhmm,lst.get(i)[0].toString()));
            loginReportBean.setCompanyName((String)lst.get(i)[1]+" ("+(String)lst.get(i)[3]+")");
            loginReportBean.setCstatus((Integer)lst.get(i)[2]);
-           loginReportBean.setIPAddress("0.0.0.0");
+           loginReportBean.setIPAddress(lst.get(i)[4].toString());
            lstLoginReportBean.add(loginReportBean);
        }
        return lstLoginReportBean;
@@ -3682,12 +3617,7 @@ public class FormService {
        Map<String,Object> var=new HashMap<String,Object>();
        var.put("tenderId",tblTender.getTenderId());
        StringBuilder query=new StringBuilder();
-//       query.append("SELECT B.BIDDERID,PERSONNAME,BD.CELLVALUE,USERID,(select max(tbh.biddateTime) from tbl_tenderbidhistory tbh where tbh.tenderId=:tenderId and tbh.isValid=1 and tbh.bidderId=b.bidderId) updatedOn FROM TBL_TENDERFORM TF " +
-//" INNER JOIN  TBL_BIDDETAIL BD ON TF.FORMID=BD.FORMID " +
-//" INNER JOIN TBL_TENDERCOLUMN TC ON TC.COLUMNID=BD.COLUMNID " +
-//" INNER JOIN TBL_BIDDER B ON B.COMPANYID=BD.COMPANYID " +
-//" INNER JOIN TBL_TENDERBID TB ON TB.FORMID=BD.FORMID AND B.BIDDERID=TB.BIDDERID " +
-//" WHERE TF.TENDERID=:tenderId AND TC.FILLEDBY=3 and tc.isgtcolumn=1 ");
+
 query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
             + "(SELECT MAX(tbh.biddateTime) FROM tbl_tenderbidhistory tbh WHERE tbh.tenderId=:tenderId AND tbh.isValid=1 AND tbh.bidderId=b.bidderId)"
             + " FROM tbl_tendercellgrandtotal tg " +
@@ -3735,44 +3665,46 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
         int i=0;
         for(Double bid : bidVal)
         {
-            
             for(int j=0;j<lstTenderBidBean.size();j++)
             {
-            TenderBidBean tenderBidBean=new TenderBidBean();
-            tenderBidBean=lstTenderBidBean.get(j);
-            
-            if(bid.equals(Double.parseDouble(tenderBidBean.getBidValue())))
-            {
-                 tenderBidBean.setRank(i+1);
-               for(int k=0;k<lstTenderBidBean.size();k++)
-               {
-                   TenderBidBean obj=new TenderBidBean();
-                   obj=lstTenderBidBean.get(k);
-                   if(tenderBidBean.getBidderId()!=obj.getBidderId()){
-                   if(tenderBidBean.getBidValue().equals(obj.getBidValue())){
-                       if(obj.getBiddingDate() != null && tenderBidBean.getBiddingDate().before(obj.getBiddingDate())){
-                            int temp=tenderBidBean.getRank();
-                            tenderBidBean.setRank(obj.getRank()-1);
-                            obj.setRank(temp);
-                       }
-                       else
-                       {
-                          int temp=tenderBidBean.getRank();
-                            tenderBidBean.setRank(obj.getRank());
-                            obj.setRank(temp-1);
-                       }
-                   }
-                   else
-                   {
-                        tenderBidBean.setRank(i+1);
-                   }
-                   }
-               }
-              
-               
-            }
-            
-                
+                TenderBidBean tenderBidBean=new TenderBidBean();
+                tenderBidBean=lstTenderBidBean.get(j);
+                if(bid.equals(Double.parseDouble(tenderBidBean.getBidValue())))
+                {
+                    
+                    tenderBidBean.setRank(i+1);
+                    for(int k=0;k<lstTenderBidBean.size();k++)
+                    {
+                        TenderBidBean obj=new TenderBidBean();
+                        obj=lstTenderBidBean.get(k);
+                        if(tenderBidBean.getBidderId()!=obj.getBidderId()){
+                            if(tenderBidBean.getBidValue().equals(obj.getBidValue())){
+                                if(obj.getBiddingDate() != null && tenderBidBean.getBiddingDate().before(obj.getBiddingDate())){
+                                    int temp=tenderBidBean.getRank();
+                                    if(temp > 0)
+                                    {
+                                        tenderBidBean.setRank(temp-1);
+                                      //  obj.setRank(temp);
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    int temp=tenderBidBean.getRank();
+                                    if(temp > 0)
+                                    {
+                                        tenderBidBean.setRank(temp);
+                                      //  obj.setRank(temp-1);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                 tenderBidBean.setRank(i+1);
+                            }
+                        }
+                    }
+                }
             }
            i++;
         }
@@ -3785,13 +3717,13 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
         Integer rank=0;
         List<TenderBidBean> lstTenderBidBean=new ArrayList<TenderBidBean>();
         lstTenderBidBean=getBidsByTenderId(tblTender);
-        Integer[] bidVal=new Integer[lstTenderBidBean.size()];
+        Double[] bidVal=new Double[lstTenderBidBean.size()];
         
         for(int i=0;i<lstTenderBidBean.size();i++)
         {
             TenderBidBean tenderBidBean=new TenderBidBean();
             tenderBidBean=lstTenderBidBean.get(i);
-            bidVal[i]=Integer.parseInt(tenderBidBean.getBidValue());
+            bidVal[i]=Double.parseDouble(tenderBidBean.getBidValue());
           
         }
         if(tblTender.getauctionMethod()==1)
@@ -3808,45 +3740,48 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
        
         List<TenderBidBean> DupLst=new ArrayList<TenderBidBean>();
         int i=0;
-        for(Integer bid : bidVal)
+        for(Double bid : bidVal)
         {
-            
             for(int j=0;j<lstTenderBidBean.size();j++)
             {
-            TenderBidBean tenderBidBean=new TenderBidBean();
-            tenderBidBean=lstTenderBidBean.get(j);
-            
-            if(bid.equals(Integer.parseInt(tenderBidBean.getBidValue())))
-            {
-                tenderBidBean.setRank(i+1);
-               for(int k=0;k<lstTenderBidBean.size();k++)
-               {
-                   TenderBidBean obj=new TenderBidBean();
-                   obj=lstTenderBidBean.get(k);
-                   if(tenderBidBean.getBidderId()!=obj.getBidderId()){
-                   if(tenderBidBean.getBidValue().equals(obj.getBidValue())){
-                       if(obj.getBiddingDate() != null && tenderBidBean.getBiddingDate().before(obj.getBiddingDate())){
-                            int temp=tenderBidBean.getRank();
-                            tenderBidBean.setRank(obj.getRank()-1);
-                            obj.setRank(temp);
-                       }
-                       else
-                       {
-                          int temp=tenderBidBean.getRank();
-                            tenderBidBean.setRank(obj.getRank());
-                            obj.setRank(temp-1);
-                       }
-                   }
-                   else
-                   {
-                        tenderBidBean.setRank(i+1);
-                   }
-                   }
-               }
-               
-            }
-            
-                
+                TenderBidBean tenderBidBean=new TenderBidBean();
+                tenderBidBean=lstTenderBidBean.get(j);
+                if(bid.equals(Double.parseDouble(tenderBidBean.getBidValue())))
+                {
+                    
+                    tenderBidBean.setRank(i+1);
+                    for(int k=0;k<lstTenderBidBean.size();k++)
+                    {
+                        TenderBidBean obj=new TenderBidBean();
+                        obj=lstTenderBidBean.get(k);
+                        if(tenderBidBean.getBidderId()!=obj.getBidderId()){
+                            if(tenderBidBean.getBidValue().equals(obj.getBidValue())){
+                                if(obj.getBiddingDate() != null && tenderBidBean.getBiddingDate().before(obj.getBiddingDate())){
+                                    int temp=tenderBidBean.getRank();
+                                    if(temp > 0)
+                                    {
+                                        tenderBidBean.setRank(temp-1);
+                                      //  obj.setRank(temp);
+                                    }
+                                    
+                                }
+                                else
+                                {
+                                    int temp=tenderBidBean.getRank();
+                                    if(temp > 0)
+                                    {
+                                        tenderBidBean.setRank(temp);
+                                      //  obj.setRank(temp-1);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                 tenderBidBean.setRank(i+1);
+                            }
+                        }
+                    }
+                }
             }
            i++;
         }
@@ -3877,9 +3812,9 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
        var.put("tenderId",tblTender.getTenderId());
        StringBuilder query=new StringBuilder();
        query.append("select bd.cellvalue,bd.formid from tbl_tenderbid tb inner join tbl_bidder b on b.bidderId=tb.bidderid " +
-" inner join tbl_biddetail bd on bd.formid=tb.formid " +
-" inner join tbl_tendercolumn tc on bd.columnid=tc.columnid " +
-" where tb.tenderid=:tenderId and tc.filledby=3 and tc.isGTColumn=1 order by bd.bidDetailId desc limit 1");
+                    " inner join tbl_biddetail bd on bd.formid=tb.formid " +
+                    " inner join tbl_tendercolumn tc on bd.columnid=tc.columnid " +
+                    " where tb.tenderid=:tenderId and tc.filledby=3 and tc.isGTColumn=1 order by bd.bidDetailId desc limit 1");
        List<Object[]> lst=hibernateQueryDao.nativeSQLQuery(query.toString(), var);
       if(lst != null && !lst.isEmpty()){
            
@@ -3907,20 +3842,31 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
        return LastBid;
    }
    
-   
+   @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+   public int getBidCountByBidder(TblTender tblTender,int userId)throws Exception
+   {
+       int count = 0;
+       Map<String,Object> var = new HashMap<String,Object>();
+       var.put("tenderId",tblTender.getTenderId());
+       var.put("userId",userId);
+       StringBuilder query = new StringBuilder();
+       query.append("select tg.gtValue,tg.bidderId from tbl_tendercellgrandtotal tg " +
+                    " inner join tbl_bidder b on b.bidderId=tg.bidderid " +
+                    " where tg.tenderId =:tenderId and b.userId= :userId");
+       List<Object[]> lst=hibernateQueryDao.nativeSQLQuery(query.toString(), var);
+       if(lst != null  && !lst.isEmpty())
+       {
+           count = lst.size();
+       }
+       return count;
+   }
    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
    public Double getHighestBidByTenderId(TblTender tblTender) throws Exception
    {
        Map<String,Object> var=new HashMap<String,Object>();
        var.put("tenderId",tblTender.getTenderId());
        StringBuilder query=new StringBuilder();
-//       query.append("SELECT B.BIDDERID,PERSONNAME,BD.CELLVALUE,USERID,(select max(tbh.biddateTime) from tbl_tenderbidhistory tbh where tbh.tenderId=:tenderId and tbh.isValid=1 and tbh.bidderId=b.bidderId) updatedOn FROM TBL_TENDERFORM TF " +
-//" INNER JOIN  TBL_BIDDETAIL BD ON TF.FORMID=BD.FORMID " +
-//" INNER JOIN TBL_TENDERCOLUMN TC ON TC.COLUMNID=BD.COLUMNID " +
-//" INNER JOIN TBL_BIDDER B ON B.COMPANYID=BD.COMPANYID " +
-//" INNER JOIN TBL_TENDERBID TB ON TB.FORMID=BD.FORMID AND B.BIDDERID=TB.BIDDERID " +
-//" WHERE TF.TENDERID=:tenderId AND TC.FILLEDBY=3 and tc.isgtcolumn=1 ");
-        query.append("SELECT tg.gtValue,tg.bidderId FROM tbl_tendercellgrandtotal tg " +
+       query.append("SELECT tg.gtValue,tg.bidderId FROM tbl_tendercellgrandtotal tg " +
         " INNER JOIN tbl_bidder b ON b.bidderId=tg.bidderid " +
         " WHERE tg.tenderId =:tenderId ");
        List<Object[]> lst=hibernateQueryDao.nativeSQLQuery(query.toString(), var);
@@ -4016,61 +3962,7 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
         }
         return status;
    }
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
-    public String checkAuctionStopResume(TblTender tblTender)throws Exception
-    { 
-        String ValidationMsg="";
-        
-        List<TblAuctionStopResume> lsttblAuctionStopResume=getAuctionStopResumeDetail(tblTender.getTenderId());
-        if(tblTender.getisAuction()==1)//if it is auction or not
-        {
-            if(tblTender.getCstatus()==2)//if it is cancelled or not
-            {
-                ValidationMsg="Auction has been cancelled because of "+tblTender.getCancelRemarks();
-            }
-            else
-            {
-                if(tblTender.getIsAuctionStop()==1)//1 for Auction is stop and 0  for auction is live or resumed
-                {
-                    for(int i=0;i<lsttblAuctionStopResume.size();i++)
-                    {
-                        TblAuctionStopResume tblAuctionStopResume=new TblAuctionStopResume();
-                        tblAuctionStopResume=lsttblAuctionStopResume.get(i);
-                        if(tblAuctionStopResume.getstatus()==1)
-                        {
-                            ValidationMsg="Auction has been stopped from "+commonService.convertSqlToClientDate(client_dateformate_hhmm,tblAuctionStopResume.getauctionstartdate())+" to "+commonService.convertSqlToClientDate(client_dateformate_hhmm,tblAuctionStopResume.getauctionenddate())+" because of "+tblAuctionStopResume.getremark();
-                        }
-                    }
-                }
-                else
-                {
-                    for(int i=0;i<lsttblAuctionStopResume.size();i++)
-                    {
-                        TblAuctionStopResume tblAuctionStopResume=new TblAuctionStopResume();
-                        tblAuctionStopResume=lsttblAuctionStopResume.get(i);
-                        if(tblAuctionStopResume.getstatus()==1)
-                        {
-                            ValidationMsg="Auction has been stopped from "+commonService.convertSqlToClientDate(client_dateformate_hhmm,tblAuctionStopResume.getauctionstartdate())+" to "+commonService.convertSqlToClientDate(client_dateformate_hhmm,tblAuctionStopResume.getauctionenddate())+" because of "+tblAuctionStopResume.getremark();
-                        }
-                    }
-                    for(int i=0;i<lsttblAuctionStopResume.size();i++)
-                    {
-                        TblAuctionStopResume tblAuctionStopResume=new TblAuctionStopResume();
-                        tblAuctionStopResume=lsttblAuctionStopResume.get(i);
-                       
-                        if(tblAuctionStopResume.getstatus()==0)
-                        {
-                            if(commonService.getServerDateTime().after(tblAuctionStopResume.getauctionstartdate()))
-                            {
-                                ValidationMsg="Auction has been resumed, Auction end date and time is "+commonService.convertSqlToClientDate(client_dateformate_hhmm,tblTender.getAuctionEndDate());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return ValidationMsg;
-    }
+    
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
     public String validationForBidSubmission(Integer tenderId,Integer userId)throws Exception
     {
@@ -4103,7 +3995,6 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
                 else
                 {
                     BidderDisabledOrNot=checkBidderIsDisabledOrNot(userId);
-                    System.out.println("BidderDisabled.."+BidderDisabledOrNot);
                     if(BidderDisabledOrNot.equalsIgnoreCase("false"))
                     {
                         ValidationMsg = "Your profile is disabled.";
@@ -4160,75 +4051,7 @@ query.append("SELECT b.bidderId,b.personname,tg.gtValue,b.userId,"
         }
         return ValidationMsg;
     }
-     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
-    public String checkAuctionStopResumeForBidSubmission(TblTender tblTender)throws Exception
-    {
-        String ValidationMsg="";
-        List<TblAuctionStopResume> lsttblAuctionStopResume=getAuctionStopResumeDetail(tblTender.getTenderId());
-        if(tblTender.getisAuction()==1)//if it is auction or not
-        {
-            if(tblTender.getCstatus()==2)//if it is cancelled or not
-            {
-                ValidationMsg="Cancelled";
-            }
-            else
-            {
-                if(tblTender.getIsAuctionStop()==1)//1 for Auction is stop and 0  for auction is live or resumed
-                {
-                    for(int i=0;i<lsttblAuctionStopResume.size();i++)
-                    {
-                        TblAuctionStopResume tblAuctionStopResume=new TblAuctionStopResume();
-                        tblAuctionStopResume=lsttblAuctionStopResume.get(i);
-                        if(tblAuctionStopResume.getstatus()==1)
-                        {
-                            ValidationMsg="Stopped";
-                        }
-                    }
-                }
-                else
-                {
-                    for(int i=0;i<lsttblAuctionStopResume.size();i++)
-                    {
-                        TblAuctionStopResume tblAuctionStopResume=new TblAuctionStopResume();
-                        tblAuctionStopResume=lsttblAuctionStopResume.get(i);
-                        if(tblAuctionStopResume.getstatus()==1)
-                        {
-                            ValidationMsg="Stopped";
-                        }
-                    }
-                    for(int i=0;i<lsttblAuctionStopResume.size();i++)
-                    {
-                        TblAuctionStopResume tblAuctionStopResume=new TblAuctionStopResume();
-                        tblAuctionStopResume=lsttblAuctionStopResume.get(i);
-                       
-                        if(tblAuctionStopResume.getstatus()==0)
-                        {
-                            if((commonService.getServerDateTime().equals(tblAuctionStopResume.getauctionstartdate())) ||(commonService.getServerDateTime().after(tblAuctionStopResume.getauctionstartdate())))
-                            {
-                                ValidationMsg="";
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return ValidationMsg;
-    }
-    
-    public Date CurrentDateInUTC()throws Exception
-    {
-        SimpleDateFormat lv_formatter = new SimpleDateFormat(); 
-        lv_formatter.setTimeZone(TimeZone.getTimeZone("UTC"));  
-        Date dt=new Date(lv_formatter.format(new Date()));
-        return dt;
-    }
-    public Date ConvertInUTC(Date dt)throws Exception
-    {
-        SimpleDateFormat lv_formatter = new SimpleDateFormat(); 
-        lv_formatter.setTimeZone(TimeZone.getTimeZone("UTC"));  
-        Date dt1=new Date(lv_formatter.format(dt));
-        return dt1;
-    }
+       
    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = {Exception.class})
    public List<TblAuctionStopResume> getAuctionStopResumeDetail(Integer tenderId)
    {
@@ -4374,5 +4197,92 @@ public void updateTblTenderForBidConversion(Integer tenderId)throws Exception{
         } else {
             return param;
         }
+    }
+
+	public void copyWeightageForCorrigendum(Integer tenderId) {
+		// TODO Auto-generated method stub
+		Map<String,Object> param = new HashMap<String, Object>();
+		param.put("tenderId", tenderId);
+		int c=commonDAO.executeUpdate("update TblTenderForm set corrigendumFormWeight=formWeight where tblTender.tenderId=:tenderId", param);
+	}
+
+	public void addToCorrigendum(Integer tenderId,Integer formId,Integer userId,int actionType) throws Exception {
+		TblTender tblTender = tenderCommonService.getTenderById(tenderId);
+        if(tblTender.getCstatus() == 1){
+        	amendmentService.insertFormDetailToCorrigendum(formId,userId,tenderId,actionType);
+        }
+	}
+	@Transactional
+	public List<Object[]> getTenderTableListByFormId(int formId) throws Exception {
+        Map<String,Object> var = new HashMap<String,Object>();
+        var.put(FORMID, formId);
+        return hibernateQueryDao.createNewQuery("select tblTenderTable.tableId,tblTenderTable.tableName from TblTenderTable tblTenderTable where tblTenderTable.formId =:formId", var);
+    }
+	@Transactional
+	public List<TblTenderCell> getTenderCellByTableIdNewOrderBy(int tableId, int rowId){
+        StringBuilder query = new StringBuilder();
+        Map<String,Object> var = new HashMap<String, Object>();
+        var.put(TABLEID, tableId);
+        query.append("select tbltendercell.cellId,tbltendercell.tblTenderForm.formId,tbltendercell.tblTenderTable.tableId,")
+                .append("tbltendercell.tblTenderColumn.columnId,tbltendercell.rowId,tbltendercell.cellValue,tbltendercell.cellNo,tbltendercolumn.dataType,")
+                .append("tbltendercell.objectId,tbltendercolumn.columnNo,tbltendercolumn.sortOrder ")
+                .append("from TblTenderCell tbltendercell inner join tbltendercell.tblTenderColumn tbltendercolumn where ")
+                .append("tbltendercell.tblTenderTable.tableId=:tableId");
+        if (rowId != 0) {
+          query.append(" and tbltendercell.rowId!=:rowId");
+          var.put("rowId", rowId);
+        }
+        query.append(" order by tbltendercell.rowId,tbltendercolumn.columnNo asc");
+        List<Object[]> list = hibernateQueryDao.createNewQuery(query.toString(), var);      
+        return toTenderCell(list);
+    }
+	private List<TblTenderCell> toTenderCell(List<Object[]> list){
+        List<TblTenderCell> tenderCells = new ArrayList<TblTenderCell>();
+        for (Object[] cells : list) {
+            TblTenderCell tblTenderCell = new TblTenderCell();
+            tblTenderCell.setCellId((Integer)cells[0]);
+            tblTenderCell.setTblTenderForm(new TblTenderForm((Integer)cells[1]));
+            tblTenderCell.setTblTenderTable(new TblTenderTable((Integer)cells[2]));
+            TblTenderColumn tblTenderColumn = new TblTenderColumn((Integer)cells[3]);
+            tblTenderColumn.setColumnNo((Integer)cells[9]);
+            tblTenderColumn.setSortOrder((Integer)cells[10]);
+            tblTenderCell.setTblTenderColumn(tblTenderColumn);
+            tblTenderCell.setRowId((Integer)cells[4]);
+            tblTenderCell.setCellValue(cells[5].toString());
+            tblTenderCell.setCellNo((Integer)cells[6]);
+            tblTenderCell.setDataType((Integer)cells[7]);
+            tblTenderCell.setObjectId((Integer)cells[8]);
+            tenderCells.add(tblTenderCell);
+        }
+        return tenderCells;
+    }
+	@Transactional
+	public List<Object[]> getTenderTableDetails(int tableId) throws Exception {
+        List<Object[]> list = null;
+        Map<String, Object> var = new HashMap<String, Object>();
+        var.put("tableId", tableId); 
+        list = hibernateQueryDao.createNewQuery("select tbltendertable.tableId, tbltendertable.formId, tbltendertable.tableName, tbltendertable.tableHeader, tbltendertable.tableFooter,tbltendertable.isMultipleFilling,tbltendertable.noOfRows,tbltendertable.noOfCols,tbltendertable.sortOrder,tbltendertable.hasGTRow,(select count(tbltendercell.cellId) from TblTenderCell tbltendercell where tbltendercell.tblTenderTable.tableId=:tableId),tbltendertable.isMandatory,tbltendertable.isPartialFillingAllowed from TblTenderTable tbltendertable where tbltendertable.tableId=:tableId", var);
+        return list;
+    }
+	@Transactional
+	public List<Object[]> getTenderColumn(int tableId) throws Exception {
+    	StringBuilder query = new StringBuilder();
+        Map<String, Object> var = new HashMap<String, Object>();
+        List<Object []> list = null;
+        var.put("tableId", tableId);
+        query.append("select tbltendercolumn.columnHeader, tbltendercolumn.filledBy,tbltendercolumn.isShown,tbltendercolumn.columnNo,tbltendercolumn.sortOrder ") 
+             .append("from TblTenderColumn tbltendercolumn ")
+             .append("where tbltendercolumn.tblTenderTable.tableId=:tableId order by tbltendercolumn.columnNo");
+        list = hibernateQueryDao.createNewQuery(query.toString(), var);
+        return list;
+    }
+	@Transactional
+	public List<Object[]> getFormulaColId(int tableId) throws Exception {
+        List<Object[]> list = null;
+        Map<String, Object> var = new HashMap<String, Object>();
+        var.put("tableId", tableId);
+        list = hibernateQueryDao.createNewQuery("select tbltenderformula.tblTenderColumn.columnId, tbltenderformula.cellId, tbltenderformula.formula,tbltenderformula.formulaId, tbltenderformula.displayFormula,tbltenderformula.columnNo,tbltenderformula.validationMessage,tbltenderformula.formulaType,tbltenderformula.cellNo from TblTenderFormula tbltenderformula where tbltenderformula.tblTenderTable.tableId=:tableId", var);
+        return list;
+
     }
 }

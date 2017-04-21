@@ -87,29 +87,17 @@ public class SpringMailSender {
         this.javaMailSender = javaMailSenderImpl;
     }
     
-	public boolean sendMail(String dear, String content,String fromEmail,String toEmail,String subject) {
+	public boolean sendMail(String dear, String content,String fromEmail,String toEmail,String subject) throws Exception {
 		String emailBody = "Hi"+" <br/>"+ dear+"  <br/>"+ content;
 		MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-		boolean isSent = false;
-		try {
-			MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-			helper.setFrom(fromEmail);
-			helper.setTo(toEmail);
-			helper.setSubject(subject);
-			helper.setText(emailBody);
-
-			/*
-			  uncomment the following lines for attachment FileSystemResource
-			  file = new FileSystemResource("attachment.jpg");
-			  helper.addAttachment(file.getFilename(), file);
-			 */
-
-			javaMailSender.send(mimeMessage);
-			isSent = true;
-			System.out.println("Mail sent successfully.");
-		} catch (MessagingException e) {
-			e.printStackTrace();
-		}
+		boolean isSent;
+		MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+		helper.setFrom(fromEmail);
+		helper.setTo(toEmail);
+		helper.setSubject(subject);
+		helper.setText(emailBody);
+		javaMailSender.send(mimeMessage);
+		isSent = true;
 		return isSent;
 	
 	}

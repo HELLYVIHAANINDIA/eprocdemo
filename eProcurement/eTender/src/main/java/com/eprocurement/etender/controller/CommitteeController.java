@@ -736,13 +736,20 @@ public class CommitteeController {
      * @param modelMap
      * @return
      */
-    @RequestMapping(value = "/buyer/publishprebidmom/{tenderId}/{committeeId}", method = RequestMethod.GET)
-    public String publishPrebidMom(@PathVariable(TENDER_ID) int tenderId,@PathVariable("committeeId") int committeeId, ModelMap modelMap, HttpServletRequest request) {
-    String retVal="/etender/buyer/TenderPrebidTab";
+    @RequestMapping(value = "/buyer/publishprebidmom", method = RequestMethod.POST)
+    public String publishPrebidMom(ModelMap modelMap, HttpServletRequest request,RedirectAttributes redirectAttributes) {
+    String retVal="";
+    int prebidCommitteeId = 0;
+    int tenderId = 0;
 	try {
-	    	int prebidCommitteeId = committeeFormationService.getCommitteeId(tenderId, 3);
+		prebidCommitteeId = StringUtils.hasLength(request.getParameter("hdPrebidCommitteeId")) ? Integer.parseInt(request.getParameter("hdPrebidCommitteeId")) : 0;
+		tenderId = StringUtils.hasLength(request.getParameter("hdTenderId")) ? Integer.parseInt(request.getParameter("hdTenderId")) : 0;
 	    	Object[] prebidDtls = tenderCommonService.getTenderPrebidDetailByTenderId(tenderId);
 	    	committeeFormationService.publishPrebidMOM(tenderId, Integer.parseInt(tenderPrebidObjectId), prebidCommitteeId);
+	    	if(prebidDtls!=null){
+	    		modelMap.put("prebidstartdate", commonService.convertSqlToClientDate(client_dateformate_hhmm, prebidDtls[2].toString()));
+	    		modelMap.put("prebidenddate", commonService.convertSqlToClientDate(client_dateformate_hhmm, prebidDtls[3].toString()));
+	    	}
 	    	modelMap.put("isCommitteeCreated", prebidCommitteeId!=0);
 	    	modelMap.put("prebidDtls", prebidDtls);
 	    	modelMap.put("tenderId", tenderId);
@@ -751,11 +758,10 @@ public class CommitteeController {
 	    	modelMap.put("currentDate", commonService.getServerDateTime());
 	    	modelMap.put("subChildId", 0);
 	    	modelMap.put("otherSubChildId", 0);
+	    	modelMap.put(CommonKeywords.SUCCESS_MSG.toString(),"pre_bid_mom_publish_successfully");
 	    	retVal="/etender/buyer/TenderPrebidTab";
 	} catch (Exception ex) {
 	    exceptionHandlerService.writeLog(ex);
-	} finally {
-//	    auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editCommitteeLinkId, getEditPrebidComittee, tenderId, comitteeId);
 	}
 	return retVal;
     }

@@ -19,7 +19,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.eprocurement.common.daointerface.HibernateQueryDao;
-import com.eprocurement.common.services.SelectItem;
 import com.eprocurement.etender.daointerface.TblTenderBidderMapDao;
 import com.eprocurement.etender.model.TblTenderBidderMap;
 
@@ -32,18 +31,6 @@ public class BidderMappingService {
     @Autowired
     TblTenderBidderMapDao tblTenderBidderMapDao;
 
-    /**
-     * List of search options
-     *
-     * @return {@code List<SelectItem>}
-     */
-    public List<SelectItem> getSearchOptions() {
-        List<SelectItem> lstSearchOpt = new ArrayList<SelectItem>();
-
-        lstSearchOpt.add(new SelectItem("Email ID", 1));
-        lstSearchOpt.add(new SelectItem("Company Name", 2));
-        return lstSearchOpt;
-    }
     
     /**
      * @return

@@ -32,9 +32,11 @@ import com.eprocurement.common.model.TblCurrencyMap;
 import com.eprocurement.common.model.TblMailMessage;
 import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.common.services.CommonService;
+import com.eprocurement.common.utility.SendMailCron;
 import com.eprocurement.common.utility.SessionBean;
 import com.eprocurement.etender.model.TblBidder;
 import com.eprocurement.etender.model.TblBidderSectorMapping;
+import com.eprocurement.etender.model.TblBidderStatusRemarks;
 import com.eprocurement.etender.model.TblCompany;
 import com.eprocurement.etender.model.TblDepartment;
 import com.eprocurement.etender.model.TblDesignation;
@@ -309,7 +311,14 @@ public class OfficerService {
 			HashMap<String, Object> bidderremarks = new HashMap<String, Object>();
 	        bidderremarks.put("bidderId", tblDepartment.getDeptId());
 	        bidderremarks.put("type", tblDepartment.getCstatus());
+	        strQuery3.append("delete from TblBidderStatusRemarks tblBidderStatusRemarks where tblBidderStatusRemarks.type=:type and tblBidderStatusRemarks.bidderId=:bidderId ");
 	        commonDAO.executeUpdate(strQuery3.toString(), bidderremarks);
+	    	TblBidderStatusRemarks bidderStatusRemarks = new TblBidderStatusRemarks();
+	    	bidderStatusRemarks.setBidderId( tblDepartment.getDeptId());
+	    	bidderStatusRemarks.setRemarks( tblDepartment.getRemarks());
+	    	bidderStatusRemarks.setType(tblDepartment.getCstatus());
+	    	bidderStatusRemarks.setModuleId(2);
+	    	commonDAO.save(bidderStatusRemarks);
 		}else {
 			if(tblDepartment.getParentDeptId()==null) {
 				tblDepartment.setParentDeptId(0);
@@ -353,9 +362,17 @@ public class OfficerService {
 	
 	@Transactional
 	public List<TblBidderSectorMapping> getSectorMappingById(int Id) throws Exception {
-		boolean bSuccess = false;
-		List<TblBidderSectorMapping> bidderSectorMappings = tblBidderSectorMappingDao.findTblBidderSectorMapping("bidderId",Operation_enum.EQ,Id);
-		return bidderSectorMappings;
+		
+		StringBuilder builder = new StringBuilder(" select bidderId,sectorId,SecM_SectorName as sectorName,industry,indm_industryName industryName,activity,ActM_ActivityName as activityName ")
+		.append( " from tbl_biddersectormapping bs left join sectormst_tbl st on st.SectorMst_Pk = bs.sectorId  ")
+		.append(  " left join industrymst_tbl it on   it.industryMst_PK  = bs.industry ")
+		.append(  " left join activitiesmst_tbl at on at.ActivitiesMst_Pk = bs.activity where bs.bidderId =:bidderId  ");
+				
+		Map<String,Object> column = new HashMap<String, Object>();
+		column.put("alias", TblBidderSectorMapping.class);
+		column.put("bidderId", Id);
+//		List<TblBidderSectorMapping> bidderSectorMappings = tblBidderSectorMappingDao.findTblBidderSectorMapping("bidderId",Operation_enum.EQ,Id);
+		return commonDAO.executeSqlSelect(builder.toString() , column);
 	}
 	
 	@Transactional
@@ -436,13 +453,17 @@ public class OfficerService {
 			tblBidder.setTblCompany(tblCompany);
 			tblUserRoleMapping.setTblUserlogin(tblUserLogin);
 			tblBidderDao.saveOrUpdateEntity(tblBidder);
-			for (TblBidderSectorMapping bidderSectorMapping : tblBidderSectorMappings) {
+			// no need it here if we are not allowing it to edit.
+			/*for (TblBidderSectorMapping bidderSectorMapping : tblBidderSectorMappings) {
 				bidderSectorMapping.setBidderId(tblBidder.getBidderId());
 				tblBidderSectorMappingsTemp.add(bidderSectorMapping);
 			}
 			//to prevent concurrent modification error
 			tblBidderSectorMappings.clear();
 			tblBidderSectorMappings.addAll(tblBidderSectorMappingsTemp);
+			if(deletBidderSectorMapping(tblBidder)) {
+				tblBidderSectorMappingDao.saveUpdateAllTblBidderSectorMapping(tblBidderSectorMappings);
+			}*/
 			if(deletBidderSectorMapping(tblBidder)) {
 				tblBidderSectorMappingDao.saveUpdateAllTblBidderSectorMapping(tblBidderSectorMappings);
 			}
@@ -530,13 +551,12 @@ public class OfficerService {
 	 */
 	@Transactional
 	public boolean deletBidderSectorMapping(TblBidder tblBidder) {
-		Integer rowcnt = 0;
 		StringBuilder strQuery = new StringBuilder();
         HashMap<String, Object> parameters = new HashMap<String, Object>();
         parameters.put("bidderId", tblBidder.getBidderId());
         strQuery.append("delete from TblBidderSectorMapping where bidderId IN (:bidderId)");
-        rowcnt = commonDAO.executeUpdate(strQuery.toString(), parameters);
-		return rowcnt!=0;
+        tblBidderSectorMappingDao.updateDeleteQuery(strQuery.toString(), parameters);
+		return true;
 	}
 	
 	/**
@@ -628,6 +648,7 @@ public class OfficerService {
 		boolean bSuccess=false;
 		tblMailMessageDao.addTblMailMessage(tblMailMessage);
 		bSuccess=true;
+		SendMailCron.isDataAvailable = true;
 		return bSuccess;
 	}
 	/**
@@ -743,6 +764,12 @@ public class OfficerService {
         bidderremarks.put("type", userstatus);
         strQuery3.append("delete from TblBidderStatusRemarks tblBidderStatusRemarks where tblBidderStatusRemarks.type=:type and tblBidderStatusRemarks.bidderId=:bidderId and moduleId=1 ");
         rowcnt = commonDAO.executeUpdate(strQuery3.toString(), bidderremarks);
+    	TblBidderStatusRemarks bidderStatusRemarks = new TblBidderStatusRemarks();
+    	bidderStatusRemarks.setBidderId(bidderId);
+    	bidderStatusRemarks.setRemarks(remarks);
+    	bidderStatusRemarks.setType(userstatus);
+    	bidderStatusRemarks.setModuleId(1);
+    	commonDAO.save(bidderStatusRemarks);
         return rowcnt!=0;
 	}
 
@@ -924,5 +951,50 @@ public class OfficerService {
 		}
 		return i!=0 ? true : false ;
 	}
-	
+
+	public List<Object[]> getUNSPSCCategoryData(String searchParam, String dataFor) {
+		String query = "";
+		List<Object[]> result = null;
+		Map<String, Object> column = new HashMap<String, Object>();
+		column.put("searchParam", "%" + searchParam + "%"); 
+		column.put("maxResult", 50);
+		if (dataFor.equals("2")) {
+			query = "select srvMServiceCode,srvMServiceName from TblServicemst where srvMStatus='A' and srvMServiceName like:searchParam";
+			result = commonDAO.executeSelect(query, column);
+		} else if (dataFor.equals("1")) {
+			query = "select prdMProductCode,prdMProductName from TblProductmst where prdMStatus='A' and prdMProductName like:searchParam";
+			result = commonDAO.executeSelect(query, column);
+		} else {
+			query = "select code,name from ( ";
+			query += " select srvM_ServiceCode as code,srvM_ServiceName as name from Tbl_Servicemst where srvM_Status='A' and srvM_ServiceName like:searchParam";
+			query += " union ";
+			query += "select prdM_ProductCode as code ,prdM_ProductName as name from Tbl_Productmst where prdM_Status='A' and prdM_ProductName like:searchParam";
+			query += " ) x";
+			result = commonDAO.executeSqlSelect(query, column);
+		}
+
+		return result;
+	}
+
+	public List<Map<String,Object>>  getIndustryData(int sector) {
+		Map<String,Object> param = new HashMap<String, Object>();
+		param.put("alias","map");
+		param.put("sector",sector);
+		
+		String query = "select industryMst_PK as value,indm_industryName as label from industrymst_tbl where indm_sectorMst_FK=:sector";
+		return  commonDAO.executeSqlSelect(query, param);
+	}
+
+	public List<Map<String,Object>> getActivityData(int sector, int industry) {
+		Map<String,Object> param = new HashMap<String, Object>();
+		param.put("alias","map");
+		param.put("sector",sector);
+		String query = "select ActivitiesMst_Pk as value,ActM_ActivityName as label from activitiesmst_tbl where ActM_SectorMst_Fk=:sector";
+		if(industry != 0){
+			param.put("industry",industry);
+			query += " and ActM_IndustryMst_Fk=:industry";
+		}
+		return commonDAO.executeSqlSelect(query, param);
+	}
+
 }

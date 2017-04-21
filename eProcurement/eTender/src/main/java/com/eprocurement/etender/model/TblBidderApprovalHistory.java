@@ -55,8 +55,8 @@ public class TblBidderApprovalHistory implements Serializable
     private Integer    createdby    ;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="createdOn",nullable=true,updatable=false,insertable=false)
-    private Date       createdon    ;
+    @Column(name="createdOn")
+    private Date       createdon = new Date()    ; 
 
     @Column(name="envelopeId", nullable=false)
     private Integer    envelopeid   ;

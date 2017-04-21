@@ -1,7 +1,7 @@
 <%@include file="./../includes/head.jsp"%>
 <%@include file="./../includes/masterheader.jsp"%>
 <%@page import="com.eprocurement.etender.model.TblTender"%>	
-
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
 
 <spring:message code="client_dateformate_hhmm" var="client_dateformate_hhmm"/>
 	 
@@ -13,7 +13,7 @@
         <h1 class="inline"><c:if test="${empty Operation}"><spring:message code="lbl_create_auction" /></c:if>
         <c:if test="${not empty Operation}"><spring:message code="lbl_edit_auction1"/></c:if><small></small></h1>
         <c:if test="${tenderId ne 0}">
-          <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" ><< <spring:message code="lbl_go_back_to_auction_dashboard" class="g g-back"/></a>
+          <a href="${pageContext.servletContext.contextPath}/etender/buyer/tenderDashboard/${tenderId}" class="g g-back"> <spring:message code="lbl_go_back_to_auction_dashboard" /></a>
         </c:if>
     </section>
     

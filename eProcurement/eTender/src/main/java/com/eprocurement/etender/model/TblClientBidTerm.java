@@ -50,6 +50,9 @@ public class TblClientBidTerm implements Serializable
 
     @Column(name="bidTerm")
     private String     bidTerm      ;
+    
+    @Column(name="isAuction")
+    private int isAuction;
 
     //----------------------------------------------------------------------
     // CONSTRUCTOR(S)

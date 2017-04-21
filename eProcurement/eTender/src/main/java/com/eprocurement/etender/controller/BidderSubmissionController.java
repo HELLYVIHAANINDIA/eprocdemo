@@ -4,22 +4,54 @@
  */
 package com.eprocurement.etender.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellReference;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.WebUtils;
 
 import com.eprocurement.common.services.EncrptDecryptUtils;
 import com.eprocurement.common.services.ExceptionHandlerService;
@@ -41,6 +73,8 @@ import com.eprocurement.etender.model.TblTenderTable;
 import com.eprocurement.etender.model.TblTenderbidconfirmation;
 import com.eprocurement.etender.services.BidderSubmissionService;
 import com.eprocurement.etender.services.EProcureCreationService;
+import com.eprocurement.etender.services.FormService;
+import com.eprocurement.etender.services.OfficerService;
 import com.eprocurement.etender.services.TenderCommonService;
 import com.eprocurement.etender.services.TenderService;
 
@@ -60,16 +94,30 @@ public class BidderSubmissionController {
     private TenderService tenderFormService;
     @Autowired
     private EncrptDecryptUtils encrptDecryptUtils;
+    @Autowired
+    OfficerService officerService;
+    @Autowired
+    private FormService formService;
+    @Autowired
+    private MessageSource messageSource;
+    
+    @Value("#{projectProperties['mail.from']}")
+    private String mailFrom;
+    @Value("#{projectProperties['file.drive']}")
+    private String drive;
+    @Value("#{projectProperties['file.upload']}")
+    private String upload;
     
     private static final String REDIRECT_SESSION_EXPIRED = "redirect:/notloggedin";
     private static final int FINALSUBMISSION_REQUEST_TYPE_POST = 1;
     @Value("#{etenderProperties['client_dateformate_hhmm']}")
-    private String client_dateformate_hhmm;
+    private String clientDateformatehhmm;
     private static final String HIDDEN_TENDER_ID = "hdTenderId";
-    private final static String XFORWARDEDFOR = "X-FORWARDED-FOR";
-    private final static String REDIRECTBIDDERDASHBOARD = "redirect:/etender/bidder/biddingTenderDashboard/";
-    private final static String REDIRECTBIDDERDASHBOARDCONTENT = "redirect:/etender/bidder/biddingtenderdashboardcontent/";
-    
+    private static final String XFORWARDEDFOR = "X-FORWARDED-FOR";
+    private static final String REDIRECTBIDDERDASHBOARD = "redirect:/etender/bidder/biddingTenderDashboard/";
+    private static final String REDIRECTBIDDERDASHBOARDCONTENT = "redirect:/etender/bidder/biddingtenderdashboardcontent/";
+    @Value("#{etenderProperties['decimalPoint']}")
+    private int decimalPoint;
     /**
      * @param request
      */  
@@ -115,7 +163,6 @@ public class BidderSubmissionController {
 		    		tblTenderBidConfirmation.setTblTender( new TblTender(tenderId));
 		    		tblTenderBidConfirmation.setTblCompany(new TblCompany(companyId));
 		    		tblTenderBidConfirmation.setTermNcondId(clientBidtermId);
-	//	    		tblTenderBidConfirmation.setEncodedname(spCompanyNameEncoded.executeProcedure(tenderModuleId,tenderId));
 		    		tblTenderBidConfirmation.setEncodedname("test");//hardcode
 		    		tblTenderBidConfirmation.setIpaddress(ipAdress);
 		    		tblTenderBidConfirmation.setCreatedby((int)userId);
@@ -166,7 +213,6 @@ public class BidderSubmissionController {
                 String ipAddress = request.getHeader(XFORWARDEDFOR) != null ? request.getHeader(XFORWARDEDFOR) : request.getRemoteAddr();
                 boolean isFinalSubmissionDone = false;
                 int userId = (int) sessionBean.getUserId();
-//                if(bidderStatus != null && bidderStatus[1] == 1){
                 if(eventBidSubmissionService.isTenderIdRepeated(tenderId, bidderId)){
                     if(eventBidSubmissionService.isFinalSubmissionDone(tenderId,companyId)){
                         redirectAttributes.addFlashAttribute("errorMsg", "msg_final_submission_already_completed");
@@ -180,6 +226,10 @@ public class BidderSubmissionController {
 	                    modelMap.addAttribute("msgArgumentOne", finalSubmissionMsg.split("@")[1]);
 	                    modelMap.addAttribute("msgArgumentTwo", finalSubmissionMsg.split("@")[2]);//CommonUtility.convertTimezone(finalSubmissionMsg.split("@")[2]));
 	                } else {
+	                	//mail
+	                    String subject = "You have successfully submitted your bid in tender ID:" + tenderId;
+	                    String text = "Dear User, \n \n You have successfully submitted your bid in the following Tender: \n\n Tender ID :" + tenderId + "\n Reference No." +tblTender.getTenderNo()+ "\n Brief :"+tblTender.getTenderBrief()+"\n";
+	                    officerService.addMail(officerService.setTblMailMessage(formService.getTblBidderCompanyId(companyId).getEmailId(),mailFrom, subject,text,subject));
 	                    modelMap.addAttribute("allowFinalSubmission", finalSubmissionMsg);
 	                }
                 }else{
@@ -232,8 +282,6 @@ public class BidderSubmissionController {
             }
         } catch (Exception e) {
             pageName = exceptionHandlerService.writeLog(e);
-        } finally {
-//            auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()),deleteBid ,deleteBidAudit , tenderId, bidId);
         }
         return pageName;
     }
@@ -277,8 +325,13 @@ public class BidderSubmissionController {
 	    			if(isFinalSubmissionDone){
 	    				TblFinalsubmission tblFinalsubmission =  tenderCommonService.getTblFinalsubmissionById(tenderId,companyId);
 	    				success = eventBidSubmissionService.withdrawBid(tenderId, bidderId,  companyId, remarks, ipAddress,(int)userId,tblFinalsubmission);
-	    				success = true;
 	    				if(success){
+		                    //mail
+	    					TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
+		                    String subject = "You have withdrawn your bid in tender ID:" + tenderId;
+		                    String text = "Dear User, \n \n You have successfully withdrawn your bid in the following Tender: \n\n Tender ID :" + tenderId + "\n Reference No." +tblTender.getTenderNo()+ "\n Brief :"+tblTender.getTenderBrief()+"\n";
+		                    officerService.addMail(officerService.setTblMailMessage(tblBidder.getEmailId(),mailFrom, subject,text,subject));
+
 	    					retVal=REDIRECTBIDDERDASHBOARD+tenderId;
 	        				successMsgCode = "msg_withdrawn_bid";
 	        			}
@@ -300,34 +353,17 @@ public class BidderSubmissionController {
 		} catch (Exception e) {
 			retVal =  exceptionHandlerService.writeLog(e);
 		}
-    	finally{
-//    			auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), bidWithdrawalLinkId,auditMsg, tenderId, 0);
-    	}
     	return retVal;
     }
     
     @RequestMapping(value = "/bidform/{tenderId}/{envelopeId}/{formId}/{bidId}", method = RequestMethod.GET)
     public String bidForm(@PathVariable("tenderId") Integer tenderId,@PathVariable("envelopeId") Integer envelopeId, @PathVariable("formId") Integer formId,@PathVariable("bidId") Integer bidId, ModelMap modelMap, HttpServletRequest request) {
     	TblTenderForm tblTenderForm = null;
-    	boolean isEncCertVerified = false;
     	try{
 	    	HttpSession session = request.getSession();
 	    	SessionBean sessionBean = session != null && session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null ? (SessionBean) session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) : null;
 	    	if(sessionBean!= null && sessionBean.getUserTypeId() == 2 ){
 	    		tblTenderForm = tenderFormService.getTenderFormById(formId);
-	    		if(tblTenderForm.getIsEncryptionReq() == 1){
-		    		int isCertRequired = Integer.parseInt(tenderCommonService.getTenderField(tenderId, "isCertRequired").toString());
-		//    		isEncCertVerified = commonService.checkIsCertificateVerified(isCertRequired,2,request);
-		    	}
-		    	else{
-		    		isEncCertVerified = true;    		
-		    	}
-		    	request.getSession().setAttribute("isEncCertVerified",isEncCertVerified);
-		    	if(!isEncCertVerified){
-	    			return REDIRECTBIDDERDASHBOARD+"/"+tenderId;
-	    		}
-	    		else{
-    				
     				modelMap.addAttribute("tblTenderForm", tblTenderForm);
     			    modelMap.addAttribute("bidId", bidId);
     	            modelMap.addAttribute("fromBidForm", true);
@@ -339,19 +375,15 @@ public class BidderSubmissionController {
     	            modelMap.addAttribute("companyId", sessionBean.getCompanyId());
     	            tenderFormService.setViewFormNFormula(formId, modelMap, tenderId,(int)sessionBean.getUserId());
     	            setBidFormData(modelMap, request, tenderId, envelopeId);
-    	            modelMap.addAttribute("CLIENT_DATETIME",client_dateformate_hhmm);
+    	            modelMap.addAttribute("CLIENT_DATETIME",clientDateformatehhmm);
     	            modelMap.addAttribute("rebateCellId", eventBidSubmissionService.getRebateCellId(formId));
     				return "/etender/bidder/BidForm";
-	    		}
 	    	}else{
 	    		return REDIRECT_SESSION_EXPIRED;
 	    	}
 		} catch (Exception e) {
             return exceptionHandlerService.writeLog(e);
-        } finally {
-//            auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), bidId==0 ? bidFormCreate : bidFormEdit, bidId==0 ? bidFormAudit : bidFormEditAudit, tenderId, formId);
-        }
-        
+		}
     }
     
     @RequestMapping(value = "/crteditrebate/{tenderId}/{companyId}/{addEdtFlage}", method = RequestMethod.GET)             
@@ -364,7 +396,6 @@ public class BidderSubmissionController {
         		int userId = (int)sBean.getUserId();
         		TblBidder tblBidder = tenderCommonService.getTblBidderId(userId);
 	   			tenderCommonService.tenderSummary(tenderId, modelMap);
-//	   	 		setBidFormData(modelMap, request, tenderId,0);
 	   			
 	   			List<Object[]> rebateFormDtls = tenderFormService.getRebateList(tenderId,tblBidder.getBidderId());
 	   			List<TenderRebateDetailBean>  rebateFormList = new ArrayList<TenderRebateDetailBean>();
@@ -378,7 +409,7 @@ public class BidderSubmissionController {
 	   				detailBean.setColumnId(Integer.parseInt(objects[5].toString()));
 	   				rebateFormList.add(detailBean);
 				}
-	   			
+	   			modelMap.put("decimalPoint", decimalPoint);
 	   			modelMap.put("rebateFormList", rebateFormList);
 	   			modelMap.addAttribute("tblTenderRebateDtls", tenderFormService.getTblTenderRebate(tenderId,companyId));
 	   			
@@ -387,8 +418,6 @@ public class BidderSubmissionController {
         }
         catch(Exception e){
         	return exceptionHandlerService.writeLog(e);
-        } finally {
-//            auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), addEdtFlage==1?addRebateDetailLinkId:addEdtFlage==2?editRebateDetailLinkId:viewRebateDetailLinkId, createrebatepercentagepage, tenderId, rebateId);
         }
         return retVal;
     }
@@ -396,10 +425,8 @@ public class BidderSubmissionController {
     public String editRebate(RedirectAttributes redirectAttributes, HttpServletRequest request) {
     	boolean success=false;
     	String retVal = REDIRECT_SESSION_EXPIRED;
-       int tenderId = 0 ;
+    	int tenderId = 0 ;
      	int companyId = 0;
-        
-        
         try{
         	if (request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null) {
         		SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
@@ -418,7 +445,6 @@ public class BidderSubmissionController {
 	   	      	 	tblTenderRebate.setRebateEncrypt(encryptVal);
 	   	      	 	tblTenderRebate.setCreatedBy(userId);
    	          	
-   	
    	      		/*** Start Code to insert in TblTenderRebate table**/
    	      		success = eventBidSubmissionService.editTenderRebate(tenderId,tblTenderRebate,companyId);
          	 	}
@@ -426,8 +452,6 @@ public class BidderSubmissionController {
          		
         }catch(Exception e){
         	return exceptionHandlerService.writeLog(e);
-        }finally {
-//            auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), editRebateDetailLinkId, success ? rebatepercentageupdate : rebatepercentageupdatefail,tenderId,rebateId);
         }
         retVal = "redirect:/etender/bidder/biddingtenderdashboardcontent/" + tenderId+"/"+5;
         redirectAttributes.addFlashAttribute(success ? CommonKeywords.SUCCESS_MSG.toString() : CommonKeywords.ERROR_MSG.toString(), success ? "msg_success_bidder_rebate_add" : "msg_error_bidder_rebate_add");
@@ -441,34 +465,6 @@ public class BidderSubmissionController {
         modelMap.addAttribute("decimalUpto",decimalUpto);
         modelMap.addAttribute("isItemSelectionPageRequired",isItemSelectionPageRequired);
         modelMap.addAttribute("level",level);
-        /*if((Integer)modelMap.get("encryptionReq")==1){
-        	List<Object[]> pkeyList = new ArrayList<Object[]>();
-//            List<Object[]> pkeyList = eventBidSubmissionService.getOfficerPublicKey(tenderId, envelopeId);
-           
-            if(level==1){                    
-                List<String> levelonepkey = new ArrayList<String>();
-                for (Object[] pkey : pkeyList) {
-                    if((Integer)pkey[1]==1){
-                        levelonepkey.add(pkey[0].toString());
-                    }
-                }
-                modelMap.addAttribute("levelonepkey",levelonepkey);
-            }
-            if(level==2){                    
-                List<String> levelonepkey = new ArrayList<String>();
-                List<String> leveltwopkey = new ArrayList<String>();
-                for (Object[] pkey : pkeyList) {
-                    if((Integer)pkey[1]==1){
-                        levelonepkey.add(pkey[0].toString());
-                    }
-                    if((Integer)pkey[1]==2){
-                        leveltwopkey.add(pkey[0].toString());
-                    }
-                }
-                modelMap.addAttribute("levelonepkey",levelonepkey);
-                modelMap.addAttribute("leveltwopkey",leveltwopkey);
-            }
-        }*/
 }
     
     @RequestMapping(value = "/addrebate", method = RequestMethod.POST)
@@ -498,12 +494,475 @@ public class BidderSubmissionController {
        	 }	
         }catch(Exception e){
         	return exceptionHandlerService.writeLog(e);
-        }finally {
-//            auditTrailService.makeAuditTrail(request.getAttribute(CommonKeywords.AUDIT_BEAN.toString()), addRebateDetailLinkId, success ? rebatepercentageadd : rebatepercentageaddfail,tenderId,rebateId);
         }
         retVal = "redirect:/etender/bidder/biddingtenderdashboardcontent/" + tenderId+"/"+5;
         redirectAttributes.addFlashAttribute(success ? CommonKeywords.SUCCESS_MSG.toString() : CommonKeywords.ERROR_MSG.toString(), success ? "msg_success_bidder_rebate_add" : "msg_error_bidder_rebate_add");
         return retVal;
     }   
+    
+    
+    @RequestMapping(value ={"/uploadform"}, method = RequestMethod.POST)
+    @ResponseBody
+    public String uploadform(@RequestParam("hdFormId") String hdFormId, @RequestParam(HIDDEN_TENDER_ID) String hdTenderId,HttpSession session, HttpServletRequest request,@RequestParam("uploadFormData") CommonsMultipartFile multipartFile) {
+    	
+    	String data = null;
+        boolean isValidate = true;   
+        try {
+        	SessionBean sessionBean= (SessionBean) session.getAttribute("sessionObject")!=null?(SessionBean) session.getAttribute("sessionObject"):new SessionBean();
+        	 int userId = (int) sessionBean.getUserId();
+        	 DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
+             fileItemFactory.setSizeThreshold(1 * 1024 * 1024);
+             ServletFileUpload uploadHandler = new ServletFileUpload(fileItemFactory);
+             List items = uploadHandler.parseRequest(request);
+             
+            File file = null;
+            File tmpDir = null;
+            long fileSize = 0;
+            String fileName = null;
+            long fileMaxSize = 1024 * 1024;//1 MB
+            String fileExtensions = "xls";
+
+            Iterator itr = items.iterator();
+            FileItem item = multipartFile.getFileItem();
+                if (!item.isFormField()) {
+                    fileSize = item.getSize();
+                    if (item.getName().lastIndexOf("\\") != -1) {
+                        fileName = item.getName().substring(item.getName().lastIndexOf("\\") + 1, item.getName().length());
+                    } else {
+                        fileName = item.getName();
+                    }
+                    if (fileName != null && !fileName.equalsIgnoreCase("")) {
+                        if (fileSize == 0) {
+                        	data=messageSource.getMessage("msg_tender_emptyfile", null, LocaleContextHolder.getLocale());
+                            isValidate = false;
+                        }
+                        if (!checkFileSize(fileSize, fileMaxSize)) {
+                        	data= messageSource.getMessage("msg_tender_filesizeexceeds", new Object[]{fileMaxSize / (1024*1024)}, LocaleContextHolder.getLocale());
+                            isValidate = false;
+                        }
+                        if (!checkFileExn(fileName, fileExtensions)) {
+                        	data=messageSource.getMessage("msg_tender_fileformatnotsupp", null, LocaleContextHolder.getLocale());
+                            isValidate = false;
+                        } else {
+                            /* if destination directory not exist then create it*/
+                            String tmpDirPath = drive + upload + "\\OfflineBid";
+                            tmpDir = new File(tmpDirPath);
+                            if (!tmpDir.isDirectory()) {
+                                tmpDir.mkdir();
+                            }
+                            tmpDirPath = tmpDirPath + "\\" + hdFormId + "\\" + userId;
+                            tmpDir = new File(tmpDirPath);
+                            if (!tmpDir.isDirectory()) {
+                                tmpDir.mkdirs();
+                            }
+                            file = new File(tmpDir, fileName);
+                            item.write(file);
+                        }
+                    }
+                }
+            if (isValidate && file.exists()) {
+                        FileInputStream fis = new FileInputStream(file);
+                        HSSFWorkbook workbook = new HSSFWorkbook(fis);
+                        //Get first sheet from the workbook
+                        StringBuffer jsons = new StringBuffer();
+                        List<Object[]> tables = formService.getTenderTableListByFormId(Integer.parseInt(hdFormId));
+                        for (Object[] table : tables) {
+                        	//abcUtility.reverseReplaceSpecialChars();
+                            String tableName = table[1].toString().toString();
+                            String sheetName = (tableName.length()>15 ? tableName.substring(0, 15) : tableName)+"-"+table[0].toString();                            
+                            HSSFSheet sheet = workbook.getSheet(sheetName);
+                            //Iterate through each rows from first sheet
+                            Iterator<Row> rowIterator = sheet.iterator();
+                            JSONArray jSONArray = new JSONArray();
+                            int cellcount = 0;
+                            int rowcount = 0;
+                            while (rowIterator.hasNext()) {
+                                Row row = rowIterator.next();
+                                JSONObject jSONObject = new JSONObject();
+                                //For each row, iterate through each columns
+                                Iterator<Cell> cellIterator = row.cellIterator();
+                                int cellno = 0;
+                                int colcount = 0;
+                                while (cellIterator.hasNext()) {
+                                    if (rowcount == 0) {
+                                        colcount++;
+                                    }
+                                    Cell cell = cellIterator.next();
+                                    switch (cell.getCellType()) {
+                                        case Cell.CELL_TYPE_NUMERIC:
+                                            jSONObject.put(rowcount == 0 ? String.valueOf(cellcount) : (rowcount - 1) + "_" + cellno, cell.getNumericCellValue());
+                                            break;
+                                        case Cell.CELL_TYPE_STRING:
+                                            jSONObject.put(rowcount == 0 ? String.valueOf(cellcount) : (rowcount - 1) + "_" + cellno, cell.getRichStringCellValue().toString());
+                                            break;
+                                        case Cell.CELL_TYPE_FORMULA:
+                                            jSONObject.put(rowcount == 0 ? String.valueOf(cellcount) : (rowcount - 1) + "_" + cellno, cell.getNumericCellValue());
+                                            break;
+                                    }
+                                    cellno++;
+                                    cellcount++;
+                                }
+                                jSONArray.put(rowcount, jSONObject);
+    //                                System.out.println("");
+                                rowcount++;
+                            }
+                            jsons.append(jSONArray.toString()).append("@@@");
+                        }
+                        
+                        data = jsons.length()>3 ? jsons.substring(0,jsons.length()-3) : jsons.toString();
+                        fis.close();
+            }
+        } catch (Exception e) {
+            return exceptionHandlerService.writeLog(e);
+        }
+        System.out.println("data:----> "+ data);
+        return isValidate ? data : "ERROR::" + data;
+    }
+    private boolean checkFileSize(long fielSize, long maxFileSize) {
+        boolean chextn = false;
+        if (maxFileSize > fielSize) {
+            chextn = true;
+        } else {
+            chextn = false;
+        }
+        return chextn;
+    }
+    private boolean checkFileExn(String fileName, String allowExtensions) {
+        boolean chextn = false;
+        int j = fileName.lastIndexOf('.');
+        String lst = fileName.substring(j + 1);
+        String str = allowExtensions;
+        String[] str1 = str.split(",");
+        for (int i = 0; i < str1.length; i++) {
+            if (str1[i].trim().equalsIgnoreCase(lst)) {
+                chextn = true;
+            }
+        }
+        return chextn;
+    }
+    @RequestMapping(value = {"/downloadform/{tenderId}/{formId}"}, method = RequestMethod.GET)
+    public void donwloadform(@PathVariable("tenderId") int tenderId, @PathVariable("formId") int formId, HttpServletResponse response,HttpServletRequest request) {
+        try {
+            StringBuilder path = new StringBuilder();
+            TblTenderForm tblTenderForm = tenderFormService.getTenderFormById(formId);
+            path.append(drive).append(upload).append("\\OfflineBidForm\\").append(tenderId).append("\\").append(formId).append("\\");
+            File folder = new File(path.toString());
+            if(!folder.exists()){
+                folder.mkdirs();
+            }
+            //correctFileName,reverseReplaceSpecialChars
+            File file = new File(path.toString() + tblTenderForm.getFormName() + ".xls");
+            if (true || !file.exists()) {
+                Workbook wb = new HSSFWorkbook(); // Create New WorkBook
+                List<Object[]> tables = formService.getTenderTableListByFormId(formId);
+                for (Object[] table : tables) {                    
+                int tableId = (Integer)table[0];
+                List<Object[]> tableList = formService.getTenderTableDetails(tableId);                
+                List<Object[]> headerList = formService.getTenderColumn(tableId);
+                Map<Integer,Integer> sortVsColNo = new HashMap<Integer, Integer>();
+                String tableName = !tableList.isEmpty() ? tableList.get(0)[2].toString(): "";
+                int lastLocation = !tableList.isEmpty() ? (Integer) tableList.get(0)[6] : 0;
+                List<TblTenderCell> contentList = formService.getTenderCellByTableIdNewOrderBy(tableId, 0);
+                List<Object[]> formulaList = formService.getFormulaColId(tableId);
+                int headerCount = 0;
+                int contentCount = 0;
+                int rowCount = 0;
+                boolean isTotal = false;
+                
+                SessionBean sessionBean = (SessionBean)request.getSession().getAttribute("sessionObject");
+                List<Object[]> visibleRows = null;
+                Map<Integer,List<Integer>> tableRows = new HashMap<Integer, List<Integer>>();
+                int isItemSelectionPageRequired = 0;
+                if(sessionBean.getCompanyId()!=0){
+                    isItemSelectionPageRequired = (Integer)tenderCommonService.getTenderField(tenderId, "isItemSelectionPageRequired");
+                    visibleRows = tenderFormService.getSelectedRowsForBidding(formId, sessionBean.getCompanyId());
+                    for (Object[] rows : visibleRows) {
+                        List<Integer> rowIds = null;
+                        if(tableRows.containsKey(rows[0])){                            
+                            rowIds = tableRows.get(rows[0]);
+                        }else{
+                            rowIds = new ArrayList<Integer>();
+                        }
+                        rowIds.add((Integer)rows[1]);
+                        tableRows.put((Integer)rows[0],rowIds);
+                    }
+                }
+                
+                Sheet sheet = wb.createSheet((tableName.length()>15 ? tableName.replaceAll("/", "").substring(0, 15) : tableName.replaceAll("/", ""))+"-"+tableId);// Create WorkSheet
+                sheet.protectSheet("password"); //Protect WorkSheet                
+
+                Font font = wb.createFont();  // Apply Font
+                font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);  // Font Face
+
+                CellStyle headingStyle = wb.createCellStyle();// Object that create Style
+                headingStyle.setLocked(true); // Lock Cell
+                headingStyle.setFillForegroundColor(IndexedColors.BLUE_GREY.getIndex());
+                font.setColor(IndexedColors.WHITE.getIndex());
+                headingStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+                headingStyle.setAlignment(CellStyle.ALIGN_CENTER);
+                headingStyle.setFont(font);
+
+                CellStyle contentStyle = wb.createCellStyle();
+                contentStyle.setLocked(true);                
+//                contentStyle.setAlignment(CellStyle.ALIGN_RIGHT);//
+
+                CellStyle enterNumeric = wb.createCellStyle();
+                enterNumeric.setLocked(false); // Unlock Cell
+//            
+//            CellStyle totalStyle = wb.createCellStyle();
+//            totalStyle.setAlignment(CellStyle.ALIGN_RIGHT);
+//            totalStyle.setFont(font);
+//            totalStyle.setLocked(true);
+
+                int iscellAvail = -1;
+                if (!headerList.isEmpty()) {
+                    Row rowHeader = sheet.createRow(0);
+                    for (Object[] head : headerList) {//List that Print Header in EXCEL
+                        sortVsColNo.put((Integer)head[3], (Integer)head[4]);
+                        String headerData = head[0].toString().replace("\\<.*?\\>", "");
+                        Cell cell = rowHeader.createCell(headerCount);
+                        cell.setCellValue(headerData);
+                        cell.setCellStyle(headingStyle);
+                        sheet.setColumnWidth(headerCount, 7000);
+                        if((Integer)head[2]==0){                            
+                            sheet.setColumnHidden(headerCount, true);
+                        }
+                        headerCount++;
+                    }
+                }
+                int cellNum = 0;
+                int columnNo = 0;
+                int location = 0;
+                int dataType = 0;
+                int objectId = 0;
+                int colNo = 0;
+                String contentData;
+                String formula;
+                boolean addRow = false;
+                boolean isnum = false;
+                Row rowContent = sheet.createRow(1);                
+                if (!contentList.isEmpty()) {// Loop until List is Not Empty
+                    for (TblTenderCell obj2 : contentList) {// condition that is used to create new Row
+                    	columnNo = obj2.getTblTenderColumn().getColumnNo();// ColId at CellMaster                                                
+                    	location = obj2.getRowId() + 1;// Location +1 Because We have to Skip Header Part in EXCEL
+                    	dataType = obj2.getDataType();                        
+                    	objectId = obj2.getObjectId();
+                    	contentData = obj2.getCellValue();// Data Located at cellMaster
+                        if (contentCount % headerCount == 0) {// until formula list is not empty
+                            rowCount++;
+                            cellNum = 0;
+                            addRow = false;
+                            if(isItemSelectionPageRequired == 0 || tblTenderForm.getIsPriceBid() == 0 || (isItemSelectionPageRequired == 1 && tableRows.containsKey(tableId) && tableRows.get(tableId).contains(rowCount))){                                    
+                                rowContent = sheet.createRow(rowCount);//Compare Formula colid to CellMaster colid and if Match then create formula Based On EXCEl                             
+                                addRow = true;
+                            }else{
+                            	rowContent = sheet.createRow(rowCount);
+                            	sheet.getRow(rowCount).setZeroHeight(true);
+                            }                             
+                        }
+                        if(addRow){
+                          if (!formulaList.isEmpty()) {//List that take each and every Formula from FormulaMaster 
+                            for (Object[] obj1 : formulaList) {// until formula list is not empty
+                                if (obj1[2].toString().startsWith("txtcell_")) {
+                                	colNo = (Integer) obj1[5];
+                                	formula = obj1[2].toString();
+                                    if (colNo == columnNo) {//Compare Formula colid to CellMaster colid and if Match then create formula Based On EXCEl 
+                                        StringBuilder finalFormula = new StringBuilder();
+                                        if (dataType!=0){//else for (2*3) or (2*3+N_35) like Formula
+                                            List<String> formulaArr = new ArrayList<String>();
+                                            isnum = false;                                            
+                                            for (int c = 0; c < formula.length(); c++) {
+                                                char cc = formula.charAt(c);
+                                                if (cc != 'N' && cc != '_') {
+                                                    if (!isNumeric(String.valueOf(cc)) && cc != '.') {
+                                                        formulaArr.add(String.valueOf(cc));
+                                                        isnum = false;
+                                                    } else {
+                                                        if (isnum) {
+                                                            formulaArr.set(formulaArr.size()-1, formulaArr.get(formulaArr.size()-1) + cc);
+                                                        } else {
+                                                            formulaArr.add(String.valueOf(cc));                                                            
+                                                        }
+                                                        isnum = true;
+                                                    }
+                                                }
+                                            }                                            
+                                            String formulaStr = formula.replaceAll("[_]", "").replaceAll("[\\+]", "_").replaceAll("[-]", "_").replaceAll("[\\)]", "_").replaceAll("[\\(]", "_").replaceAll("[\\*]", "_").replaceAll("[/]", "_");
+                                            String[] arr = formulaStr.split("_");
+                                            List<String> columns = new ArrayList<String>();
+                                            for (int i = 0; i < arr.length; i++) {                        
+                                                if (arr[i] != "" && arr[i].indexOf('N') == -1) {
+                                                    columns.add(arr[i]);
+                                                }
+                                            }
+                                            for (int cnt2 = 0; cnt2 < columns.size(); cnt2++) {
+                                                for (int cnt3 = 0; cnt3 < formulaArr.size(); cnt3++) {
+                                                    if (columns.get(cnt2).equals(formulaArr.get(cnt3))) {
+                                                      formulaArr.set(cnt3, CellReference.convertNumToColString(sortVsColNo.get(Integer.parseInt(formulaArr.get(cnt3))) - 1)+location);
+                                                    }
+                                                }
+                                            }
+                                            for (String formulaChunk : formulaArr) {
+                                                finalFormula.append(formulaChunk);
+                                            }
+                                            Cell cellContentFormula = rowContent.createCell(cellNum);
+                                            cellContentFormula.setCellType(Cell.CELL_TYPE_STRING);
+//                                            cellContentFormula.setCellFormula((finalFormula.toString()));
+                                            cellContentFormula.setCellStyle(contentStyle);
+                                            iscellAvail = cellNum;
+                                       }
+                                    } else {
+                                        if (!(iscellAvail == cellNum)) {//To Protect OverWritting Data
+                                            if (dataType==3 || dataType==4 || dataType==5) {// If data is Numeric create Cell Numeric Type
+                                                Cell cellContentData = rowContent.createCell(cellNum);
+                                                cellContentData.setCellType(Cell.CELL_TYPE_NUMERIC);
+                                                if (StringUtils.hasLength(contentData)) {
+                                                    cellContentData.setCellStyle(contentStyle);
+                                                    cellContentData.setCellValue(Double.parseDouble(contentData));
+                                                } else {
+                                                    cellContentData.setCellStyle(enterNumeric);
+                                                }
+                                            } else { // Create Cell String Type
+                                                if(dataType == 7){//date
+                                                    Cell cellContentData = rowContent.createCell(cellNum);
+                                                    CreationHelper createHelper = wb.getCreationHelper();
+                                                    CellStyle cellStyle = wb.createCellStyle();                                        
+                                                    String dateFormat = WebUtils.getCookie(request, "dateFormat").getValue();
+                                                    cellStyle.setDataFormat(createHelper.createDataFormat().getFormat(dateFormat.replace("M", "m").replace("Y", "y")));                                        
+                                                    cellStyle.setLocked(false);
+                                                    cellContentData.setCellStyle(cellStyle);
+                                                }else if(dataType ==6){//combo
+                                                    /*List<TblComboDetail> comboDetail = tenderFormService.getComboDetailByComboId(new Object[]{objectId});
+                                                    String[] combo = new String[comboDetail.size()];
+                                                    for (int i = 0; i < combo.length; i++) {
+                                                        combo[i] = comboDetail.get(i).getOptionValue();
+
+                                                    }                                        
+                                                    CellRangeAddressList addressList = new CellRangeAddressList(rowCount, rowCount, columnNo-1, columnNo-1);                                        
+                                                    DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(combo);
+                                                    DataValidation dataValidation = new HSSFDataValidation(addressList, dvConstraint);
+                                                    dataValidation.setSuppressDropDownArrow(false);
+                                                    sheet.addValidationData(dataValidation);                                        
+                                                    Cell cellContentData = rowContent.createCell(cellNum);                                                                                
+                                                    cellContentData.setCellStyle(enterNumeric);*/
+                                                }else{
+                                                    Cell cellContentData = rowContent.createCell(cellNum);                                        
+                                                    cellContentData.setCellType(Cell.CELL_TYPE_STRING);
+                                                    if (StringUtils.hasLength(contentData)) {
+                                                        cellContentData.setCellStyle(contentStyle);
+                                                        //reverseReplaceSpecialChars
+                                                        cellContentData.setCellValue(contentData.replace("\\<.*?\\>", ""));
+                                                    } else {
+                                                        cellContentData.setCellStyle(enterNumeric);
+                                                    }                                        
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }else{
+                            if (!(iscellAvail == cellNum)) {//To Protect OverWritting Data
+                            	if (dataType==3 || dataType==4 || dataType==5) {// If data is Numeric create Cell Numeric Type
+                                    Cell cellContentData = rowContent.createCell(cellNum);
+                                    cellContentData.setCellType(Cell.CELL_TYPE_NUMERIC);
+                                    if (StringUtils.hasLength(contentData)) {
+                                        cellContentData.setCellStyle(contentStyle);
+                                        cellContentData.setCellValue(Double.parseDouble(contentData));
+                                    } else {                                            
+                                        cellContentData.setCellStyle(enterNumeric);
+                                    }
+                                } else// Create Cell String Type
+                                {
+                                    if(dataType == 7){//date
+                                        Cell cellContentData = rowContent.createCell(cellNum);
+                                        CreationHelper createHelper = wb.getCreationHelper();
+                                        CellStyle cellStyle = wb.createCellStyle();                                        
+                                        String dateFormat = WebUtils.getCookie(request, "dateFormat").getValue();
+                                        cellStyle.setDataFormat(createHelper.createDataFormat().getFormat(dateFormat.replace("M", "m").replace("Y", "y")));                                        
+                                        cellStyle.setLocked(false);
+                                        cellContentData.setCellStyle(cellStyle);
+                                    }else if(dataType ==6){//combo
+                                        /*List<TblComboDetail> comboDetail = tenderFormService.getComboDetailByComboId(new Object[]{objectId});
+                                        String[] combo = new String[comboDetail.size()];
+                                        for (int i = 0; i < combo.length; i++) {
+                                            combo[i] = comboDetail.get(i).getOptionValue();
+                                            
+                                        }
+                                        CellRangeAddressList addressList = new CellRangeAddressList(rowCount, rowCount, columnNo-1, columnNo-1);                                        
+                                        DVConstraint dvConstraint = DVConstraint.createExplicitListConstraint(combo);
+                                        DataValidation dataValidation = new HSSFDataValidation(addressList, dvConstraint);
+                                        dataValidation.setSuppressDropDownArrow(false);
+                                        sheet.addValidationData(dataValidation);                                        
+                                        Cell cellContentData = rowContent.createCell(cellNum);                                                                                
+                                        cellContentData.setCellStyle(enterNumeric);*/
+                                    }else{
+                                        Cell cellContentData = rowContent.createCell(cellNum);                                        
+                                        cellContentData.setCellType(Cell.CELL_TYPE_STRING);
+                                        //reverseReplaceSpecialChars
+                                        cellContentData.setCellValue(contentData.replace("\\<.*?\\>", ""));
+                                        if (StringUtils.hasLength(contentData)) {
+                                            cellContentData.setCellStyle(contentStyle);
+                                        } else {
+                                            cellContentData.setCellStyle(enterNumeric);
+                                        }                                        
+                                    }
+                                }
+                                }
+                            }
+                        }            
+                        cellNum++;// Increment Cell and When new Row is Created Initialize  with 0
+                        contentCount++; // content count used to create New Row
+                    }
+                    if (isTotal) {//isTotal=True at that time we have to Display Grand Total
+                        Row rowTotal;
+                        if (sheet.getRow(lastLocation) != null) {
+                            rowTotal = sheet.getRow(lastLocation);
+                        } else {
+                            rowTotal = sheet.createRow(lastLocation);
+                        }
+                        Cell cellGrandTotal = rowTotal.createCell(0);
+                        cellGrandTotal.setCellValue("Grand Total");
+                        cellGrandTotal.setCellStyle(headingStyle);
+                    }
+                }
+                    for (int i = 0; i < headerCount; i++) {                        
+                        sheet.autoSizeColumn(i);
+                    }
+                }
+                FileOutputStream fout = new FileOutputStream(file);// Write File
+                wb.write(fout);
+                fout.flush();
+                fout.close();
+            }
+            InputStream fis = new FileInputStream(file);
+            byte[] buf = new byte[fis.available()];
+            int offset = 0;
+            int numRead = 0;
+            while ((offset < buf.length) && ((numRead = fis.read(buf, offset, buf.length - offset)) >= 0)) {
+                offset += numRead;
+            }
+            ServletOutputStream outputStream = response.getOutputStream();
+            response.setContentType("application/octet-stream");
+            //reverseReplaceSpecialChars
+            response.setHeader("Content-Disposition", "attachment;filename=\"" + tblTenderForm.getFormName() + ".xls\"");            
+            outputStream.write(buf);
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception ex) {
+            exceptionHandlerService.writeLog(ex);
+        }
+    }
+    private boolean isNumeric(String contentData){// Check Wether Data is Numeric 
+        List<Integer> numbers = Arrays.asList(new Integer[]{46, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57});
+        int numCnt = 0;
+        char[] c = contentData.toCharArray();
+        for (int d : c) {
+            if (numbers.contains(d)) {
+                numCnt++;
+            }
+        }
+        return StringUtils.hasLength(contentData) && numCnt == c.length;
+    }
 }
 

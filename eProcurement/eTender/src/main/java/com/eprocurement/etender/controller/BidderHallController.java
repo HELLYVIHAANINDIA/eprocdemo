@@ -68,12 +68,14 @@ public class BidderHallController {
         @Autowired
         private FormService biddingFormService;
     @Value("#{etenderProperties['sql_dateformate']}")
-    private String sql_dateformate;
+    private String sqldateformate;
     
     
     private static final String TENDERID = "tenderId";
+    private static final String TBLTENDER = "tblTender";
+    private static final String ISAUCTION = "isAuction";
     private static final String TABID = "tabId";
-    private final static String REDIRECTBIDDERDASHBOARD = "redirect:/etender/bidder/biddingTenderDashboard/";
+    private static final  String REDIRECTBIDDERDASHBOARD = "redirect:/etender/bidder/biddingTenderDashboard/";
     private static final String REDIRECT_SESSION_EXPIRED = "redirect:/notloggedin";
     private static final int TAB_DECLARATION = 2;
     private static final int TAB_PREPARE_BID = 5;
@@ -82,7 +84,7 @@ public class BidderHallController {
     private static final int TAB_PRE_BID= 8;
     
     @Value("#{etenderProperties['client_dateformate_hhmm']}")
-    private String client_dateformate_hhmm;
+    private String clientdateformatehhmm;
     @Value("#{projectProperties['doc_upload_path']}")
     private String docUploadPath;
     @Value("#{projectProperties['tenderPrebidObjectId']}")
@@ -101,26 +103,27 @@ public class BidderHallController {
 	
     
     @RequestMapping(value = "/bidderTenderListing/{isAuction}", method = RequestMethod.GET)
-    public ModelAndView createEvent1(@PathVariable("isAuction")Integer isAuction,HttpServletRequest request) throws Exception {
+    public ModelAndView createEvent1(@PathVariable(ISAUCTION)Integer isAuction,HttpServletRequest request) throws Exception {
     	String retVal = REDIRECT_SESSION_EXPIRED;
     	ModelAndView modelAndView = new ModelAndView(retVal);
     	try {
 	    	if (request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null) {
                    		SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
-	            long userId = sBean.getUserId();
-		        retVal = "/etender/bidder/BidderTenderListing";
-                        modelAndView = new ModelAndView(retVal);
-		        Map<String,Object> tenderCount = eventCreationService.getTenderCount(isAuction);
-		        modelAndView.addObject("tenderCount", tenderCount);
-		        TblBidder tblBidder = tenderCommonService.getTblBidderId(userId);
-		        int bidderId = tblBidder.getBidderId();
-		        modelAndView.addObject("bidderId", bidderId);
-                        if(isAuction==1)
-                             modelAndView.addObject("isAuction", 1);
-                        else
-                             modelAndView.addObject("isAuction", 0);
-                        modelAndView.addObject("userId", userId);
-                            
+				if (sBean.getUserTypeId() == 2) {
+					long userId = sBean.getUserId();
+					retVal = "/etender/bidder/BidderTenderListing";
+					modelAndView = new ModelAndView(retVal);
+					Map<String, Object> tenderCount = eventCreationService.getTenderCount(isAuction, userId);
+					modelAndView.addObject("tenderCount", tenderCount);
+					TblBidder tblBidder = tenderCommonService.getTblBidderId(userId);
+					int bidderId = tblBidder.getBidderId();
+					modelAndView.addObject("bidderId", bidderId);
+					if (isAuction == 1)
+						modelAndView.addObject(ISAUCTION, 1);
+					else
+						modelAndView.addObject(ISAUCTION, 0);
+					modelAndView.addObject("userId", userId);
+				}
 	    	}
     	} catch (Exception ex) {
     	    exceptionHandlerService.writeLog(ex);
@@ -129,89 +132,6 @@ public class BidderHallController {
         return modelAndView;
     }
     
-    /*@RequestMapping(value = {"/viewtender/{tenderId}"}, method = RequestMethod.GET)
-    public ModelAndView viewTender(@PathVariable(TENDERID) Integer tenderId, ModelMap modelMap, HttpServletRequest request) {
-    	String retVal = "/etender/bidder/ViewTender";
-    try{
-    	TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
-    	if(tenderId != null && tenderId != 0){
-    		boolean checkpricebid = false;
-			List<Object[]> tenderEnvelopeList = tenderCommonService.getEnvelopeTypeByTenderId(tenderId);
-			String currencyName = "";
-			String envolopeName = "";
-			if(tenderEnvelopeList != null && !tenderEnvelopeList.isEmpty()){
-				for(Object[] obj : tenderEnvelopeList){
-					if("4".equals(obj[0].toString())){
-						checkpricebid = true;
-					}
-					envolopeName += obj[1].toString()+",";
-				}
-			}
-			//List<Object[]> tenderCurrency= tenderCommonService.getCurrencyList(tblTender.getCurrencyId());
-			List<Object[]> tenderICBCurrency= tenderCommonService.getCurrencyByTenderId(tenderId);
-			String internationalCurrency = "";
-			if(tenderICBCurrency != null && !tenderICBCurrency.isEmpty()){
-				for(Object[] obj : tenderICBCurrency){
-					if("1".equals(obj[2].toString())){
-						currencyName += commonService.getCurrencyList(Integer.parseInt(obj[0].toString())).get(0)[1]+",";
-					}else if(tblTender.getBiddingType() == 2){
-						internationalCurrency += commonService.getCurrencyList(Integer.parseInt(obj[0].toString())).get(0)[1]+",";
-					}
-
-				}
-			}
-			String departmentName = ""; 
-			List<Object[]> tenderDepartment= tenderCommonService.getDepartmentById(tblTender.getDepartmentId());
-			if(tenderDepartment != null && !tenderDepartment.isEmpty()){
-				for(Object[] obj : tenderDepartment){
-					departmentName += obj[1].toString()+",";
-				} 
-			}
-			String officerName = ""; 
-			List<Object[]> tenderOfficer= tenderCommonService.getOfficerById(tblTender.getOfficerId());
-			if(tenderOfficer != null && !tenderOfficer.isEmpty()){
-				for(Object[] obj : tenderOfficer){
-					officerName += obj[1].toString()+",";
-				}
-			}
-
-			String procurementNature = ""; 
-			List<Object[]> tblProcurementNature= tenderCommonService.getProcurementNatureById(tblTender.getProcurementNatureId());
-			if(tenderOfficer != null && !tblProcurementNature.isEmpty()){
-				for(Object[] obj : tblProcurementNature){
-					procurementNature += obj[1].toString()+",";
-				}
-			}
-
-        	modelMap.addAttribute("procurementNature",procurementNature);
-            modelMap.addAttribute("tblTender", tblTender);
-            String eventTypeName = (tenderCommonService.getTblEventTypeById(tblTender.getEventTypeId()) != null) ? tenderCommonService.getTblEventTypeById(tblTender.getEventTypeId()).getEventTypeName() : "";
-            modelMap.addAttribute("eventTypeName",  eventTypeName);
-            modelMap.addAttribute("currencyName", currencyName);
-            modelMap.addAttribute("internationalCurrency", internationalCurrency);
-            modelMap.addAttribute("departmentName", departmentName);
-            modelMap.addAttribute("officerName", officerName);
-            modelMap.addAttribute("envolopeName", envolopeName);
-            modelMap.addAttribute("checkpricebid", checkpricebid);
-            modelMap.addAttribute("tenderNITObjectId", tenderNITObjectId);
-            modelMap.addAttribute("isCategoryAllow", 0);
-            modelMap.addAttribute("documentStartDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getDocumentStartDate()));
-            modelMap.addAttribute("documentEndDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getDocumentEndDate()));
-            modelMap.addAttribute("preBidEndDate", commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getPreBidEndDate()));
-            modelMap.addAttribute("preBidStartDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getPreBidStartDate()));
-            modelMap.addAttribute("queStartDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getQuestionAnswerStartDate()));
-            modelMap.addAttribute("queEndtDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getQuestionAnswerEndDate()));
-            modelMap.addAttribute("openingDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getOpeningDate()));
-            modelMap.addAttribute("submissionStartDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getSubmissionStartDate()));
-            modelMap.addAttribute("submissionEndDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getSubmissionEndDate()));
-}
-    	}catch(Exception e)
-    	{
-    		e.printStackTrace();
-    	}
-        ModelAndView modelAndView = new ModelAndView(retVal);
-        return modelAndView;
-    }*/
 
     @RequestMapping(value = "/biddingTenderDashboard/{tenderId}", method = RequestMethod.GET)
     public String biddingTenderDashboard(@PathVariable("tenderId")Integer tenderId, HttpServletRequest request, ModelMap modelMap) throws Exception {
@@ -225,11 +145,11 @@ public class BidderHallController {
                 Date submissionEndDate=new Date();
                 if(tblTender.getisAuction()==0)
                 {
-                submissionEndDate = commonService.convertStringToDate(sql_dateformate, tblTender.getSubmissionEndDate().toString());
+                submissionEndDate = commonService.convertStringToDate(sqldateformate, tblTender.getSubmissionEndDate().toString());
                 }
                 else
                 {
-                submissionEndDate = commonService.convertStringToDate(sql_dateformate, tblTender.getAuctionEndDate().toString());    
+                submissionEndDate = commonService.convertStringToDate(sqldateformate, tblTender.getAuctionEndDate().toString());    
                 }
                            
                 Date serverDateTime = commonService.getServerDateTime();
@@ -238,17 +158,23 @@ public class BidderHallController {
     	        }
                 if(tblTender.getisAuction()==0)
                 {
-                    modelMap.addAttribute("submissionEndDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getSubmissionEndDate()));
-                modelMap.addAttribute("submissionEndDateForCounter",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getSubmissionEndDate()));
+                    modelMap.addAttribute("submissionEndDate",commonService.convertSqlToClientDate(clientdateformatehhmm, tblTender.getSubmissionEndDate()));
+                modelMap.addAttribute("submissionEndDateForCounter",commonService.convertSqlToClientDate(clientdateformatehhmm, tblTender.getSubmissionEndDate()));
                 }
                 else
                 {
-                     modelMap.addAttribute("submissionEndDate",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getAuctionEndDate()));
-                modelMap.addAttribute("submissionEndDateForCounter",commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getAuctionEndDate()));
+                     modelMap.addAttribute("submissionEndDate",commonService.convertSqlToClientDate(clientdateformatehhmm, tblTender.getAuctionEndDate()));
+                modelMap.addAttribute("submissionEndDateForCounter",commonService.convertSqlToClientDate(clientdateformatehhmm, tblTender.getAuctionEndDate()));
                 }
                 
                 modelMap.put("isRepeated", eventBidSubmissionService.isTenderIdRepeated(tenderId, tblBidder.getBidderId()));
-                modelMap.addAttribute("tblTender", tblTender);
+                modelMap.addAttribute(TBLTENDER, tblTender);
+                if(tblTender.getisAuction()==1)
+                {
+                    modelMap.addAttribute("formId",biddingFormService.getFormIdByTenderId(tenderId));
+                    modelMap.addAttribute("bid",biddingFormService.getBidIdByTenderandBidderId(tenderId, tblBidder.getBidderId()));
+                    
+                }
                 retVal = "/etender/bidder/BidderTenderDashboard";
 			}
     } catch (Exception ex) {
@@ -265,7 +191,7 @@ public class BidderHallController {
 				SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
 				modelMap.put("sessionUserTypeId", sBean.getUserTypeId());
                 long userId = sBean.getUserId();
-                modelMap.put("clientDateFormate",client_dateformate_hhmm);
+                modelMap.put("clientDateFormate",clientdateformatehhmm);
                 TblBidder tblBidder = tenderCommonService.getTblBidderId(userId);
                 modelMap.addAttribute("tblBidder", tblBidder);
                 int bidderId = tblBidder.getBidderId();
@@ -273,7 +199,7 @@ public class BidderHallController {
 				modelMap.put("sessionUserId", commonService.getSessionUserId(request));
 				int formStatus = -1;
 				TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
-				modelMap.addAttribute("tblTender", tblTender);
+				modelMap.addAttribute(TBLTENDER, tblTender);
 				int isFormConfirmationReq = tblTender.getIsFormConfirmationReq();
                 List<Object> lstTndrSubManDocsDtls = tenderCommonService.isSubmissionDateLapsed(tenderId);
                 modelMap.addAttribute("submissionEndDtLapse", lstTndrSubManDocsDtls.get(0));
@@ -281,12 +207,12 @@ public class BidderHallController {
             	Date submissionEndDate=new Date();
                 if(tblTender.getisAuction()==1)
                 {
-                    submissionEndDate = commonService.convertStringToDate(sql_dateformate,tblTender.getAuctionEndDate().toString());
+                    submissionEndDate = commonService.convertStringToDate(sqldateformate,tblTender.getAuctionEndDate().toString());
                     
                 }
                 else
                 {
-                    submissionEndDate = commonService.convertStringToDate(sql_dateformate, tblTender.getSubmissionEndDate().toString());
+                    submissionEndDate = commonService.convertStringToDate(sqldateformate, tblTender.getSubmissionEndDate().toString());
                 }
                 
     	        Date serverDateTime = commonService.getServerDateTime();
@@ -296,27 +222,29 @@ public class BidderHallController {
                 
                 if(tblTender.getisAuction()==1)
                 {
-                    modelMap.addAttribute("submissionEndDate", commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getAuctionEndDate()));            
+                    modelMap.addAttribute("submissionEndDate", commonService.convertSqlToClientDate(clientdateformatehhmm, tblTender.getAuctionEndDate()));            
 
                 }
                 else
                 {
-                    modelMap.addAttribute("submissionEndDate", commonService.convertSqlToClientDate(client_dateformate_hhmm, tblTender.getSubmissionEndDate()));            
+                    modelMap.addAttribute("submissionEndDate", commonService.convertSqlToClientDate(clientdateformatehhmm, tblTender.getSubmissionEndDate()));            
 
                 }
                             
 				switch (tabId) {
 					case TAB_DECLARATION:
-	//                    auditMsg = postajaxBiddingTenderDashboardContentDEC;
-	//                    String languageId = WebUtils.getCookie(request, "locale").getValue();
-	                    
 	                    boolean isRepeated = eventBidSubmissionService.isTenderIdRepeated(tenderId, bidderId);
 	                    TblEventTermAndConditions condition = eventBidSubmissionService.getTermAndConditionByEventId(tenderId);
 	                    List<Object[]> termAndconditions = null;
 	                    if(condition==null) {
-                                
-                                termAndconditions = eventBidSubmissionService.getTenderBidConfirmForm();
-                                
+                                if(tblTender.getisAuction()==0)
+                                {
+                                    termAndconditions = eventBidSubmissionService.getTenderBidConfirmForm();
+                                }
+                                else
+                                {
+                                    termAndconditions = biddingFormService.getAuctionBidConfirmForm();
+                                }
 	                    	
 	                    }
 	                    List<Object[]> currencyList = null;
@@ -384,22 +312,16 @@ public class BidderHallController {
                             modelMap.addAttribute("lstTenderBidDtls", lstTenderBidDtls);
                         }
                         
-                        /*if(isDocUploaded){
-                            for (TblBidderdocument objects : lstTenderBidderDocs) {
-                                String fPath = docUploadPath.concat((String)objects.getFileName());
-                                File f = new File(fPath);
-                            }
-                         }*/
                         String finalSubmissionMsg1 = tenderCommonService.allowFinalSubmission(sBean.getIpAddress(),tenderId, companyId, bidderId,FINALSUBMISSION_REQUEST_TYPE_GET,(int)userId);
                         if (finalSubmissionMsg1 != null && finalSubmissionMsg1.contains("msg_tender_fs_finalsubmission_done")) {
                             modelMap.addAttribute("allowFinalSubmission", finalSubmissionMsg1.split("@")[0]);
-//                            modelMap.addAttribute("msgArgumentOne", finalSubmissionMsg1.split("@")[1]);
-//                            modelMap.addAttribute("msgArgumentTwo", CommonUtility.convertTimezone(finalSubmissionMsg1.split("@")[2]));
+    	                    modelMap.addAttribute("msgArgumentOne", finalSubmissionMsg1.split("@")[1]);
+    	                    modelMap.addAttribute("msgArgumentTwo", finalSubmissionMsg1.split("@")[2]);
                         } else {
                             modelMap.addAttribute("allowFinalSubmission", finalSubmissionMsg1);
                         }
                         
-                        if(isFormConfirmationReq == 1 && lstTenderBidDtls.size()>0){
+                        if(isFormConfirmationReq == 1 && !lstTenderBidDtls.isEmpty()){
                             List<Integer> bidLst = new ArrayList<Integer>();
                             for (Object[] bidDetail : lstTenderBidDtls) {
                                 bidLst.add(Integer.parseInt(bidDetail[0].toString()));
@@ -411,7 +333,6 @@ public class BidderHallController {
                          */
                         if (tblTender.getIsItemSelectionPageRequired() == 1) {
 							List<Object[]> itemselected = new ArrayList<Object[]>(); 
-									//tenderFormService.getBidderFromItemSelection(tenderId, userId, 0, false, false);
 							Map<Object, Boolean> selectedForm = new HashMap<Object, Boolean>();
 							if (itemselected != null && !itemselected.isEmpty()) {
 								for (Object[] obj : itemselected) {
@@ -428,9 +349,6 @@ public class BidderHallController {
                         modelMap.addAttribute("isBidPrepared", isBidPrepared);
                         boolean isWeightageEvaluationRequired = tblTender.getIsWeightageEvaluationRequired() == 1;
                 		boolean isGrandTotalWiseTenderResult =  tblTender.getTenderResult() == 1;
-                		if(isWeightageEvaluationRequired && isGrandTotalWiseTenderResult){
-//                			setWeightageEvaluation(tenderId,modelMap);
-                		}
                 		modelMap.addAttribute("isSecondaryPartner", tenderCommonService.isSecondaryPartner(tenderId,companyId)>0 ? true : false);
                 		modelMap.addAttribute("isFinalSubmission", tenderCommonService.isFinalBidSubmision(tenderId, companyId));
                 		modelMap.addAttribute("tblTenderForm", tenderCommonService.getTblTenderFormById(tenderId));
@@ -472,7 +390,7 @@ public class BidderHallController {
                         if (finalSubmissionMsg.contains("msg_tender_fs_finalsubmission_done")) {
                         	modelMap.addAttribute("allowFinalSubmission", finalSubmissionMsg.split("@")[0]);
     	                    modelMap.addAttribute("msgArgumentOne", finalSubmissionMsg.split("@")[1]);
-    	                    modelMap.addAttribute("msgArgumentTwo", finalSubmissionMsg.split("@")[2]);//CommonUtility.convertTimezone(finalSubmissionMsg.split("@")[2]));
+    	                    modelMap.addAttribute("msgArgumentTwo", finalSubmissionMsg.split("@")[2]);
                         } else {
                             modelMap.addAttribute("allowFinalSubmission", finalSubmissionMsg);
                         }
@@ -481,7 +399,7 @@ public class BidderHallController {
                         modelMap.addAttribute("bidWithdrawalDtls", eventBidSubmissionService.getBidWithDrawaldtls(tenderId, companyId));
                         
                         List<Object[]> lstTenderBidDtl = tenderCommonService.getTenderBidDtls(tenderId, companyId, false);
-                        if(isFormConfirmationReq==1 && lstTenderBidDtl.size()>0){
+                        if(isFormConfirmationReq==1 && !lstTenderBidDtl.isEmpty()){
                             List<Integer> bidsLst = new ArrayList<Integer>();
                             for (Object[] bidDetail : lstTenderBidDtl) {
                                 bidsLst.add(Integer.parseInt(bidDetail[0].toString()));
@@ -510,7 +428,7 @@ public class BidderHallController {
                 	  		   for(Object[] obj : data ){
                 	  			   if(obj[4] != null && !"".equals(obj[4].toString())){
                 	  				   String date = obj[4].toString();
-                	  				   obj[4] = commonService.convertSqlToClientDate(client_dateformate_hhmm, date);
+                	  				   obj[4] = commonService.convertSqlToClientDate(clientdateformatehhmm, date);
                 	  			  }
                 	  		   }
                 	  	   }
@@ -529,44 +447,52 @@ public class BidderHallController {
                 	    		tenderDataBean.setEventTypeId(Integer.parseInt(obj[5].toString()));
                 	    		tenderDataBean.setTotalNoOfBidders(Integer.parseInt(obj[6].toString()));
                 	    		tenderDataBean.setIsRebateApplicable(Integer.parseInt(obj[7].toString()));
-//                	    		tenderDataBean.setRebateId(obj[8]!=null?Integer.parseInt(obj[8].toString()):0);	    		
-//                	    		tenderDataBean.setReportName(obj[9]!=null?obj[9].toString():"");
-//                	    		tenderDataBean.setRebateCount(Integer.parseInt(obj[10].toString()));
-//                	    		tenderDataBean.setDecryptVerifyCount(Integer.parseInt(obj[11].toString()));
                 	    		tenderDataBean.setBidderCount(Integer.parseInt(obj[8].toString()));
                 	    		tenderDataBean.setShowNoOfBidders(Integer.parseInt(obj[9].toString()));
-                	    		
                 	    	}
                 	    }
                 	    modelMap.addAttribute("tenderDetailList",tenderDataBean);
                             if(tblTender.getisAuction()==1)
                             {
                                 modelMap.addAttribute("bidHistory", biddingFormService.getBidHistoryByBidderId(tblBidder.getBidderId(),tblTender.getTenderId()));
+                                if(tblTender.getBiddingType()==2)
+                                {
+                                    float ExchangeRate = 0;
+                                    List<Object[]> lst = biddingFormService.getBidderCurrencyDetailByTenderId(tenderId);
+                                    for(int i=0;i<lst.size();i++)
+                                    {
+                                        if(Integer.parseInt(lst.get(i)[2].toString())==tblBidder.getBidderId())
+                                        {
+                                            ExchangeRate = Float.parseFloat(lst.get(i)[1].toString());
+                                        }
+                                    }
+                                    modelMap.addAttribute("ExchangeRate", ExchangeRate);
+                                }
                             }
                             retVal="etender/bidder/TenderResult";
 	                	break;
 	                case TAB_PRE_BID:
-	                	modelMap.addAttribute("tblTender",tblTender);
+	                	modelMap.addAttribute(TBLTENDER,tblTender);
 	                	int prebidCommitteeId = committeeFormationService.getCommitteeId(tenderId, 3);
 	        	    	Object[] prebidDtls = tenderCommonService.getTenderPrebidDetailByTenderId(tenderId);
 	        	    	if(prebidDtls!=null){
-	        	    		modelMap.put("prebidstartdate", commonService.convertSqlToClientDate(client_dateformate_hhmm, prebidDtls[2].toString()));
-	        	    		modelMap.put("prebidenddate", commonService.convertSqlToClientDate(client_dateformate_hhmm, prebidDtls[3].toString()));
+	        	    		modelMap.put("prebidstartdate", commonService.convertSqlToClientDate(clientdateformatehhmm, prebidDtls[2].toString()));
+	        	    		modelMap.put("prebidenddate", commonService.convertSqlToClientDate(clientdateformatehhmm, prebidDtls[3].toString()));
 	        	    	}
 	        	    	modelMap.put("isCommitteeCreated", prebidCommitteeId!=0);
 	        	    	modelMap.put("prebidDtls", prebidDtls);
-	        	    	modelMap.put("tenderId", tenderId);
+	        	    	modelMap.put(TENDERID, tenderId);
 	        	    	modelMap.put("objectId", tenderPrebidObjectId);
 	        	    	modelMap.put("childId", prebidCommitteeId);
-	        	    	modelMap.put("currentDate", new Date());
+	        	    	modelMap.put("currentDate", commonService.getServerDateTime());
 	        	    	modelMap.put("subChildId", 0);
 	        	    	modelMap.put("otherSubChildId", 0);
 	                	retVal="etender/bidder/PrebidDashboardTabBidder";
 				}
 				List<Integer> cStatusList=new ArrayList<Integer>();
                 cStatusList.add(1);
-                modelMap.addAttribute("isAuction",tblTender.getisAuction());
-                modelMap.addAttribute("clientDateFormate",client_dateformate_hhmm);
+                modelMap.addAttribute(ISAUCTION,tblTender.getisAuction());
+                modelMap.addAttribute("clientDateFormate",clientdateformatehhmm);
 				modelMap.addAttribute("tenderEnvelopeLst", tenderCommonService.getTenderEnvelopeByTenderId(tenderId,false,cStatusList));
 				modelMap.addAttribute("tenderFormLst", tenderCommonService.getTenderFormByTenderId(true, tenderId, formStatus,tblTender.getTenderMode(),tblTender.getIsItemwiseWinner(),companyId));
 			}
@@ -587,13 +513,13 @@ public class BidderHallController {
     public ModelAndView getTenderNITDocument(@PathVariable("tenderId")Integer tenderId,@PathVariable("formId")Integer formId,@PathVariable("objectId")Integer objectId,@PathVariable("bidderId")Integer bidderId, HttpServletRequest request) throws Exception {
         String retVal = "/etender/bidder/TenderMapBidderDocument";
         ModelAndView modelAndView = new ModelAndView(retVal);
-        modelAndView.addObject("tenderId", tenderId);
+        modelAndView.addObject(TENDERID, tenderId);
         modelAndView.addObject("objectId", bidderMapDocObjectId);
         modelAndView.addObject("childId", formId);
         modelAndView.addObject("subChildId", 0);
         modelAndView.addObject("otherSubChildId", 0);
         TblTender tblTender=biddingFormService.BiddingTypeFromTender(tenderId);
-        modelAndView.addObject("isAuction", tblTender.getisAuction());
+        modelAndView.addObject(ISAUCTION, tblTender.getisAuction());
         return modelAndView;
     }
     
@@ -601,14 +527,14 @@ public class BidderHallController {
     public ModelAndView getTenderReferenceDocument(@PathVariable("tenderId")Integer tenderId,@PathVariable("formId")Integer formId,@PathVariable("objectId")Integer objectId,@PathVariable("bidderId")Integer bidderId, HttpServletRequest request) throws Exception {
         String retVal = "/etender/bidder/TenderReferenceDocument";
         ModelAndView modelAndView = new ModelAndView(retVal);
-        modelAndView.addObject("tenderId", tenderId);
+        modelAndView.addObject(TENDERID, tenderId);
         modelAndView.addObject("docList",fileUploadService.getOfficerDocuments(tenderId, Integer.parseInt(bidderMandetoryMapDocObjectId), formId,0,0,2,bidderId));
         modelAndView.addObject("objectId", bidderMandetoryMapDocObjectId);
         modelAndView.addObject("childId", formId);
         modelAndView.addObject("subChildId", 0);
         modelAndView.addObject("otherSubChildId", 0);
         TblTender tblTender=biddingFormService.BiddingTypeFromTender(tenderId);
-        modelAndView.addObject("isAuction", tblTender.getisAuction());
+        modelAndView.addObject(ISAUCTION, tblTender.getisAuction());
         return modelAndView;
     }
     

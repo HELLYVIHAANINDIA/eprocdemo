@@ -557,12 +557,21 @@ public class DocumentController {
         objectId=StringUtils.hasLength(request.getParameter(OBJECTID)) ? Integer.parseInt(request.getParameter(OBJECTID)) : 0;
         boolean renameFlag = false;
         SessionBean sessionBean= (SessionBean) session.getAttribute("sessionObject")!=null?(SessionBean) session.getAttribute("sessionObject"):new SessionBean();
+        int userType = 0;
         try {
+        	if(sessionBean!=null){
+        		userType=sessionBean.getUserTypeId();
+        	}
+        	//in case of tender authority and bidder registration userType would be 2
+        	if(objectId==bidderRegistrationObjectId || objectId==tenderAuthorityRegistrationObjectId){
+        		userType=2;
+        	}
+        	
         	List<Object[]> tblOfficerDocument = null;
         	if(objectId==bidderRegistrationObjectId || objectId==tenderAuthorityRegistrationObjectId) {
-        		tblOfficerDocument=documentService.getOfficerDocument(Integer.parseInt(docId),2);
+        		tblOfficerDocument=documentService.getOfficerDocument(Integer.parseInt(docId),userType);
     		}else {
-    			tblOfficerDocument=documentService.getOfficerDocument(Integer.parseInt(docId),sessionBean.getUserTypeId());
+    			tblOfficerDocument=documentService.getOfficerDocument(Integer.parseInt(docId),userType);
     		}
 //        	if(session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null) {
 	    		for(int i=0;i<tblOfficerDocument.size();i++){
@@ -570,7 +579,7 @@ public class DocumentController {
 		    		renameFlag = renameFile(filePath,tblOfficerDocument.get(i)[0].toString());
 	    		}
 	    		if (renameFlag) {
-	    			renameFlag = documentService.updateOfficerDocStatus(docId, cStatusDoc,sessionBean.getUserTypeId());
+	    			renameFlag = documentService.updateOfficerDocStatus(docId, cStatusDoc,userType);
 	            }
 	          response.getWriter().write(renameFlag + "");
 //        	}else{

@@ -5,7 +5,10 @@
 package com.eprocurement.etender.controller;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -29,9 +32,9 @@ import com.eprocurement.common.utility.SessionBean;
 import com.eprocurement.etender.model.TblQuestionAnswer;
 import com.eprocurement.etender.model.TblSeekClarification;
 import com.eprocurement.etender.services.AuditTrailService;
-import com.eprocurement.etender.services.BidderSubmissionService;
 import com.eprocurement.etender.services.ClarificationService;
 import com.eprocurement.etender.services.DocumentService;
+import com.eprocurement.etender.services.OfficerService;
 import com.eprocurement.etender.services.TenderCommonService;
 
 @Controller
@@ -55,9 +58,9 @@ public class ClarificationBidderController {
     @Autowired
     private CommonValidations commonValidations;
     @Autowired
-    private BidderSubmissionService eventBidSubmissionService;
-    @Autowired
     private CommonService commonservice;
+    @Autowired
+    private OfficerService officerService;
     
     @Value("#{etenderProperties['client_dateformate_hhmm']}")
     private String client_dateformate_hhmm;
@@ -65,6 +68,8 @@ public class ClarificationBidderController {
     private String sql_dateformate;
 	@Value("#{projectProperties['tenderSeekClarificationBidderObjectId']}")
     private String tenderSeekClarificationBidderObjectId;
+	@Value("#{projectProperties['mail.from']}")
+    private String mailFrom;
     
     private static final String REDIRECT_SESSION_EXPIRED = "redirect:/sessionexpired";
    
@@ -124,6 +129,27 @@ public class ClarificationBidderController {
                 	tblQuestionAnswer.setAnswerDate(commonService.getServerDateTime());
                 	seekClarificationService.addTblQuestion(tblQuestionAnswer);
                 	seekClarificationService.updateBidderDocStatus(questionId);
+                	Object[] bidderDtls = officerService.getBiddderDetails(bidderId);
+                	String bidderEmailId = "";
+                	String companyName = "";
+                	Set<String> officerList = seekClarificationService.getTECofficerEmailIds(tenderId);
+                	if(bidderDtls!=null){
+                		bidderEmailId = bidderDtls[0].toString();
+                		companyName = bidderDtls[1].toString();
+                	    
+                	}
+                	try {
+                		for (String string : officerList) {
+                			String contentForBidder = "This is to inform you that "+companyName+" has given clarification for the following Tender:"+tenderId;
+                            String subject = " Bidder has given clarification in Tender ID:"+tenderId;
+                           officerService.addMail(officerService.setTblMailMessage(string,mailFrom, subject,contentForBidder,"seek clarification"));
+                     
+						}
+                		
+                			}catch (Exception e) {
+                    	 e.printStackTrace();	
+                     }
+                	
                 }
                 StringBuilder redirectUrl = new StringBuilder();
                 redirectUrl.append("redirect:/etender/bidder/viewQueries/").append(tenderId).append("/").append(envelopeId).append("/").append(bidderId);
@@ -153,15 +179,28 @@ public class ClarificationBidderController {
             List<Object[]> list = seekClarificationService.getConfigureDateData(tenderId, envelopeId, bidderId);
             List<TblSeekClarification> seekClarifications = seekClarificationService.getSeekClarificationDtls(tenderId, envelopeId, bidderId);
             List<TblQuestionAnswer> tblQuestionAnswers  = null;
+            Map<String,String> questionDates = new HashMap<String, String>();
+            Map<String,String> answerDates = new HashMap<String, String>();
             if(list != null && !list.isEmpty()) {
                 modelMap.addAttribute("configureDateList", list.get(0));
+                modelMap.addAttribute("responseEndDate", commonService.convertSqlToClientDate(client_dateformate_hhmm, (Date)list.get(0)[1]));
                 tblQuestionAnswers = seekClarificationService.getQuestionByEventId((Integer)list.get(0)[0]);
+                for (TblQuestionAnswer tblQuestionAnswer : tblQuestionAnswers) {
+                	if(tblQuestionAnswer.getQuestionDate()!=null){
+                		questionDates.put("queId_"+tblQuestionAnswer.getQuestionId(), commonService.convertSqlToClientDate(client_dateformate_hhmm, tblQuestionAnswer.getQuestionDate().toString()));
+                	}
+                	if(tblQuestionAnswer.getAnswerDate()!=null){
+                		answerDates.put("ansId_"+tblQuestionAnswer.getQuestionId(), commonService.convertSqlToClientDate(client_dateformate_hhmm, tblQuestionAnswer.getAnswerDate().toString()));
+                	}
+				}
             }
             if(seekClarifications != null && !seekClarifications.isEmpty()) {
                 modelMap.addAttribute("seekClarifications", seekClarifications);
             }
             modelMap.addAttribute("currentDate", commonService.getServerDateTime());
             modelMap.addAttribute("tblQuestionAnswersLst", tblQuestionAnswers);
+            modelMap.addAttribute("questionDates", questionDates);
+            modelMap.addAttribute("answerDates", answerDates);
         } catch (Exception ex) {
             return exceptionHandlerService.writeLog(ex);
         } finally {
@@ -199,4 +238,6 @@ public class ClarificationBidderController {
         }
         return "/etender/bidder/ViewSeekClarificationQueAns";
     }
+    
 }
+

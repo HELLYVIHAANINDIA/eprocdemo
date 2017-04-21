@@ -5,8 +5,10 @@
 package com.eprocurement.etender.services;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import com.eprocurement.common.daointerface.HibernateQueryDao;
 import com.eprocurement.common.daointerface.TblCompanyDao;
 import com.eprocurement.common.daointerface.TblQuestionAnswerDao;
 import com.eprocurement.common.daointerface.TblSeekClarificationDao;
+import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.etender.model.TblCompany;
 import com.eprocurement.etender.model.TblQuestionAnswer;
 import com.eprocurement.etender.model.TblSeekClarification;
@@ -34,6 +37,9 @@ public class ClarificationService{
     TblCompanyDao tblCompanyDao;
     @Autowired
     TblQuestionAnswerDao tblQuestionAnswerDao;
+    @Autowired
+    CommonDAO commonDAO;
+    
      
 
     /**
@@ -281,5 +287,34 @@ public class ClarificationService{
         return cnt!=0;
     }
     
-    
+    public Set<String> getTECofficerEmailIds(int tenderId){
+		Integer cType = 2;
+		Set<String> emailIds = new HashSet<String>();
+		
+		StringBuilder emailId = new StringBuilder();
+		String committeeQuery = "select tblOfficer.tblUserlogin.userId,tblOfficer.id,tblCommittee.committeeType,tblOfficer.emailid from TblCommitteeUser tblCommitteeUser inner join tblCommitteeUser.tblOfficer tblOfficer inner join  tblCommitteeUser.tblCommittee tblCommittee where tblCommitteeUser.tblCommittee.isActive=1 "
+				+ "and tblCommittee.tblTender.tenderId="+tenderId +" and tblCommittee.committeeType="+cType;
+			List<Object[]> oldCommittees = commonDAO.executeSelect(committeeQuery, null);
+			int[] committeeUser = null;
+			String[] committeeUserEmailId = null;
+			if(oldCommittees != null && !oldCommittees.isEmpty()){
+				committeeUser = new int[oldCommittees.size()];
+				committeeUserEmailId = new String[oldCommittees.size()];
+				for(int i = 0; i < oldCommittees.size(); i++){
+					committeeUser[i] = Integer.parseInt(oldCommittees.get(i)[0].toString());
+					committeeUserEmailId[i] = oldCommittees.get(i)[3].toString();
+				}
+			}
+			if(committeeUser != null){
+				String user = "";
+				if(committeeUser != null){
+					for(int i = 0; i < committeeUser.length; i++){
+						user += committeeUser[i]+",";
+						emailId.append(committeeUserEmailId[i]).append(",");
+						emailIds.add(committeeUserEmailId[i]);
+					}
+				}
+			}
+			return emailIds;
+    	}
 }

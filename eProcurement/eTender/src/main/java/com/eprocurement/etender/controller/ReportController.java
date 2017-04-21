@@ -4,9 +4,10 @@
  */
 package com.eprocurement.etender.controller;
 
-import java.math.BigInteger;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -31,11 +33,20 @@ import com.eprocurement.etender.databean.BiddingFormBean;
 import com.eprocurement.etender.databean.BiddingFormCellBean;
 import com.eprocurement.etender.databean.BiddingFormColumnBean;
 import com.eprocurement.etender.databean.BiddingFormTableBean;
+import com.eprocurement.etender.model.TblBidDetail;
+import com.eprocurement.etender.model.TblBidder;
 import com.eprocurement.etender.model.TblBidderdocument;
+import com.eprocurement.etender.model.TblCompany;
 import com.eprocurement.etender.model.TblPurchaseorder;
 import com.eprocurement.etender.model.TblTender;
+import com.eprocurement.etender.model.TblTenderBid;
+import com.eprocurement.etender.model.TblTenderBidDetail;
+import com.eprocurement.etender.model.TblTenderBidMatrix;
+import com.eprocurement.etender.model.TblTenderCell;
 import com.eprocurement.etender.model.TblTenderCellGrandTotal;
+import com.eprocurement.etender.model.TblTenderColumn;
 import com.eprocurement.etender.model.TblTenderEnvelope;
+import com.eprocurement.etender.model.TblTenderRebate;
 import com.eprocurement.etender.services.CommitteeService;
 import com.eprocurement.etender.services.EProcureCreationService;
 import com.eprocurement.etender.services.FormService;
@@ -64,6 +75,10 @@ public class ReportController {
     CommitteeService committeeService;
     @Autowired
     QuotationService quotationService;
+    @Autowired
+    FormService biddingFormService;
+    @Autowired
+    private TenderService tenderFormService;
     
     
     private static final String RESULTSET_1= "#result-set-1";
@@ -80,8 +95,9 @@ public class ReportController {
     private static final String TENDERID = "tenderId";
     
     @Value("#{etenderProperties['client_dateformate_hhmm']}")
-    private String client_dateformate_hhmm;
-    
+    private String clientdateformatehhmm;
+    @Value("#{etenderProperties['decimalPoint']}")
+    private int decimalPoint;
     
     @RequestMapping(value = {"/buyer/submitFormBidWeight/{tenderId}/{formId}"}, method = RequestMethod.POST)
     public ModelAndView submitFormBidWeight(@PathVariable(TENDERID) int tenderId,@PathVariable("formId") int formId,HttpServletRequest request,HttpSession session,RedirectAttributes redirectAttributes) {
@@ -90,13 +106,53 @@ public class ReportController {
         if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
         	String[] bidderId = request.getParameterValues("bidderId");
         	String[] weightVal = request.getParameterValues("weightVal");
+        	String envelopeId = request.getParameter("envelopeId");
+        	String weightageRemarks = request.getParameter("weightageRemarks");
         	if(bidderId != null && weightVal != null){
         		reportService.updateBidWeightage(bidderId,weightVal,tenderId,formId);
+        		reportService.updateWeightageRemarks(envelopeId,weightageRemarks);
         		page = "redirect:/etender/buyer/gettabcontent/"+tenderId+"/2";
         		redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_weight_updated_success");
         		model.setViewName(page);
         	}
         }
+        return model;
+    }
+    @RequestMapping(value = {"/buyer/weightageCombineReport/{tenderId}"}, method = RequestMethod.GET)
+    public ModelAndView weightageCombineReport(@PathVariable(TENDERID) int tenderId,HttpServletRequest request,HttpSession session) {
+        String page= REDIRECT_SESSION_EXPIRED;
+        ModelAndView model = new ModelAndView(page);
+        if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
+        		try {
+        			List<Object[]> weightageList = reportService.getWeightageReportData(tenderId);
+        			List<Object[]> l1H1ReportList = reportService.getL1H1ReportData(tenderId);
+					Map<String,String> companyWeightage = new HashMap<String, String>(); 
+					Map<String,String> companyL1H1 = new HashMap<String, String>(); 
+					Map<String,String> w1Count = new HashMap<String, String>();
+					if(weightageList != null){
+        				for(int i = 0 ; i < weightageList.size(); i++){
+        					if(!w1Count.containsKey(weightageList.get(i)[0].toString())){
+        						w1Count.put(weightageList.get(i)[0].toString(), ("W"+(w1Count.size()+1))+"("+weightageList.get(i)[0]+")"); // first map all weightage for w1 and w2 string.
+        					}
+        				//	companyWeightage.put(weightageList.get(i)[2].toString(),"W"+(i+1) +"("+weightageList.get(i)[0]+")");
+        				}
+        				
+        				for(int i = 0 ; i < weightageList.size(); i++){
+        					companyWeightage.put(weightageList.get(i)[2].toString(),w1Count.get(weightageList.get(i)[0].toString()));
+        				}
+        			
+        				for(int i = 0 ; i < l1H1ReportList.size(); i++){
+        					companyL1H1.put(l1H1ReportList.get(i)[2].toString(),l1H1ReportList.get(i)[0].toString());
+        				}
+        			}
+					model.addObject("companyWeightage", companyWeightage);
+					model.addObject("companyL1H1", companyL1H1);
+	        		page = "/etender/common/weightageCombineReport";
+	        		model.setViewName(page);
+        		} catch (Exception e) {
+					exceptionHandlerService.writeLog(e);
+				}
+        	}
         return model;
     }
     @RequestMapping(value = {"/buyer/weightageReportEnv/{tenderId}/{envelopeId}"}, method = RequestMethod.GET)
@@ -106,20 +162,19 @@ public class ReportController {
         if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
         		try {
 					List<Object[]> result = reportService.getTenderBidFormWithFormDetail(tenderId, envelopeId,0,"0");
-					model.addObject("tblTender", tenderCommonService.getTenderById(tenderId));
-					//model.addObject("lstCompanyFrmDtl", result);
-					Map<String,List<Object[]>> bidderResultMap = new HashMap<String,List<Object[]>>();
-					Map<String,List<String>> formNameMap = new HashMap<String, List<String>>();
+					model.addObject(EProcureCreationController.TBLTENDER, tenderCommonService.getTenderById(tenderId));
+					Map<String,List<Object[]>> bidderResultMap = new HashMap();
+					Map<String,List<String>> formNameMap = new LinkedHashMap<String, List<String>>();
 					for(Object[] obj : result){
 						String formId = obj[3].toString();
 						if(bidderResultMap.containsKey(formId)){
 							bidderResultMap.get(formId).add(obj);
 						}else{
-							List<Object[]> list = new ArrayList<Object[]>();
+							List<Object[]> list = new ArrayList();
 							list.add(obj);
 							bidderResultMap.put(formId,list);
 						}
-						List<String> list = new ArrayList<String>();
+						List<String> list = new ArrayList();
 						list.add(obj[8].toString());
 						list.add(obj[9].toString());
 						formNameMap.put(formId, list);
@@ -128,9 +183,18 @@ public class ReportController {
 					model.addObject("isBidderRejected",isBidderRejected);
 					model.addObject("formNameMap", formNameMap);
 					model.addObject("bidderResultMap", bidderResultMap);
-					model.addObject("tblTender", tenderCommonService.getTenderById(tenderId));
-					TblTenderEnvelope tblTenderEnvelope = tenderService.getTblTenderEnvelope(tenderId,envelopeId);
-					model.addObject("envelopeName", tenderCommonService.getEnvelopeNameById(tblTenderEnvelope.getTblEnvelope().getEnvId()));
+					if(envelopeId != 0){
+						TblTenderEnvelope tblTenderEnvelope = tenderService.getTblTenderEnvelope(tenderId,envelopeId);
+						model.addObject("envelopeName", tenderCommonService.getEnvelopeNameById(tblTenderEnvelope.getTblEnvelope().getEnvId()));
+						model.addObject("weightageRemarks", tblTenderEnvelope.getWeightageRemarks());
+						// check is weightage report detail entry was done or not
+					}
+					if(envelopeId == 0){
+						List<Object[]> data = reportService.getWeightageReportData(tenderId);
+						if(data == null || data.isEmpty()){
+							model.addObject("isWeightageDataSaveReq", true);
+						}
+					}
 	        		page = "/etender/common/WeightageReport";
 	        		model.setViewName(page);
         		} catch (Exception e) {
@@ -139,7 +203,16 @@ public class ReportController {
         	}
         return model;
     }
-    
+
+    @ResponseBody
+    @RequestMapping(value = {"/buyer/saveWeightageData/{tenderId}"}, method = RequestMethod.POST)
+    public void saveWeightageData(@PathVariable(TENDERID) int tenderId,HttpServletRequest request,HttpSession session) {
+    	 if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
+		    String weightage = request.getParameter("weightage");
+		    String companyId = request.getParameter("companyId");
+		    reportService.insertWeightageDetail(tenderId,weightage,companyId);
+    	 }
+    }
     @RequestMapping(value = {"/buyer/tenderindividualreport/{tenderId}/{envelopeId}/{formId}/{operation}/{commiteeType}","/bidder/tenderindividualreport/{tenderId}/{envelopeId}/{formId}/{operation}/{commiteeType}"}, method = RequestMethod.GET)
     public String showTenderOpeningIndividualReport(@PathVariable(TENDERID) int tenderId,@PathVariable("envelopeId") int envelopeId,@PathVariable("formId") int formId,@PathVariable("operation") int operation, @PathVariable("commiteeType") int commiteeType, ModelMap modelMap, HttpServletRequest request,HttpSession session) {
         String page= REDIRECT_SESSION_EXPIRED;
@@ -153,8 +226,23 @@ public class ReportController {
                 if(request.getParameter("hdisPrintPriview")!=null){
                     modelMap.addAttribute("isPrintPriview",request.getParameter("hdisPrintPriview"));
                 }
-                TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
-                modelMap.addAttribute("tblTender",tblTender);
+//                TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
+//                modelMap.addAttribute("tblTender",tblTender);
+                int currencyId = (Integer) modelMap.get("currencyId");
+                List<Object[]> lst1=tenderCommonService.getCurrencyByTenderId(tenderId);
+                String currncyName="";
+                if (lst1 != null && !lst1.isEmpty()) {
+                    for (int i = 0; i < lst1.size(); i++) {
+                        if (lst1.get(i)[0] != null && lst1.get(i)[0].toString().trim().length() > 0) {
+                            if (currencyId == (Integer) lst1.get(i)[0]) {
+                                currncyName = (String) lst1.get(i)[3];
+                            }
+                        }
+                    }
+                }
+                modelMap.addAttribute("currncyName",currncyName);
+                
+                
                 if(outMap != null && !outMap.isEmpty())
                 {
                     if(outMap.get(RESULTSET_1) !=null) // Tender Form
@@ -274,16 +362,9 @@ public class ReportController {
                     		bidderBidBean.setDataType(Integer.parseInt(obj[7].toString()));
                     		bidderBidBean.setCellId(Integer.parseInt(obj[8].toString()));
                     		bidderBidBean.setCellNo(Integer.parseInt(obj[9].toString()));
+                    		bidderBidBean.setCellValue(obj[10].toString());
                     		bidderBidBean.setFilledby(Integer.parseInt(obj[11].toString()));
                                 
-//                                if(bidderBidBean.getFilledby()==2 || bidderBidBean.getFilledby()==3)
-//                                {
-//                                    bidderBidBean.setCellValue(encryptDecryptUtils.decrypt((String)obj[10],tblTender.getRandPass().substring(0, 16).getBytes()));
-//                                }
-//                                else
-//                                { 
-                                    bidderBidBean.setCellValue(obj[10].toString());
-                               // }
                     		lstBidDtl.add(bidderBidBean);
                     	}
                         modelMap.addAttribute("lstBidDtl",lstBidDtl);
@@ -317,6 +398,10 @@ public class ReportController {
                     if(bidderIds!=null && !bidderIds.isEmpty()){
                     	tblTenderCellGrandTotal = formService.getTblTenderCellGrandTotal(tenderId,bidderIds.toArray(),formId,false);
                     }
+                    if(Integer.parseInt(modelMap.get("isRebateApplicable").toString())==1){
+                    	modelMap.addAttribute("TblTenderRebateList",tenderService.getTblTenderRebate(tenderId));
+                    }
+                    
                     modelMap.addAttribute("TenderCellGrandTotalList",tblTenderCellGrandTotal);
                 }
                 page = "/etender/common/TenderOpeningIndividualReport";
@@ -330,6 +415,8 @@ public class ReportController {
                 page =  REDIRECT_SESSION_EXPIRED;
             }
             if(operation == 5){
+            	TblTenderEnvelope tblTenderEnvelope = tenderCommonService.getTenderEnvelopeById(envelopeId);
+            	modelMap.addAttribute("weightageRemarks",tblTenderEnvelope.getWeightageRemarks());
             	page = "/etender/common/addFormWeightageScore"; // for weightage evaluation.
             }
         } catch (Exception e) {
@@ -356,6 +443,19 @@ public class ReportController {
                 }
                 TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
                 modelMap.addAttribute("tblTender",tblTender);
+                
+                List<Object[]> lst1=tenderCommonService.getCurrencyByTenderId(tenderId);
+                String currncyName="";
+                if (lst1 != null && !lst1.isEmpty()) {
+                    for (int i = 0; i < lst1.size(); i++) {
+                        if (lst1.get(i)[0] != null && lst1.get(i)[0].toString().trim().length() > 0) {
+                            if (tblTender.getCurrencyId() == (Integer) lst1.get(i)[0]) {
+                                currncyName = (String) lst1.get(i)[3];
+                            }
+                        }
+                    }
+                }
+                modelMap.addAttribute("currncyName",currncyName);
                 
                 if(outMap != null && !outMap.isEmpty()){
                     if(outMap.get(RESULTSET_1) !=null) {// Tender Form
@@ -466,15 +566,7 @@ public class ReportController {
                     		bidderBidBean.setCellId(Integer.parseInt(obj[8].toString()));
                     		bidderBidBean.setCellNo(Integer.parseInt(obj[9].toString()));
                                 bidderBidBean.setFilledby(Integer.parseInt(obj[11].toString()));
-//                    		if(bidderBidBean.getFilledby()==2 || bidderBidBean.getFilledby()==3)
-//                                {
-//                                    bidderBidBean.setCellValue(encryptDecryptUtils.decrypt((String)obj[10],tblTender.getRandPass().substring(0, 16).getBytes()));
-//                                }
-//                                else
-//                                {
                                     bidderBidBean.setCellValue(obj[10].toString());
-                             //   }
-//                    		
                     		mapBidData.put(bidderBidBean.getBidderId()+"_"+bidderBidBean.getTableId()+"_"+bidderBidBean.getColumnId()+"_"+bidderBidBean.getRowId(), bidderBidBean.getCellValue());
                     		lstBidDtl.add(bidderBidBean);
                     	}
@@ -528,19 +620,29 @@ public class ReportController {
     	String page= REDIRECT_SESSION_EXPIRED;
     	int tenderId = 0;
     	int formId = 0;
-    	int operation = 0;
     	int commiteeType = 0;
         try {
         	tenderId = Integer.parseInt(request.getParameter("hdTenderId"));
         	formId = Integer.parseInt(request.getParameter("hdFormId"));
-        	operation = Integer.parseInt(request.getParameter("hdOperation"));
         	commiteeType = Integer.parseInt(request.getParameter("hdCommiteeType"));
         	if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
         		SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
                 modelMap.addAttribute("userTypeId",sBean.getUserTypeId());
                 modelMap.addAttribute("flag",2);
                 tenderCommonService.tenderSummary(tenderId, modelMap);
-                
+                int currencyId = (Integer) modelMap.get("currencyId");
+                List<Object[]> lst1=tenderCommonService.getCurrencyByTenderId(tenderId);
+                String currncyName="";
+                if (lst1 != null && !lst1.isEmpty()) {
+                    for (int i = 0; i < lst1.size(); i++) {
+                        if (lst1.get(i)[0] != null && lst1.get(i)[0].toString().trim().length() > 0) {
+                            if (currencyId == (Integer) lst1.get(i)[0]) {
+                                currncyName = (String) lst1.get(i)[3];
+                            }
+                        }
+                    }
+                }
+                modelMap.addAttribute("currncyName",currncyName);
                 List<Object> strBidders = new ArrayList<Object>();
                 List<Object> strRows = new ArrayList<Object>();
                 List<Object> strColumns = new ArrayList<Object>();
@@ -592,7 +694,6 @@ public class ReportController {
                     }
                     if(outMap.get(RESULTSET_3) !=null) // Tender Column Details
                     {
-                    	System.out.println(outMap.get(RESULTSET_3).size()+"--------");
                         modelMap.addAttribute("lstColumnDtl", outMap.get(RESULTSET_3) );
                     }
                     if(outMap.get(RESULTSET_4) !=null) // Tender Row Details
@@ -654,6 +755,7 @@ public class ReportController {
         		SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
                 modelMap.addAttribute("userTypeId",sBean.getUserTypeId());
                 tenderCommonService.tenderSummary(tenderId, modelMap);
+                
                  modelMap.addAttribute("operation",operation);
                  modelMap.addAttribute("flag",1);
                 if(request.getParameter("hdisPrintPriview")!=null)
@@ -702,7 +804,6 @@ public class ReportController {
         	if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
         		SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
                 modelMap.addAttribute("userTypeId",sBean.getUserTypeId());
-//                tenderCommonService.tenderSummary(tenderId, modelMap);
                 TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
                 if(request.getParameter("hdisPrintPriview")!=null)
                 {
@@ -752,15 +853,116 @@ public class ReportController {
     	String retVal=REDIRECT_SESSION_EXPIRED;
     	ModelAndView modelAndView =  new ModelAndView(retVal);
     	String redtMsg = "";
-    	boolean bSucess = false;
+    	boolean bSucess;
     	if(req.getRequestURI().contains("getUserListForVerifyBid")){
     		redtMsg = "msg_verify_Bid";
     	}else if(req.getRequestURI().contains("getUserListForDecryptBid")){
     		redtMsg = "msg_decypt_Bid";
     	}
+    	boolean isdecryptionlevelStarted  = reportService.isdecryptionlevel(tenderId,formId);
+    	if(!isdecryptionlevelStarted){
     	bSucess = reportService.vefifyNdecryptBid(tenderId,formId);
-    	if(bSucess){
-	    	retVal="redirect:/etender/buyer/gettabcontent/"+tenderId+"/1";
+	    	if(bSucess && req.getRequestURI().contains("getUserListForDecryptBid")){
+	    		
+	     			List<TblBidDetail> lstBidDetail=new ArrayList<TblBidDetail>();
+	                lstBidDetail=biddingFormService.getBidForConversion(tenderId);
+	                List<TblTenderBidDetail> lstTblTenderBidDetail=biddingFormService.getTenderBidDetailForBidConverstion(tenderId);
+	                TblTender tblTender=tenderCommonService.getTenderById(tenderId);
+	                List<Object[]> lst=reportService.getTenderCurrencyExchageRate(tenderId,null);
+	                List<TblTenderCellGrandTotal> lstTblTenderCellGrandTotal=new ArrayList<TblTenderCellGrandTotal>();
+	                lstTblTenderCellGrandTotal=biddingFormService.getGtCellValueForBidConversion(tenderId);
+	                List<TblTenderRebate> tblTenderRebateList = null;
+	                if(tblTender.getIsRebateApplicable() == 1){
+	                        tblTenderRebateList = tenderFormService.getTblTenderRebate(tenderId); 
+	                }
+	                BigDecimal bidVal = BigDecimal.ZERO;
+	                for(int j=0;j<lst.size();j++){
+	                        for(int i=0;i<lstBidDetail.size();i++){
+	                            TblBidDetail tblBidDetail = lstBidDetail.get(i);
+	                            TblCompany tblCompany=tblBidDetail.getTblCompany();
+	                            TblTenderColumn tblTenderColumn=tblBidDetail.getTblTenderColumn();
+	                            if(tblTenderColumn.getFilledBy()==3){
+	                                if(tblCompany.getCompanyid().equals((Integer)lst.get(j)[2]) && (Integer)lst.get(j)[4] != 1){
+	                                	BigDecimal cellval=  new BigDecimal(tblBidDetail.getCellValue().toString());
+	                                    BigDecimal exchange=(BigDecimal)lst.get(j)[1];
+	                                    bidVal=exchange.multiply(cellval);
+	                                    BigDecimal roundOff = bidVal.setScale(decimalPoint,BigDecimal.ROUND_CEILING);
+	                                    tblBidDetail.setCellValue(roundOff+"");
+	                                    biddingFormService.updateBidConversion(tblBidDetail);
+	                                }
+	                            } 
+	
+	                        }
+	                        for(int i=0;i<lstTblTenderBidDetail.size();i++){
+	                            TblTenderBidDetail tblTenderBidDetail=new TblTenderBidDetail();
+	                            tblTenderBidDetail=lstTblTenderBidDetail.get(i);
+	                            TblTenderCell tblTenderCell=new TblTenderCell();
+	                            tblTenderCell=tblTenderBidDetail.getTblTendercell();
+	                            TblTenderColumn tblTenderColumn=new TblTenderColumn();
+	                            tblTenderColumn=tblTenderCell.getTblTenderColumn();
+	                            TblTenderBidMatrix tblTenderBidMatrix=tblTenderBidDetail.getTblTenderbidmatrix();
+	                            TblTenderBid tblTenderBid=tblTenderBidMatrix.getTblTenderbid();
+	
+	                            if(tblTenderColumn.getFilledBy()==3){
+	                                if(tblTenderBid.getBidderid().equals((Integer)lst.get(j)[2]) && (Integer)lst.get(j)[4] != 1){
+	                                	BigDecimal cellVal=new BigDecimal(tblTenderBidDetail.getCellvalue().toString());
+	                                    BigDecimal exchange=(BigDecimal)lst.get(j)[1];
+	                                    bidVal=exchange.multiply(cellVal);
+	                                    BigDecimal roundOff = bidVal.setScale(decimalPoint,BigDecimal.ROUND_CEILING);
+	                                    tblTenderBidDetail.setCellvalue(roundOff+"");
+	                                    biddingFormService.updateTblTenderBidDetailForBidConversion(tblTenderBidDetail);
+	                                }
+	
+	                            }
+	                        }
+	
+	                        for(int i=0;i<lstTblTenderCellGrandTotal.size();i++){
+	                            TblTenderCellGrandTotal tblTenderCellGrandTotal=new TblTenderCellGrandTotal();
+	                            tblTenderCellGrandTotal=lstTblTenderCellGrandTotal.get(i);
+	                            TblBidder tblBidder=tblTenderCellGrandTotal.getTblBidder();
+	                            if(tblBidder.getBidderId().equals((Integer)lst.get(j)[2]) && (Integer)lst.get(j)[4] != 1){
+	                            	BigDecimal cellVal=new BigDecimal(tblTenderCellGrandTotal.getGTValue().toString());
+	                                BigDecimal exchange=(BigDecimal)lst.get(j)[1];
+	                                bidVal=exchange.multiply(cellVal);
+	                                BigDecimal roundOff = bidVal.setScale(decimalPoint,BigDecimal.ROUND_CEILING);
+	                                tblTenderCellGrandTotal.setGTValue(roundOff+"");
+	                                biddingFormService.updateTblTenderCellGrandTotalForBidConversion(tblTenderCellGrandTotal);
+	                            }
+	                        }
+	                        //rebate
+	                        if(tblTenderRebateList!=null && !tblTenderRebateList.isEmpty()){
+	                            for(int i=0;i<tblTenderRebateList.size();i++){
+	                                TblTenderRebate tblTenderRebate=new TblTenderRebate();
+	                                tblTenderRebate = tblTenderRebateList.get(i);
+		                            TblBidder tblBidder= biddingFormService.getTblBidderCompanyId(tblTenderRebate.getTblCompany().getCompanyid());
+		                            if(tblBidder.getBidderId().equals((Integer)lst.get(j)[2]) && (Integer)lst.get(j)[4] != 1){
+		                            	BigDecimal cellVal=new BigDecimal(tblTenderRebate.getRebateValue());
+		                                BigDecimal exchange=(BigDecimal)lst.get(j)[1];
+		                                bidVal=exchange.multiply(cellVal);
+		                                BigDecimal roundOff = bidVal.setScale(decimalPoint,BigDecimal.ROUND_CEILING);
+		                                tblTenderRebate.setRebateValue(roundOff+"");
+		                                biddingFormService.updateTblTenderRebateForBidConversion(tblTenderRebate);
+		                            }
+	                            }
+	                        }
+	                 }
+	                biddingFormService.updateTblTenderForBidConversion(tenderId);
+	    		
+		    	retVal="redirect:/etender/buyer/gettabcontent/"+tenderId+"/1";
+		    	redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), redtMsg);
+		    	modelAndView = new ModelAndView(retVal);
+	    	}else{
+	    		retVal="redirect:/etender/buyer/gettabcontent/"+tenderId+"/1";
+		    	redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), redtMsg);
+		    	modelAndView = new ModelAndView(retVal);
+	    	}
+    	}else{
+    		retVal="redirect:/etender/buyer/gettabcontent/"+tenderId+"/1";
+    		if(req.getRequestURI().contains("getUserListForVerifyBid")){
+        		redtMsg = "msg_verify_already_Bid";
+        	}else if(req.getRequestURI().contains("getUserListForDecryptBid")){
+        		redtMsg = "msg_decypt_already_Bid";
+        	}
 	    	redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), redtMsg);
 	    	modelAndView = new ModelAndView(retVal);
     	}
@@ -776,7 +978,6 @@ public class ReportController {
         	if (session.getAttribute(CommonKeywords.SESSION_OBJ.toString()) != null){
         		SessionBean sBean = (SessionBean) request.getSession().getAttribute(CommonKeywords.SESSION_OBJ.toString());
                 modelMap.addAttribute("userTypeId",sBean.getUserTypeId());
-//                tenderCommonService.tenderSummary(tenderId, modelMap);
                 TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
                 if(request.getParameter("hdisPrintPriview")!=null)
                 {
@@ -836,7 +1037,7 @@ public class ReportController {
 		        SessionBean sessionBean = (SessionBean) request.getSession().getAttribute("sessionObject");
 		        modelMap.addAttribute("lstLoginReportBean",  formService.getLoginReport(tenderId,(int)sessionBean.getUserId()));
 		        modelMap.addAttribute("tblTender", eventCreationService.getTenderMaster(tenderId));
-		        modelMap.addAttribute("client_dateformate_hhmm", client_dateformate_hhmm);
+		        modelMap.addAttribute("client_dateformate_hhmm", clientdateformatehhmm);
 		        page = "/eauction/loginReport"; 
         	}
             else {

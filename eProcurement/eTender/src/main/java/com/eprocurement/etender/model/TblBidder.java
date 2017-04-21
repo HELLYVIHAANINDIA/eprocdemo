@@ -185,7 +185,7 @@ public class TblBidder implements Serializable {
     public void setCity( String city ) {
         this.city = city;
     }
-    @Column(name="city", nullable=false, length=25)
+    @Column(name="city", length=25)
     public String getCity() {
         return this.city;
     }
@@ -194,7 +194,7 @@ public class TblBidder implements Serializable {
     public void setPhoneno( String phoneno ) {
         this.phoneno = phoneno;
     }
-    @Column(name="phoneNo", length=11)
+    @Column(name="phoneNo")
     public String getPhoneno() {
         return this.phoneno;
     }
@@ -203,7 +203,7 @@ public class TblBidder implements Serializable {
     public void setMobileno( String mobileno ) {
         this.mobileno = mobileno;
     }
-    @Column(name="mobileNo", nullable=false, length=11)
+    @Column(name="mobileNo")
     public String getMobileno() {
         return this.mobileno;
     }

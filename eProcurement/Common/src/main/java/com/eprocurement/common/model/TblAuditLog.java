@@ -28,7 +28,9 @@ public class TblAuditLog implements java.io.Serializable {
 	private String entityName;
 	private String emailId;
 	private String pageUrl;
-
+    private String IpAddress;
+    private int userType;
+    
 
 
 	public TblAuditLog() {
@@ -63,7 +65,18 @@ public class TblAuditLog implements java.io.Serializable {
 	public void setAction(String action) {
 		this.action = action;
 	}
-
+        
+        @Column(name = "IpAddress")
+        public String getIpAddress()
+        {
+            return IpAddress;
+        }
+        
+        public void setIpAddress(String IpAddress)
+        {
+            this.IpAddress = IpAddress;
+        }
+        
 	@Column(name = "DETAIL", nullable = false, length = 65535)
 	public String getDetail() {
 		return this.detail;
@@ -73,7 +86,7 @@ public class TblAuditLog implements java.io.Serializable {
 		this.detail = detail;
 	}
 
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "CREATED_DATE", nullable = false, length = 10)
 	public Date getCreatedDate() {
 		return this.createdDate;
@@ -117,6 +130,15 @@ public class TblAuditLog implements java.io.Serializable {
 
 	public void setPageUrl(String pageUrl) {
 		this.pageUrl = pageUrl;
+	}
+	
+	@Column(name = "USERTYPE", nullable = false)
+	public int getUserType() {
+		return userType;
+	}
+
+	public void setUserType(int userType) {
+		this.userType = userType;
 	}
 	
 	

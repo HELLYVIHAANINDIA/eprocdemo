@@ -21,6 +21,7 @@ import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.common.services.CommonService;
 import com.eprocurement.common.services.EncrptDecryptUtils;
 import com.eprocurement.etender.daointerface.TblBidDetailDao;
+import com.eprocurement.etender.daointerface.TblL1H1ReportDao;
 import com.eprocurement.etender.daointerface.TblShareReportDao;
 import com.eprocurement.etender.daointerface.TblShareReportDetailDao;
 import com.eprocurement.etender.daointerface.TblTenderBidDetailDao;
@@ -28,6 +29,7 @@ import com.eprocurement.etender.daointerface.TblTenderCellGrandTotalDao;
 import com.eprocurement.etender.model.TblBidDetail;
 import com.eprocurement.etender.model.TblBidder;
 import com.eprocurement.etender.model.TblCompany;
+import com.eprocurement.etender.model.TblL1H1Report;
 import com.eprocurement.etender.model.TblShareReport;
 import com.eprocurement.etender.model.TblShareReportDetail;
 import com.eprocurement.etender.model.TblTender;
@@ -40,6 +42,7 @@ import com.eprocurement.etender.model.TblTenderEnvelope;
 import com.eprocurement.etender.model.TblTenderForm;
 import com.eprocurement.etender.model.TblTenderTable;
 import com.eprocurement.etender.model.TblTenderopen;
+import com.eprocurement.etender.model.TblWeightageReport;
 
 @Service
 public class ReportService {
@@ -66,6 +69,8 @@ public class ReportService {
     TblBidDetailDao tblBidDetailDao;
     @Autowired
     TblShareReportDetailDao tblShareReportDetailDao;
+    @Autowired
+    TblL1H1ReportDao tblL1H1ReportDao;
     
     
     /**
@@ -77,11 +82,9 @@ public class ReportService {
      */
     @Transactional
     public List<Object[]> getShareReportDetailsByReportId(int shareReportId) throws Exception{
-        List<Object[]> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("shareReportId",shareReportId);
-        list = hibernateQueryDao.createNewQuery("select tblsharereportdetail.shareIndividualReport, tblsharereportdetail.shareComparativeReport, tblsharereportdetail.shareDocument, tblsharereportdetail.shareReportDetailId, tblsharereportdetail.tblTenderForm.formId from TblShareReportDetail tblsharereportdetail where tblsharereportdetail.tblShareReport.shareReportId=:shareReportId order by tblsharereportdetail.tblTenderForm.formId ",var);                
-        return list;        
+        return hibernateQueryDao.createNewQuery("select tblsharereportdetail.shareIndividualReport, tblsharereportdetail.shareComparativeReport, tblsharereportdetail.shareDocument, tblsharereportdetail.shareReportDetailId, tblsharereportdetail.tblTenderForm.formId from TblShareReportDetail tblsharereportdetail where tblsharereportdetail.tblShareReport.shareReportId=:shareReportId order by tblsharereportdetail.tblTenderForm.formId ",var);                
     }
     
     /**
@@ -91,7 +94,7 @@ public class ReportService {
      * @throws Exception 
      */
     public boolean deActivateShareReport(int shareReportId) throws Exception{
-        int cnt = 0;
+        int cnt;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("shareReportId",shareReportId);
         cnt = hibernateQueryDao.updateDeleteNewQuery("update TblShareReport set isActive=0 where shareReportId=:shareReportId",var);        
@@ -131,8 +134,6 @@ public class ReportService {
         List<String> criteriaList = new ArrayList<String>();
         criteriaList.add("Individual");
         criteriaList.add("Comparative");
-//        criteriaList.add("L1 Report");
-//        criteriaList.add(new SelectItem(messageSource.getMessage("field_sup_doc",  null, LocaleContextHolder.getLocale()),3));
         return criteriaList;        
     }
     
@@ -140,7 +141,6 @@ public class ReportService {
         List<String> criteriaList = new ArrayList<String>();
         criteriaList.add("All Bidders");
         criteriaList.add("Qualified Bidders");
-//        criteriaList.add(new SelectItem(messageSource.getMessage("field_sup_doc",  null, LocaleContextHolder.getLocale()),3));
         return criteriaList;        
     }
     
@@ -152,14 +152,12 @@ public class ReportService {
      */
     @Transactional
     public List<Object[]> getTenderFormForResultShare(int tenderId) throws Exception{
-        List<Object[]> list = null;
         Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId",tenderId);
         StringBuilder query = new StringBuilder();
         query.append(" SELECT tbltenderform.formId,tbltenderform.formName,tbltenderform.tblTenderEnvelope.envelopeId, tbltenderform.sortOrder");
         query.append(" from TblTenderForm tbltenderform where tbltenderform.tblTender.tenderId=:tenderId and tbltenderform.cstatus=1 order by tbltenderform.formId");
-        list = hibernateQueryDao.createNewQuery(query.toString(),var);                
-        return list;        
+        return  hibernateQueryDao.createNewQuery(query.toString(),var);                
     }
    
     
@@ -169,7 +167,7 @@ public class ReportService {
     }
     
     @Transactional
-	private Map<String, List<Object[]>> spTenderReport(int tenderId, int formId, int reportTypeId,int biddingVariant,int isRebateApplicable,int isItemwiseWinner) throws Exception {
+    public Map<String, List<Object[]>> spTenderReport(int tenderId, int formId, int reportTypeId,int biddingVariant,int isRebateApplicable,int isItemwiseWinner) throws Exception {
 		Map<String, List<Object[]>> map = new HashMap<String, List<Object[]>>();
 		
 		if(isItemwiseWinner==1){
@@ -190,6 +188,7 @@ public class ReportService {
 			
 			/* Get bidder's value for rank*/
 			List<Object[]> cellList = getItemWiseRank(tables);
+			List<Object[]> officerValue = new ArrayList<Object[]>();
 			if(cellList!=null && !cellList.isEmpty()){
 				//map.put("#result-set-4", cellList);
 				Map<String,String> pMap = new HashMap<String,String>();
@@ -203,30 +202,110 @@ public class ReportService {
 						pMap.put(obj[1]+"_"+obj[2], obj[3]+"("+obj[0]+")");
 					}
 				}
-				List<Object[]> obj = new ArrayList<Object[]>();
+				
 				for(Map.Entry<String, String> entiry : pMap.entrySet()){
 					Object[] o = new Object[3];
 					String val = entiry.getKey();
-					 val.split("_");
 					o[0] = entiry.getValue();
 					o[1] = Integer.parseInt(val.split("_")[0]);
 					o[2] = Integer.parseInt(val.split("_")[1]);
-					obj.add(o);	
+					officerValue.add(o);	
  				}
-				map.put("#result-set-4", obj);
+				map.put("#result-set-4", officerValue);
+			}
+			if(getTblL1H1Report(tenderId) && tableList.size() > 0){
+				addTblL1H1ReportELIWise(tableList,officerValue,bidList,tenderId,biddingVariant,isRebateApplicable);
 			}
 		}else{
 			/* Get bidder's total value in order of their rank- Grand Total */
 			List<Object[]> rankList = getGTWiseRank(tenderId,biddingVariant,isRebateApplicable);
 			if(rankList!=null && !rankList.isEmpty()){
 				map.put("#result-set-1", rankList);
+				if(getTblL1H1Report(tenderId)){
+					addTblL1H1ReportGTWise(rankList,tenderId,biddingVariant,isRebateApplicable);
+				}
 			}
 		}
-		
 		return map;
 	}
+    
     @Transactional
-    private List<Object[]> getItemWiseRank(List<Object> tables) {
+	public boolean getTblL1H1Report(int tenderId) throws Exception {
+        List<TblL1H1Report> list = null;
+        list = commonDAO.findEntity(TblL1H1Report.class, "tblTender.tenderId", Operation_enum.EQ, tenderId);
+        return (list != null && !list.isEmpty()) ? false : true;
+	 }  
+
+    
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public void addTblL1H1ReportELIWise(List<Object[]> tableList,List<Object[]> officerValue,List<Object[]> bidList,int tenderId,int biddingVariant,int isRebateApplicable) {
+    	String oldAmt = "";
+		int counter = 0;
+    	List<TblL1H1Report> tblL1H1ReportList = new ArrayList<TblL1H1Report>();
+    	for (Object[] tables : tableList) {
+    		for (Object[] officers : officerValue) {
+    			if(officers[2].toString().equals(tables[0].toString())){
+    				counter = 0;
+    				oldAmt = "";
+	    			for (Object[] bids : bidList) {
+	    				if(bids[2].toString().equals(officers[1].toString())){
+	    					TblL1H1Report tblL1H1Report = new TblL1H1Report();
+	    					tblL1H1Report.setFilledByOfficers(officers[0].toString());
+	    					tblL1H1Report.setTableId(Integer.parseInt(tables[0].toString()));
+	    					tblL1H1Report.setTblCompany(new TblCompany(Integer.parseInt(bids[4].toString())));
+	    					tblL1H1Report.setTblTender(new TblTender(tenderId));
+		    				if(!oldAmt.equals(bids[0].toString())){
+		    					counter++;
+		    				}
+		    				tblL1H1Report.setAmount(bids[0].toString());
+		    				oldAmt = bids[0].toString();
+		    				if(biddingVariant==1){
+		    					tblL1H1Report.setRank("L"+counter);	
+		    				}else{
+		    					tblL1H1Report.setRank("H"+counter);
+		    				}
+		    				tblL1H1Report.setRowId(Integer.parseInt(bids[2].toString()));
+		    				tblL1H1ReportList.add(tblL1H1Report);
+	    				}
+	    			}
+    			}
+			}
+		}
+    	
+    	if(tblL1H1ReportList.size() > 0){
+    		tblL1H1ReportDao.saveUpdateAllTblL1H1Report(tblL1H1ReportList);
+    	}
+    }
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public void addTblL1H1ReportGTWise(List<Object[]> tables,int tenderId,int biddingVariant,int isRebateApplicable) {
+    	int counter = 0;
+    	String oldAmt = "";
+    	List<TblL1H1Report> tblL1H1ReportList = new ArrayList<TblL1H1Report>();
+    	for (Object[] objects : tables) {
+			TblL1H1Report tblL1H1Report = new TblL1H1Report();
+			tblL1H1Report.setTblCompany(new TblCompany(Integer.parseInt(objects[1].toString())));
+			tblL1H1Report.setTblTender(new TblTender(tenderId));
+			if(!oldAmt.equals(objects[0].toString())){
+				counter++;
+			}
+			tblL1H1Report.setAmount(objects[0].toString());
+			oldAmt = objects[0].toString();
+			if(isRebateApplicable==1){
+				tblL1H1Report.setAmountAfterRebate(objects[4].toString());
+			}
+			if(biddingVariant == 1){
+				tblL1H1Report.setRank("L"+counter);
+	    	}else if(biddingVariant == 2){
+	    		tblL1H1Report.setRank("H"+counter);
+	    	}
+			tblL1H1ReportList.add(tblL1H1Report);
+		}
+    	if(tblL1H1ReportList.size() > 0){
+    		tblL1H1ReportDao.saveUpdateAllTblL1H1Report(tblL1H1ReportList);
+    	}
+    }
+    @Transactional
+    public List<Object[]> getItemWiseRank(List<Object> tables) {
     	Map<String, Object> var = new HashMap<String, Object>();
         var.put("tables",tables);
         StringBuilder query = new StringBuilder();
@@ -239,16 +318,16 @@ public class ReportService {
     }
 
 	@Transactional
-    private List<Object[]> getItemWiseBidValue(int tenderId) {
+	public List<Object[]> getItemWiseBidValue(int tenderId) {
     	Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId",tenderId);
         StringBuilder query = new StringBuilder();
-        query.append(" select cast(TBD.cellValue as decimal(10,2)) as cellVal,TCM.companyName,TTCE.rowid,FS.bidderid");
+        query.append(" select cast(TBD.cellValue as decimal(10,2)) as cellVal,TCM.companyName,TTCE.rowid,FS.bidderid,TCM.companyid");
         query.append(" from tbl_biddetail TBD");
         query.append(" inner join tbl_tenderform TTF on TBD.formid = TTF.formid");
         query.append(" INNER JOIN tbl_finalsubmission FS ON FS.tenderId = TTF.tenderId AND TBD.companyId = FS.companyId");
         query.append(" inner join tbl_bidderapprovaldetail TBAD ON TBAD.finalsubmissionId = FS.finalsubmissionid AND TBAD.isapproved =1");
-        query.append(" inner join tbl_company TCM on TCM.companyID = FS.companyId");
+        query.append(" inner join tbl_company TCM on TCM.companyid = FS.companyId");
         query.append(" inner join tbl_tendergovcolumn TTGC on TTGC.formid = TBD.formid ");
         query.append(" inner join tbl_tendercolumn TTC on TTC.columnid = TTGC.columnid");
         query.append(" inner join tbl_tendercell TTCE on TTCE.columnid = TTC.columnid AND TTCE.cellID = TBD.cellId");
@@ -260,7 +339,7 @@ public class ReportService {
 	}
 
 	@Transactional
-    private List<Object[]> getGTWiseRank(int tenderId,int biddingVariant,int isRebateApplicable) throws Exception {
+    public List<Object[]> getGTWiseRank(int tenderId,int biddingVariant,int isRebateApplicable) throws Exception {
     	Map<String, Object> var = new HashMap<String, Object>();
     	
     	int envelopeId = tenderFormService.getLastEnvelopeId(tenderId);
@@ -271,11 +350,6 @@ public class ReportService {
         query.append(" select SUM(cast(GT.GTValue as decimal(10,2))) as GTValue,FS.companyId,FS.bidderid,TCM.companyName ");
         if(isRebateApplicable == 1){
         	query.append(" ,cast(TR.rebateValue as decimal(10,2)) finalAmt");
-	        /*if(biddingVariant == 1){
-	        	query.append(" ,(((GT.GTValue*TR.rebateValue) /100) - GT.GTValue) as finalAmt");
-	        }else{
-	        	query.append(" ,(GT.GTValue + ((GT.GTValue*TR.rebateValue) /100)) as finalAmt");
-	        }*/
         }
         
         query.append(" from tbl_tendercellgrandtotal GT ");
@@ -307,7 +381,7 @@ public class ReportService {
 	}
 
 	@Transactional
-	private List<Object[]> getFormWiseGT(int tenderId) throws Exception {
+	public List<Object[]> getFormWiseGT(int tenderId) throws Exception {
     	Map<String, Object> var = new HashMap<String, Object>();
         var.put("tenderId",tenderId);
         StringBuilder query = new StringBuilder();
@@ -354,7 +428,7 @@ public class ReportService {
 		return bSucess;
 	}
     @Transactional
-    private List<TblBidDetail> getTblBidDetail(int formId,byte[] key) throws Exception{
+    public List<TblBidDetail> getTblBidDetail(int formId,byte[] key) throws Exception{
     	List<Object[]> list = null;
     	 Map<String, Object> var = new HashMap<String, Object>();
          var.put("formId",formId);
@@ -376,7 +450,7 @@ public class ReportService {
 	     return newlist;
     }
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-     private boolean decryptTblBidDetail(int formId,byte[] key) throws Exception {
+    public boolean decryptTblBidDetail(int formId,byte[] key) throws Exception {
     	 boolean bSucess = false;
          tblBidDetailDao.updateAllTblBidDetail(getTblBidDetail(formId,key));
          bSucess = true;
@@ -384,7 +458,7 @@ public class ReportService {
 		
 	}
     @Transactional
-    private List<TblTenderBidDetail> getTblTenderBidDetail(int formId,byte[] key) throws Exception{
+    public List<TblTenderBidDetail> getTblTenderBidDetail(int formId,byte[] key) throws Exception{
 
     	List<Object[]> tblTenderBidDetailList = null;
     	 Map<String, Object> var = new HashMap<String, Object>();
@@ -413,14 +487,14 @@ public class ReportService {
     
     }
      @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-     private boolean decryptTblTenderBidDetail(int formId,byte[] key) throws Exception {
+     public boolean decryptTblTenderBidDetail(int formId,byte[] key) throws Exception {
     	 boolean bSucess = false;
     	 tblTenderBidDetailDao.updateAllTblTenderBidDetail(getTblTenderBidDetail(formId,key));
     	 bSucess = true;
     	 return bSucess;
 	}
      @Transactional
-     private List<TblTenderCellGrandTotal> getTblTenderCellGrandTotal(int formId,byte[] key,boolean bool) throws Exception{
+     public List<TblTenderCellGrandTotal> getTblTenderCellGrandTotal(int formId,byte[] key,boolean bool) throws Exception{
     	 List<Object[]> list = null;
          Map<String, Object> var = new HashMap<String, Object>();
          var.put("formId",formId);
@@ -448,8 +522,8 @@ public class ReportService {
          return newlist;
      }
      @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-     private boolean decryptTblTenderCellGrandTotal(int formId,byte[] key) throws Exception {
-    	boolean bSucess = false;
+     public boolean decryptTblTenderCellGrandTotal(int formId,byte[] key) throws Exception {
+    	boolean bSucess;
         tblTenderCellGrandTotalDao.updateAllTblTenderCellGrandTotal(getTblTenderCellGrandTotal(formId,key,true));
         bSucess  = true;
     	return bSucess;
@@ -484,7 +558,7 @@ public class ReportService {
         return sPTenderOpeningReport(tenderId, envelopId, bidderId, consortiumId,0, 3);
     }
     @Transactional
-	private Map<String, List<Object[]>> sPTenderOpeningReport(int tenderId,	int envelopId, int bidderId, int consortiumId, int formId, int reportTypeId) throws Exception {
+    public Map<String, List<Object[]>> sPTenderOpeningReport(int tenderId,	int envelopId, int bidderId, int consortiumId, int formId, int reportTypeId) throws Exception {
 		TblTenderEnvelope tblTenderEnvelope = tenderCommonService.getTenderEnvelopeById(envelopId);
 		int envelopeSortOrder = tblTenderEnvelope.getSortOrder();
 		int previousEnvelopeId = 0;
@@ -558,7 +632,7 @@ public class ReportService {
         Map<String,Object> var=new HashMap<String,Object>();
         var.put("tenderId",tenderId);
         StringBuilder query=new StringBuilder();
-        query.append("select tc.currencyId,tc.exchangeRate,bidderId,tb.userId from tbl_tenderbidcurrency tb ");
+        query.append("select tc.currencyId,tc.exchangeRate,bidderId,tb.userId,tc.isDefault from tbl_tenderbidcurrency tb ");
         query.append(" inner join tbl_tendercurrency tc on tc.tenderCurrencyId=tb.tenderCurrencyId ");
         query.append(" inner join tbl_bidder bd on bd.userId=tb.userId ");
         query.append(" where tenderId= :tenderId");
@@ -570,7 +644,7 @@ public class ReportService {
         return lst;
     }
 	@Transactional
-	private List<Object[]> getTenderItemWiseList(int tenderId, int envelopId,int formId,int bidderId)throws Exception {
+	public List<Object[]> getTenderItemWiseList(int tenderId, int envelopId,int formId,int bidderId)throws Exception {
 		StringBuilder query = new StringBuilder();
 		Map<String, Object> var = new HashMap<String, Object>();
 	    var.put("tenderId", tenderId);
@@ -598,7 +672,7 @@ public class ReportService {
 	    return hibernateQueryDao.createSQLQuery(query.toString(), var);
 	}
 	@Transactional
-	private List<Object[]> getTenderBidTableList(int tenderId, int envelopId,int formId, List<Object> bidderIds)throws Exception {
+	public List<Object[]> getTenderBidTableList(int tenderId, int envelopId,int formId, List<Object> bidderIds)throws Exception {
 		StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
 	     var.put("tenderId", tenderId);
@@ -645,7 +719,9 @@ public class ReportService {
 	    	 query.append(" INNER JOIN tbl_finalsubmission FS ON TB.companyid=FS.companyid and TB.tenderId=FS.TenderId");
 	    	 query.append(" INNER JOIN tbl_tenderform TF ON TB.formId=TF.formId and TF.isMandatory=1 ");
 	    	 query.append(" INNER JOIN tbl_company UD on FS.companyid = UD.companyid");
-	     
+    	 if(envelopId ==0 ){
+    		 query.append(" INNER JOIN tbl_tenderEnvelope TE on TF.envelopeId = TE.envelopeId ");
+    	 }
 	     query.append(" WHERE TB.tenderId =:tenderId and FS.isActive=1 ");
 	     if(bidderIds!=null && !bidderIds.isEmpty() && !"0".equals(bidderIds)){
 	    	 var.put("bidderIds", bidderIds);
@@ -657,7 +733,11 @@ public class ReportService {
 	     if(envelopId !=0 ){
 	    	 query.append(" AND TB.envelopeId =:envelopId");
 	     }
-	     query.append(" ORDER BY TB.envelopeId, TB.formId,UD.companyname, TB.companyid ");
+	     if(envelopId ==0 ){
+    		 query.append(" Order by TE.envId ");
+    	 }else{
+    		 query.append(" ORDER BY TB.envelopeId, TB.formId,UD.companyname, TB.companyid ");
+    	 }
 	     
 	     return hibernateQueryDao.createSQLQuery(query.toString(), var);
 	
@@ -681,7 +761,7 @@ public class ReportService {
 	    	 query.append(" INNER JOIN tbl_company UD on FS.companyid = UD.companyid");
 	     
 	     query.append(" WHERE TB.tenderId =:tenderId ");
-	     if(bidderIds!=null && !bidderIds.isEmpty() && !bidderIds.equals("0")){
+	     if(bidderIds!=null && !bidderIds.isEmpty() && !bidderIds.contains("0")){
 	    	 var.put("bidderIds", bidderIds);
 	    	 query.append(" AND TB.bidderId IN(:bidderIds)");
 	     }
@@ -699,7 +779,7 @@ public class ReportService {
 		}
 
 	@Transactional
-	private List<Object[]> getTenderBidList(int tenderId, int envelopId,int formId, List<Object> bidderIds, int consortiumId,List<Object> columnIds,List<Object> rowIds) throws Exception{
+	public List<Object[]> getTenderBidList(int tenderId, int envelopId,int formId, List<Object> bidderIds, int consortiumId,List<Object> columnIds,List<Object> rowIds) throws Exception{
 		StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
 	     var.put("tenderId", tenderId);
@@ -744,7 +824,7 @@ public class ReportService {
 	     return hibernateQueryDao.createSQLQuery(query.toString(), var);
 	}
 	@Transactional
-	private List<Object[]> getTenderBidderList(int tenderId, int envelopId,	int formId, List<Object> bidderIds, int consortiumId, int envelopeSortOrder,int previousEnvelopeId,int isEncodedName,int tenderStage,int isConsortiumAllow,int biddingType)throws Exception {
+	public List<Object[]> getTenderBidderList(int tenderId, int envelopId,	int formId, List<Object> bidderIds, int consortiumId, int envelopeSortOrder,int previousEnvelopeId,int isEncodedName,int tenderStage,int isConsortiumAllow,int biddingType)throws Exception {
 		StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
 	     var.put("tenderId", tenderId);
@@ -813,7 +893,7 @@ public class ReportService {
 	
 		}
 	@Transactional
-	private List<Object[]> getTenderCellList(int tenderId, int envelopId,int formId, int bidderId, int consortiumId, int reportTypeId) throws Exception{
+	public List<Object[]> getTenderCellList(int tenderId, int envelopId,int formId, int bidderId, int consortiumId, int reportTypeId) throws Exception{
 
 		StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
@@ -859,7 +939,7 @@ public class ReportService {
 	}
 
 	@Transactional
-	private List<Object[]> getTenderColumnList(int tenderId, int envelopId,	int formId, int bidderId, int consortiumId) throws Exception{
+	public List<Object[]> getTenderColumnList(int tenderId, int envelopId,	int formId, int bidderId, int consortiumId) throws Exception{
 		StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
 	     var.put("tenderId", tenderId);
@@ -900,7 +980,7 @@ public class ReportService {
 	}
 
 	@Transactional
-	private List<Object[]> getTenderTableList(int tenderId, int envelopId,int formId, int bidderId, int consortiumId) throws Exception{
+	public List<Object[]> getTenderTableList(int tenderId, int envelopId,int formId, int bidderId, int consortiumId) throws Exception{
 		StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
 	     var.put("tenderId", tenderId);
@@ -933,13 +1013,15 @@ public class ReportService {
 	     if(envelopId !=0 ){
 	    	 query.append(" AND TF.envelopeId =:envelopId");
 	     }
-	     query.append(" ORDER BY TF.sortOrder, TT.sortOrder ");
+//	     query.append(" ORDER BY TF.sortOrder, TT.sortOrder ");
+	     query.append(" ORDER BY TT.formId,TT.tableId desc"); 
+	     
 	     
 	     return hibernateQueryDao.createSQLQuery(query.toString(), var);
 	}
 
 	@Transactional
-	 private List<Object[]> getTenderFormList(int tenderId, int envelopId,int formId,int bidderId,int consortiumId,int autoResultSharing) throws Exception{
+	public List<Object[]> getTenderFormList(int tenderId, int envelopId,int formId,int bidderId,int consortiumId,int autoResultSharing) throws Exception{
 		 StringBuilder query = new StringBuilder();
 		 Map<String, Object> var = new HashMap<String, Object>();
 	     var.put("tenderId", tenderId);
@@ -1043,7 +1125,6 @@ public class ReportService {
 		 return sPGenerateCustomReport(tenderId,formId,1,bidderIds,columnIds,rowIds);
 	}
 	 public void updateBidWeightage(String[] bidderIds, String[] weightVals, int tenderId, int formId) {
-			// TODO Auto-generated method stub
 			for(int i = 0; i < bidderIds.length;i++){
 				Integer bidderId =  Integer.parseInt(bidderIds[i]);
 				Double weightVal = Double.parseDouble(weightVals[i]);
@@ -1058,7 +1139,7 @@ public class ReportService {
 		}
 	 
 	@Transactional
-	private Map<String, List<Object[]>> sPGenerateCustomReport(int tenderId,int formId, int flag, List<Object> bidderIds, List<Object> columnIds, List<Object> rowIds) throws Exception {
+	public Map<String, List<Object[]>> sPGenerateCustomReport(int tenderId,int formId, int flag, List<Object> bidderIds, List<Object> columnIds, List<Object> rowIds) throws Exception {
 		 Map<String, List<Object[]>> map = new HashMap<String, List<Object[]>>();
 		 int envelopeId = 0;
 		 
@@ -1094,7 +1175,7 @@ public class ReportService {
 				 map.put("#result-set-4", cellList);
 			 }
 			 TblTender tblTender =  tenderCommonService.getTenderById(tenderId);
-			 List<Object[]> bidderList = tenderFormService.getBidderById(tenderId,envelopeId,formId,envelopeSortOrder,previousEnvelopeId,tblTender.getEnvelopeType(),bidderIds);
+			 List<Object[]> bidderList = tenderFormService.getBidderById(tenderId,envelopeId,formId,envelopeSortOrder,previousEnvelopeId,tblTender.getEnvelopeType(),bidderIds,tblTender.getBiddingType());
 			 if(bidderList!=null && !bidderList.isEmpty()){
 				 map.put("#result-set-5", bidderList);
 			 }
@@ -1136,6 +1217,80 @@ public class ReportService {
 	     
 	     return hibernateQueryDao.createSQLQuery(query.toString(), var);
 	
+	}
+	/**
+	 * Check is weightage report done or not.
+	 * @param tenderId
+	 * @return
+	 */
+	public List<Object[]> getWeightageReportData(int tenderId) {
+		StringBuilder query = new StringBuilder();
+		 Map<String, Object> param = new HashMap<String, Object>();
+		 param.put("tenderId", tenderId);
+	     query.append(" SELECT weightage,tblCompany.companyid,tblCompany.companyname ");
+	     query.append("  FROM TblWeightageReport where tblTender.tenderId=:tenderId order by weightage desc");
+	     return commonDAO.executeSelect(query.toString(),param);
+	}
+
+	public void insertWeightageDetail(int tenderId, String weightage,String companyId) {
+		if(weightage != null && !weightage.isEmpty()){
+			List<TblWeightageReport> tblWeightageReportList = new ArrayList<TblWeightageReport>();
+			String[] wArr = weightage.split(",");
+			String[] cArr = companyId.split(",");
+			for(int i = 0; i < wArr.length;i++){
+				if(wArr[i] != null && !wArr[i].isEmpty()){
+					TblWeightageReport tblWeightageReport = new TblWeightageReport();
+					tblWeightageReport.setTblTender(new TblTender(tenderId));
+					tblWeightageReport.setWeightage(Float.parseFloat(wArr[i]));
+					tblWeightageReport.setTblCompany(new TblCompany(Integer.parseInt(cArr[i])));
+					tblWeightageReportList.add(tblWeightageReport);
+				}
+			}
+			commonDAO.saveOrUpdateAll(tblWeightageReportList);
+		}
+	}
+
+	public List<Object[]> getL1H1ReportData(int tenderId) {
+		StringBuilder query = new StringBuilder();
+		 Map<String, Object> param = new HashMap<String, Object>();
+		 param.put("tenderId", tenderId);
+	     query.append(" SELECT rank,tblCompany.companyid,tblCompany.companyname ");
+	     query.append(" FROM TblL1H1Report wr where tblTender.tenderId=:tenderId");
+	     return commonDAO.executeSelect(query.toString(),param);
+	}
+
+	public boolean isdecryptionlevel(int tenderId) throws Exception {
+		boolean isdecryptionlevelStarted = false;
+		Map<String,Object> map = new HashMap<String, Object>();
+		map.put("tenderId", tenderId);
+		map.put("decryptionlevel", 1);
+		String query = "select decryptionlevel,tblTender.tenderId from TblTenderopen where tblTender.tenderId=:tenderId and decryptionlevel=:decryptionlevel and tblTenderenvelope.tblEnvelope.envId in (4,5)";
+		List<Object[]> list = commonDAO.executeSelect(query, map);
+		if (list != null && !list.isEmpty()) {
+			isdecryptionlevelStarted = true;
+		}
+		return isdecryptionlevelStarted;
+	}
+	public boolean isdecryptionlevel(int tenderId,int formId) throws Exception {
+		boolean isdecryptionlevelStarted = false;
+		Map<String,Object> map = new HashMap<String, Object>();
+		map.put("tenderId", tenderId);
+		map.put("decryptionlevel", 1);
+		map.put("formId", formId);
+		String query = "select decryptionlevel,tblTender.tenderId from TblTenderopen where tblTender.tenderId=:tenderId and decryptionlevel=:decryptionlevel and tblTenderform.formId=:formId";
+		List<Object[]> list = commonDAO.executeSelect(query, map);
+		if (list != null && !list.isEmpty()) {
+			isdecryptionlevelStarted = true;
+		}
+		return isdecryptionlevelStarted;
+	}
+
+	public void updateWeightageRemarks(String envelopeId, String txtaWeightageRemarks) {
+		String update = "update TblTenderEnvelope set WeightageRemarks=:WeightageRemarks where envelopeId=:envelopeId";
+		Map<String,Object> map = new HashMap<String, Object>();
+		map.put("WeightageRemarks", txtaWeightageRemarks);
+		map.put("envelopeId", Integer.parseInt(envelopeId));
+		commonDAO.executeUpdate(update, map);
 	}
 	
 	

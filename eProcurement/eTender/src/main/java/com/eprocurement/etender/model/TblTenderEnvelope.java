@@ -45,10 +45,8 @@ public class TblTenderEnvelope  implements java.io.Serializable {
         private   int minFormsReqForBidding;
         private   TblEnvelope tblEnvelope;
         private   TblTender tblTender;
-
-        
-        
-        private Set<TblCommitteeEnvelope> tblCommitteeEnvelope = new HashSet<TblCommitteeEnvelope>();
+        private   String weightageRemarks;
+		private Set<TblCommitteeEnvelope> tblCommitteeEnvelope = new HashSet<TblCommitteeEnvelope>();
         
         @OneToMany(cascade=CascadeType.ALL, fetch=FetchType.LAZY, mappedBy="tblTenderEnvelope")
         public Set<TblCommitteeEnvelope> getTblCommitteeEnvelope() {
@@ -196,7 +194,16 @@ public class TblTenderEnvelope  implements java.io.Serializable {
         public void setOpeningDateStatus(int openingDateStatus) {
             this.openingDateStatus = openingDateStatus;
         }
-        @Column(name="remark",nullable=false, length=1000)
+        
+        @Column(name="weightageRemarks")
+        public String getWeightageRemarks() {
+			return weightageRemarks;
+		}
+		public void setWeightageRemarks(String weightageRemarks) {
+			this.weightageRemarks = weightageRemarks;
+		}
+        
+		@Column(name="remark",nullable=false, length=1000)
         public String getRemark() {
             return this.remark;
         }

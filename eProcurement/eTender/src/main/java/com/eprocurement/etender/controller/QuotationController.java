@@ -3,6 +3,7 @@ package com.eprocurement.etender.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -21,6 +22,7 @@ import com.eprocurement.common.services.ExceptionHandlerService;
 import com.eprocurement.common.utility.CommonKeywords;
 import com.eprocurement.common.utility.SessionBean;
 import com.eprocurement.etender.model.TblPurchaseorder;
+import com.eprocurement.etender.services.ClarificationService;
 import com.eprocurement.etender.services.FormService;
 import com.eprocurement.etender.services.OfficerService;
 import com.eprocurement.etender.services.QuotationService;
@@ -54,6 +56,10 @@ public class QuotationController {
     private String client_dateformate_hhmm;
 	@Value("#{etenderProperties['sql_dateformate']}")
     private String sql_dateformate;
+	@Value("#{projectProperties['mail.from']}")
+    private String mailFrom;
+	@Autowired
+    private ClarificationService seekClarificationService;
 	
 	
     
@@ -301,7 +307,20 @@ public class QuotationController {
     @RequestMapping(value = "/buyer/publishpurchaseorder/{tenderId}/{bidderId}/{poId}", method = RequestMethod.GET)
     public String publishpurchaseorder(@PathVariable("tenderId") int tenderId,@PathVariable("bidderId") int bidderId,@PathVariable("poId") int poId,HttpServletRequest request, ModelMap modelMap,final RedirectAttributes redirectAttributes) {
         try {
+            Object[] bidderDtls = userService.getBiddderDetails(bidderId);
             poService.publishPurchaseorder(poId);
+            String bidderEmailId = "";
+            if(bidderDtls!=null){
+            	bidderEmailId=bidderDtls[0].toString();
+            }
+            try {
+               String contentForBidder = "Dear User,This is to inform you that purchase order is issued to you for the following Tender:"+tenderId;
+               String subject = " Purchase Order is issued for Tender ID:"+tenderId;
+               userService.addMail(userService.setTblMailMessage(bidderEmailId,mailFrom, subject,contentForBidder,"Purchase order"));
+            }catch (Exception e) {
+            	exceptionHandlerService.writeLog(e);
+            }
+            
         } catch (Exception e) {
             return exceptionHandlerService.writeLog(e);
         } finally {
@@ -315,11 +334,22 @@ public class QuotationController {
     @RequestMapping(value = "/buyer/cancelpurchaseorder/{tenderId}/{bidderId}/{poId}", method = RequestMethod.GET)
     public String cancelpurchaseorder(@PathVariable("tenderId") int tenderId,@PathVariable("bidderId") int bidderId,@PathVariable("poId") int poId,HttpServletRequest request, ModelMap modelMap,final RedirectAttributes redirectAttributes) {
         try {
+            Object[] bidderDtls = userService.getBiddderDetails(bidderId);
             poService.cancelPurchaseorder(poId);
+            String bidderEmailId = "";
+            if(bidderDtls!=null){
+            	bidderEmailId=bidderDtls[0].toString();
+            }
+            try {
+               String contentForBidder = "Dear User,This is to inform you that purchase order is cancelled for the following Tender:"+tenderId;
+               String subject = " Purchase Order is cancelled for Tender ID:"+tenderId;
+               userService.addMail(userService.setTblMailMessage(bidderEmailId,mailFrom, subject,contentForBidder,"Purchase order"));
+            }catch (Exception e) {
+            	exceptionHandlerService.writeLog(e);
+            }
+            
         } catch (Exception e) {
             return exceptionHandlerService.writeLog(e);
-        } finally {
-        	
         }
         redirectAttributes.addFlashAttribute(CommonKeywords.SUCCESS_MSG.toString(), "msg_po_cancel_successfully");
         return "redirect:/etender/buyer/getpurchaseorderdashboard/"+tenderId+"/"+poId;
@@ -362,6 +392,7 @@ public class QuotationController {
             Object[] bidderDtls = userService.getBiddderDetails(bidderId);
             if(bidderDtls!=null) {
             	modelMap.addAttribute("bidderName", bidderDtls[1].toString());
+            	modelMap.addAttribute("companyName", bidderDtls[2].toString());
             }
             modelMap.addAttribute("department",tenderCommonService.getDeptNameByTenderId(tenderId));
             modelMap.addAttribute("tenderId", tenderId);
@@ -372,6 +403,7 @@ public class QuotationController {
             modelMap.addAttribute("otherSubChildId", 0);
             modelMap.addAttribute("optType", "acknowledge");
             modelMap.addAttribute("bidderIsApproved", 1);
+            modelMap.addAttribute("bidderId", bidderId);
             
         } catch (Exception e) {
             return exceptionHandlerService.writeLog(e);
@@ -390,10 +422,27 @@ public class QuotationController {
         	int poId = StringUtils.hasLength(request.getParameter("hdPoId")) ? Integer.parseInt(request.getParameter("hdPoId")): 0;
         	int ackstatus = StringUtils.hasLength(request.getParameter("ackstatus")) ? Integer.parseInt(request.getParameter("ackstatus")): 0;
         	int tenderId = StringUtils.hasLength(request.getParameter("tenderId")) ? Integer.parseInt(request.getParameter("tenderId")): 0;
+        	String hdCompanyName = StringUtils.hasLength(request.getParameter("hdCompanyName")) ? request.getParameter("hdCompanyName"): "";
+        	int bidderId = StringUtils.hasLength(request.getParameter("bidderId")) ? Integer.parseInt(request.getParameter("bidderId")): 0;
+        	String bidderEmailId = "";
+        	Object[] bidderDtls = userService.getBiddderDetails(bidderId);
         	poService.acknowledgePurchaseOrder(poId, remarks,ackstatus);
+        	if(bidderDtls!=null){
+        		bidderEmailId=bidderDtls[0].toString();
+        	}
+        	Set<String> officerList = seekClarificationService.getTECofficerEmailIds(tenderId);
+        	for (String emailId : officerList) {
+        		try {
+                    String contentForBidder = "Issued Purchase order is acknowledged by the "+hdCompanyName+" for the following Tender: "+tenderId;
+                    String subject = " Purchase Order is acknowledge by "+hdCompanyName+" for Tender ID:"+tenderId;
+                    userService.addMail(userService.setTblMailMessage(emailId,mailFrom, subject,contentForBidder,"Purchase order"));
+                 }catch (Exception e) {
+                	 e.printStackTrace();	
+                 }
+			}
         	redirect.append("redirect:/etender/bidder/biddingTenderDashboard/").append(tenderId);
         } catch (Exception e) {
-            return exceptionHandlerService.writeLog(e);
+            e.printStackTrace();
         } finally {
         	
         }

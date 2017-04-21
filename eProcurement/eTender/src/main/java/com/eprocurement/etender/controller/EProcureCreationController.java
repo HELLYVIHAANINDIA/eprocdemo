@@ -30,9 +30,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.eprocurement.common.daogeneric.Operation_enum;
 import com.eprocurement.common.services.CommonDAO;
 import com.eprocurement.common.services.CommonService;
+import com.eprocurement.common.services.EncrptDecryptUtils;
 import com.eprocurement.common.services.ExceptionHandlerService;
 import com.eprocurement.common.utility.CommonKeywords;
 import com.eprocurement.common.utility.SessionBean;
@@ -55,6 +55,7 @@ import com.eprocurement.etender.services.EProcureCreationService;
 import com.eprocurement.etender.services.FormService;
 import com.eprocurement.etender.services.OfficerService;
 import com.eprocurement.etender.services.QuotationService;
+import com.eprocurement.etender.services.ReportService;
 import com.eprocurement.etender.services.TenderCommonService;
 import com.google.gson.Gson;
 
@@ -71,6 +72,8 @@ public class EProcureCreationController {
 	private String docUploadPath;
 	@Autowired
 	DocumentService documentService;
+	@Autowired
+	EncrptDecryptUtils encryptDecryptUtils;
 
 	@Autowired
 	ExceptionHandlerService exceptionHandlerService;
@@ -91,6 +94,8 @@ public class EProcureCreationController {
     BidderSubmissionService eventBidSubmissionService;
     @Autowired
     QuotationService poService;
+    @Autowired
+    private ReportService reportService;
     
 	
 	static final String CREATE = "create";
@@ -268,7 +273,25 @@ public class EProcureCreationController {
     	}
         return retVal;
     }
-
+   
+    @ResponseBody
+    @RequestMapping(value ={"/etender/buyer/tenderListingCount/{type}"}, method = RequestMethod.POST)
+    public Map<String,Object> tenderListingCount(HttpServletRequest request,@PathVariable("type") Integer type) throws Exception  {
+    	HttpSession sesson = request.getSession();
+    	SessionBean sessionBean =  (SessionBean) sesson.getAttribute(SESSIONOBJECT);
+    	if(type == 1){//Tender
+    		return eProcureCreationService.getTenderCount(sessionBean);
+    	}else if(type == 2) {	// auction
+    		return biddingFormService.getAuctionCount();
+    	}else if(type == 3){	// bidder tender
+    		long userId = sessionBean.getUserId();
+	        return eProcureCreationService.getTenderCount(0,userId);
+    	}else if(type == 4){	// bidder auction
+    		long userId = sessionBean.getUserId();
+	        return eProcureCreationService.getTenderCount(1,userId);
+    	}
+		return null;
+    }
 	@RequestMapping(value ={"/etender/buyer/tenderListing"}, method = RequestMethod.GET)
     public ModelAndView tenderListing(HttpServletRequest request)  {
         String retVal = "/etender/buyer/tenderListing";
@@ -407,11 +430,13 @@ public class EProcureCreationController {
 		try{
                     /*Envelope MinFormRequiredForBidding count Update*/
                     
-                    List<TblTenderEnvelope> lstTblTenderEnvelope=new ArrayList();
-                    lstTblTenderEnvelope=biddingFormService.getMinimumFormCountForBidding(tenderId);
-                        biddingFormService.updateMinimumBiddingFormReqForBidding(lstTblTenderEnvelope);
-                        /*************************************************/
-			tblTender = tenderCommonService.getTenderById(tenderId);
+            List<TblTenderEnvelope> lstTblTenderEnvelope=new ArrayList<TblTenderEnvelope>();
+            lstTblTenderEnvelope=biddingFormService.getMinimumFormCountForBidding(tenderId);
+            biddingFormService.updateMinimumBiddingFormReqForBidding(lstTblTenderEnvelope);
+            tblTender = tenderCommonService.getTenderById(tenderId);
+            if(tblTender.getIsWeightageEvaluationRequired() == 1){
+            	biddingFormService.copyWeightageForCorrigendum(tenderId);
+            }
 			setUpdatedDateForPublish(request,tblTender);
 			Integer userId = commonService.getSessionUserId(request);
 			eProcureCreationService.publishTender(tblTender,userId);
@@ -700,6 +725,7 @@ public class EProcureCreationController {
         modelAndView.addObject("evaluationMap", biddingFormService.checkIfEvaluationColumnSet(tenderId));
         modelAndView.addObject("biddingForm", biddingFormService.FormListing(tenderId));
         modelAndView.addObject("isSingleEnvelopeOpened", committeeService.isSingleEnvelopeIsOpened(tenderId));
+        modelAndView.addObject("isSingleEnvelopeIsEvaluated", committeeService.isSingleEnvelopeIsEvaluated(tenderId));
         modelAndView.addObject("copyTenderRequired", eProcureCreationService.coyTenderLinkRequired(tblTender));
         modelAndView.addObject(TBLTENDER, tblTender);
         modelAndView.addObject("tenderNITObjectId", tenderNITObjectId);
@@ -708,6 +734,8 @@ public class EProcureCreationController {
         modelAndView.addObject("isAuction",tblTender.getisAuction());
         modelAndView.addObject("poId",tblPurchaseorder!=null && !tblPurchaseorder.isEmpty()?tblPurchaseorder.get(0).getPoid():0);
         modelAndView.addObject("isResultShareDone", tenderCommonService.isResultShareDone(tenderId));
+        boolean isdecryptionlevelStarted  = reportService.isdecryptionlevel(tenderId);
+        modelAndView.addObject("isdecryptionlevelStarted", isdecryptionlevelStarted);
 	 }catch(Exception e){
 		exceptionHandlerService.writeLog(e);
 	 }
@@ -1050,7 +1078,7 @@ public class EProcureCreationController {
                     	officerService.saveCategoryData(0, 0l,tblTender.getTenderId(),0,request.getParameter("categoryText"));
                         if (EDIT.equals(opType)) {
                             redirectMessage = msg_update_tender;
-                            retVal = "redirect:/etender/buyer/tenderDashboard/"+tblTender.getTenderId();
+                            retVal = "redirect:/etender/buyer/tenderDashboard/"+tblTender.getTenderId()+"?enc="+encryptDecryptUtils.encryptParam("/etender/buyer/tenderDashboard/"+tblTender.getTenderId());
                         } else {
                             redirectMessage = msg_create_tender;
                             retVal = "redirect:/etender/buyer/viewtender/"+tblTender.getTenderId()+"/0";

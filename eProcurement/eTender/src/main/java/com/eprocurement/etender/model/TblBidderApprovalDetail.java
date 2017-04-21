@@ -52,8 +52,8 @@ public class TblBidderApprovalDetail implements Serializable
     private Integer    createdby    ;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="createdOn",nullable=false,updatable=false,insertable=false)
-    private Date       createdon    ;
+    @Column(name="createdOn")
+    private Date       createdon = new Date();
 
     @Column(name="isApproved", nullable=false)
     private Integer    isapproved   ;

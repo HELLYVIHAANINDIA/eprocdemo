@@ -1,1 +1,0 @@
-insert into `tbl_commonlisting`(`listingId`,`actionItem`,`columnName`,`commonAction`,`discription`,`fromClause`,`isHQL`,`status`,`srnoCol`) values ( 28,'View','personName:Name:1,emailId:emailId:1,address:address:1,bidderId:bidderId:0,phoneNo:Phone No:1',NULL,'rejected bidders','from tbl_bidder where cstatus=2',NULL,'1','1');

@@ -1,2 +1,0 @@
-insert into tbl_link (linkName,module,link,description) values('add bidder','common','/common/user/addbidder','add bidder');
-insert into tbl_rolelinkmapping (linkId,roleId) values((select linkId from tbl_link where link='/common/user/addbidder'),5)

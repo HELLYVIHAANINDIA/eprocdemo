@@ -1,1 +1,0 @@
-alter table `eauctiontender`.`tbl_userlogin` change `modifiedby` `modifiedby` int(11) NULL , change `salt` `salt` varchar(250) character set latin1 collate latin1_swedish_ci NULL , change `userType` `userType` int(10) NULL ;

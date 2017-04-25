@@ -1,1 +1,0 @@
-alter table `eauctiontender`.`tbl_tender` change `tenderBrief` `tenderBrief` varchar(2000) NULL , change `tenderDetail` `tenderDetail` longtext NULL ;
